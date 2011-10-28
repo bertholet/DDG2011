@@ -1,0 +1,4 @@
+GeneratedFiles/*/*
+Resources/*
+*.out
+*.vcproj*
