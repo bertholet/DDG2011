@@ -12,7 +12,10 @@ public:
 	~MainWindow();
 
 private:
-	
+	QMenu * fileMenu;
+	QAction * openObjFileAction;
+	QAction * generateMeshAction;
+
 };
 
 #endif // MAINWINDOW_H
