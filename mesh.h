@@ -35,6 +35,7 @@ protected:
 public:
 	//observer msg
 	static const int MESHVERTICESCHANGED = 0;
+	static const int MESH_CONNECTIVITY_CHANGED = 1;
 	//the mesh
 	vector<tuple3f> vertices;
 	//index of the vertices of a face
@@ -52,6 +53,7 @@ public:
 
 	void addNormalNoise( float max );
 	void scaleVertices(float scale);
+	void translateVertices( float dx,float dy,float dz );
 
 	void rotX(float phi);
 	void rotY( float phi );

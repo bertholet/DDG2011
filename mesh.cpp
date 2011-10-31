@@ -160,6 +160,15 @@ void mesh::scaleVertices( float scale )
 	}
 }
 
+void mesh::translateVertices( float dx,float dy,float dz )
+{
+	for(unsigned int i = 0; i < vertices.size(); i++){
+		vertices[i].x += dx;
+		vertices[i].y += dy;
+		vertices[i].z += dz;
+	}
+}
+
 void mesh::rotY( float f )
 {
 	matrixf rot = matrixFactory::rotateX(f);
@@ -430,6 +439,7 @@ void mesh::normalize( void )
 	for(vector<tuple3f>::iterator it = vertices.begin(); it != vertices.end(); it++){
 		(*it)+=translation;
 	}*/
+	translateVertices(-(maxx+minx)/2,-(miny +maxy)/2,-(minz+maxz)/2);
 	scaleVertices(scale);
 
 
