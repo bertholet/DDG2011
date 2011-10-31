@@ -13,7 +13,6 @@ class curvColormap : colorMap
 public:
 	float min, max;
 	vector<tuple3f> * theNormals;
-	vector<tuple3f> curvNormals;
 	curvColormap(mesh &myMesh_);
 	~curvColormap(void);
 

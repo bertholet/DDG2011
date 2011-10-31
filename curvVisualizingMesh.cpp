@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include "Model.h"
 
 
 curvColormap::curvColormap(mesh &myMesh)
@@ -12,24 +13,34 @@ curvColormap::curvColormap(mesh &myMesh)
 
 
 //init curve normals.
-	theNormals = & curvNormals;
+	/*theNormals = & curvNormals;
 	Operator::calcAllCurvNormals(myMesh,curvNormals);
-	min = curvNormals[0].norm();
-	for(unsigned int i = 0; i < curvNormals.size(); i++){
-		min = (min > curvNormals[i].norm()?curvNormals[i].norm(): min);
-	}
+	*/
 
-	max = curvNormals[0].norm();
-	for(unsigned int i = 0; i < curvNormals.size(); i++){
-		max = (max < curvNormals[i].norm()? curvNormals[i].norm() : max);
-	}
-	
-	stringstream ss;
+	theNormals = (Model::getModel()->getMeshInfo()->getCurvNormals());
+	vector<tuple3f> & curvNormals =  * theNormals;
+
+
+	if(curvNormals.size() > 0){
+		max = curvNormals[0].norm();
+		for(unsigned int i = 0; i < curvNormals.size(); i++){
+			max = (max < curvNormals[i].norm()? curvNormals[i].norm() : max);
+		}
+
+		min = curvNormals[0].norm();
+		for(unsigned int i = 0; i < curvNormals.size(); i++){
+			min = (min > curvNormals[i].norm()?curvNormals[i].norm(): min);
+		}
+	}	
+
+	min = log(min + 1);
+	max = log(max + 1);
+	/*stringstream ss;
 	ss << "Min / Max of normal curvatures are: ";
 	ss << min/2 << "/" << max/2;
 	min = log(min + 1);
 	max = log(max + 1);
-	info = ss.str();
+	info = ss.str();*/
 
 }
 
@@ -49,7 +60,10 @@ tuple3f curvColormap::color( float val )
 
 tuple3f curvColormap::color( int vertexNr )
 {
-	return color(log((*theNormals)[vertexNr].norm() + 1));	
+	if(theNormals->size() >vertexNr){
+		return color(log((*theNormals)[vertexNr].norm() + 1));	
+	}
+	return tuple3f(0.5f,0.5f,0.5f);
 }
 
 std::string curvColormap::additionalInfo( void )
@@ -59,7 +73,8 @@ std::string curvColormap::additionalInfo( void )
 
 void curvColormap::setNormals( vector<tuple3f> & normals )
 {
-	theNormals = & normals;
+	//theNormals = & normals;
+	throw new runtime_error("Deprecated Method");
 }
 
 

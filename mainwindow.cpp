@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <iostream>
 #include "mesh.h"
+#include "curvVisualizingMesh.h"
 
 MainWindow::MainWindow(): QMainWindow()
 {
@@ -22,6 +23,7 @@ MainWindow::MainWindow(): QMainWindow()
 	comboBox->addItem("Lines");
 	comboBox->addItem("Faces");
 	comboBox->addItem("Border");
+	comboBox->addItem("Curvature");
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
 
 	//comboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
@@ -79,5 +81,11 @@ void MainWindow::setDisplayMode( int mode )
 	}
 	else if(mode == 2){
 		this->myGLDisp->setMode(FLATMODE);
+	}
+	else if(mode == 3){
+		Model & model = *Model::getModel();
+		model.getMeshInfo()->activateCurvNormals(true);
+		this->myGLDisp->setColormap((colorMap *) new curvColormap(* Model::getModel()->getMesh()));
+		this->myGLDisp->setMode(COLORMAPMODE);
 	}
 }

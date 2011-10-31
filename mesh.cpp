@@ -174,6 +174,15 @@ void mesh::rotX(float f)
 	lighTransform = rot.transpose()*lighTransform;
 }
 
+void mesh::rot( float angle, float x, float y, float z )
+{
+	matrixf rot = matrixFactory::rotate( angle, x, y, z );
+	
+
+	rotation = rotation*rot;
+	lighTransform = rot.transpose()*lighTransform;
+}
+
 void mesh::scaleXYZ(float f)
 {
 	matrixf rot = matrixFactory::scale(f);
@@ -461,6 +470,23 @@ void mesh::setTextures_perVertex( vector<tuple3f> & textures )
 	}
 
 	this->face_tex = faces;
+}
+
+/************************************************************************/
+/* Attach an Observer to this mesh
+/* Observers will be notified about changes in the mesh structure
+/* or positions
+/************************************************************************/
+void mesh::attach( Observer * o )
+{
+	this->observer.push_back(o);
+}
+
+void mesh::updateObserver( int msg )
+{
+	for(int i = 0; i < observer.size(); i++){
+		observer[i]->update(this, msg);
+	}
 }
 
 

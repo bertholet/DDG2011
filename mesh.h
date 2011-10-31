@@ -5,6 +5,7 @@
 #include "colorMap.h"
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include "Observer.h"
 
 using namespace std;
 
@@ -27,7 +28,14 @@ protected:
 	vector<vector<int>> nbr_fcs;
 	tuple3f color;
 	bool showOrientation;
+
+	//Observer List
+	vector<Observer *> observer;
+
 public:
+	//observer msg
+	static const int MESHVERTICESCHANGED = 0;
+	//the mesh
 	vector<tuple3f> vertices;
 	//index of the vertices of a face
 	vector<tuple3i> faces; 
@@ -47,6 +55,7 @@ public:
 
 	void rotX(float phi);
 	void rotY( float phi );
+	void rot( float angle, float x, float y, float z );
 	void scaleXYZ(float scale );
 	void normalize(void);
 
@@ -72,6 +81,10 @@ public:
 		showOrientation = b;
 	}
 	void setPosition( tuple3f &pos );
+
+
+	void attach(Observer * o);
+	void updateObserver(int msg);
 
 private:
 	void init( const char* file, tuple3f & col, float scale );
