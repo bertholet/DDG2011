@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include <QtGui>
 #include "mesh.h"
-#include "TutteWeights.h"
-#include "TutteDemo.h"
+//#include "TutteWeights.h"
+//#include "TutteDemo.h"
 
 int main(int argc, char *argv[])
 {
