@@ -96,7 +96,9 @@ void Displayer::mouseMoveEvent( QMouseEvent* event )
 
 	float axisx=y*lastz-lasty*z,axisy=z*lastx-lastz*x,axisz=x*lasty-y*lastx;
 	float axisnrm = sqrtf(axisx*axisx+axisy*axisy+axisz*axisz);
-	float angle = acos(x*lastx+y*lasty+z*lastz);
+	float cos = x*lastx+y*lasty+z*lastz;
+	cos = (cos<-1.f?-1.f :(cos>1?1.f:cos));
+	float angle = acos(cos);
 	Model::getModel()->getMesh()->rot(angle,axisx/axisnrm,
 		axisy/axisnrm,
 		axisz/axisnrm);
