@@ -2,3 +2,4 @@ GeneratedFiles/*/*
 Resources/*
 *.out
 *.vcproj*
+objfiles/*
