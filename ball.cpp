@@ -268,8 +268,8 @@ ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
 	{float x,y, z, delta, phi, psi;
 	int N = nrPhi, startIndex_actualRing, startIndex_lastRing, actualRing_size, lastRing_size,n;
 	int M = nrPsi;
-	float maxDelta = r * 2 * PI / nrPhi;
-	float maxDelta2= r* 2 * PI / nrPhi2;
+	float maxDelta = r * 2 * PI / (nrPhi>nrPhi2?nrPhi2:nrPhi);
+	float maxDelta2= r* 2 * PI / (nrPhi<nrPhi2?nrPhi2:nrPhi);
 
 	vertices.push_back(tuple3f(0,0,-r));
 	//lastRing_indices.push_back(0);
@@ -280,7 +280,7 @@ ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
 	psi = - PI;
 	n = N;
 	while(psi< 0){
-		if(psi>0 && delta >maxDelta2){
+		if(psi>-PI/2 && delta >maxDelta2){
 			delta = delta /2;
 			n = 2 * n;
 		}

@@ -8,7 +8,7 @@ class Observer
 {
 public:
 	Observer(void);
-	~Observer(void);
+	virtual ~Observer(void){}
 
 	virtual void update(void * src, int type) = 0;
 };

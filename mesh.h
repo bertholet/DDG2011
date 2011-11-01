@@ -24,7 +24,9 @@ protected:
 	vector<tuple3f> tex;
 
 	// nbrs[i] is a vector with the indices of the neighbors
+	//the vertices neighboring vertex i.
 	vector<vector<int>> nbrs;
+	//the faces neighboring vertex i.
 	vector<vector<int>> nbr_fcs;
 	tuple3f color;
 	bool showOrientation;

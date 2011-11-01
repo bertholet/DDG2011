@@ -2,6 +2,7 @@
 #include <iostream>
 #include "mesh.h"
 #include "curvVisualizingMesh.h"
+#include "generatemeshgui.h"
 
 MainWindow::MainWindow(): QMainWindow()
 {
@@ -15,6 +16,7 @@ MainWindow::MainWindow(): QMainWindow()
 	this->fileMenu->addAction(generateMeshAct);
 
 	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
+	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 
 	myGLDisp = new Displayer(this);
 
@@ -47,6 +49,15 @@ MainWindow::~MainWindow()
 
 }
 
+
+void MainWindow::update()
+{
+	this->myGLDisp->updateGL();
+}
+
+/************************************************************************/
+/* Takies care of the open obj file Action                                                                     */
+/************************************************************************/
 void MainWindow::openObjFile()
 {
 	std::cout << "objFileLoad Clicked";
@@ -65,10 +76,15 @@ void MainWindow::openObjFile()
 	this->update();
 }
 
-void MainWindow::update()
+/************************************************************************/
+/* Takes care of the generate Mesh action.                              */
+/************************************************************************/
+void MainWindow::generateMesh()
 {
-	this->myGLDisp->updateGL();
+	GenMeshDialog genDialog(this);
+	genDialog.exec();
 }
+
 
 
 void MainWindow::setDisplayMode( int mode )

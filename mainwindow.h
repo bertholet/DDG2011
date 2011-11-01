@@ -24,6 +24,7 @@ private:
 	QComboBox * comboBox;
 private slots:
 	void openObjFile();
+	void generateMesh();
 	void setDisplayMode(int);
 };
 
