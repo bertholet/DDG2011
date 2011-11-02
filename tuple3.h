@@ -155,3 +155,25 @@ public:
 		c=z_;
 	}
 };
+
+// for fun, could use pair..
+class tuple2i
+{
+public:
+	int a, b;
+	tuple2i(void);
+	tuple2i(int x_, int y_){
+		a = x_;
+		b=y_;
+	}
+	~tuple2i(void){}
+
+	void set(int x_, int y_){
+		a = x_;
+		b=y_;
+	}
+
+	bool operator < (const tuple2i & other) const{
+		return this->a <other.a || (this->a == other.a && this->b < other.b);
+	}
+};

@@ -360,6 +360,22 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+	//returns a representation of the halfedges contained in the mesh,
+	//not contained are halfedges that do not belong to faces.
+	//
+	//target_fc_halfEdge[i] will return the halfedges belonging to the face i.
+	// i.e. a tuple3i which contains the indices of the halfedges associated
+	// to the face i.
+	// the indices of the halfedges ar given by target_halfEdge; so 
+	//halfEdge[fc_halfedge[i].a],halfEdge[fc_halfedge[i].b],halfEdge[fc_halfedge[i].c]
+	// are the halfedges of the face i.
+	//
+	//halfedge[i].a is the startVertex id and halfedge[i].b is the 
+	//endVertex ID of edge i
+	//////////////////////////////////////////////////////////////////////////
+	static void getHalfEdges(mesh & m, vector<tuple3i> & target_fc_halfEdge, vector<tuple2i> & target_halfEdge);
+
+	//////////////////////////////////////////////////////////////////////////
 	//returns the index of the predecessor of v in the neighbors of the center_index
 	//vertex (by orientation induced from the face orientation) or -1 if none exists
 	//////////////////////////////////////////////////////////////////////////

@@ -20,3 +20,8 @@ tuple3i::tuple3i( void )
 {
 
 }
+
+tuple2i::tuple2i( void )
+{
+
+}
