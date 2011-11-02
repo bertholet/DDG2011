@@ -132,7 +132,7 @@ void GenMeshDialog::okButtonAct()
 	int what = whatCBox->currentIndex();
 	mesh *m;
 	if(what == 0){
-		m = new ball(input1->value(), input2->value());
+		m = new ball(1,input1->value(), input2->value());
 		m->normalize();
 		Model::getModel()->setMesh(m);
 	}

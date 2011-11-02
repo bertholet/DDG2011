@@ -277,15 +277,13 @@ ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
 	lastRing_size =1;
 	
 	delta = maxDelta;
-	psi = - PI;
+	psi = - PI + 1.f/ nrPsi * PI;
 	n = N;
 	while(psi< 0){
 		if(psi>-PI/2 && delta >maxDelta2){
 			delta = delta /2;
 			n = 2 * n;
 		}
-
-		psi += 1.f/ n *2 * PI;
 		z = r*cos(psi);
 	/*}
 	for(int i = 1; i <M; i++){
@@ -368,8 +366,9 @@ ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
 		//updateLastRingIndices
 		startIndex_lastRing = startIndex_actualRing;
 		lastRing_size = actualRing_size;
+		psi += 1.f/ nrPsi * PI;
 	}
-	vertices.push_back(tuple3f(0,0,-r));
+	vertices.push_back(tuple3f(0,0,r));
 	startIndex_actualRing = vertices.size() -1;
 	for(int i = 0; i < lastRing_size; i++){
 		faces.push_back(tuple3i(
