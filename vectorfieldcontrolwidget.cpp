@@ -2,6 +2,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <iostream>
+#include "Model.h"
 
 vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
@@ -23,4 +24,7 @@ vectorFieldControlWidget::~vectorFieldControlWidget()
 void vectorFieldControlWidget::genAxisAllignedField()
 {
 	std::cout << "click";
+	/* generate VField */
+	Model::getModel().getMesh();
+	//get halfEdge stuff...
 }
