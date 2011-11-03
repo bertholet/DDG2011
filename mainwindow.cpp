@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include "curvVisualizingMesh.h"
 #include "generatemeshgui.h"
+#include "vectorfieldcontrolwidget.h";
 
 MainWindow::MainWindow(): QMainWindow()
 {
@@ -15,8 +16,6 @@ MainWindow::MainWindow(): QMainWindow()
 	this->fileMenu->addAction(openObjFileAct);
 	this->fileMenu->addAction(generateMeshAct);
 
-	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
-	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 
 	myGLDisp = new Displayer(this);
 
@@ -26,20 +25,31 @@ MainWindow::MainWindow(): QMainWindow()
 	comboBox->addItem("Faces");
 	comboBox->addItem("Border");
 	comboBox->addItem("Curvature");
+
+	this->tabs = new QTabWidget(this);
+	QWidget * tab1Widget = new QWidget();
+	tabs->addTab(tab1Widget, "Smoothing");
+	QWidget * tab2Widget = new vectorFieldControlWidget();
+	tabs->addTab(tab2Widget, "Vector Fields");
+
+	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
+	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
 
-	//comboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-	QHBoxLayout *layout = new QHBoxLayout();
-	layout->addWidget(myGLDisp);
-	layout->addWidget(comboBox);
-	layout->setStretchFactor(comboBox,0);
-
+	//layout the gui
+	QVBoxLayout * rightLayout = new QVBoxLayout();
+	rightLayout->addWidget(comboBox);
+	rightLayout->addWidget(tabs);
+	
+	QHBoxLayout *mainLayout = new QHBoxLayout();
+	mainLayout->addWidget(myGLDisp,1);
+	mainLayout->addLayout(rightLayout,0);
 
 	QWidget * mainWidget = new QWidget();
-	mainWidget->setLayout(layout);
+	mainWidget->setLayout(mainLayout);
 	this->setCentralWidget(mainWidget);
 
-	this->resize(500, 500);
+	this->resize(600, 500);
 	this->show();
 }
 

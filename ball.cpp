@@ -195,7 +195,7 @@ ball::ball( float r, int nrPhi, int nrPsi )
 {
 	float x,y, z, phi, psi;
 	int N = nrPhi, startIndex_actualRing, startIndex_lastRing, actualRing_size, lastRing_size;
-	int M = nrPhi/2;
+	int M = nrPsi;//nrPhi/2;
 
 	vertices.push_back(tuple3f(0,0,r));
 	//lastRing_indices.push_back(0);

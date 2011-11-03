@@ -22,6 +22,7 @@ private:
 
 	Displayer * myGLDisp;
 	QComboBox * comboBox;
+	QTabWidget * tabs;
 private slots:
 	void openObjFile();
 	void generateMesh();
