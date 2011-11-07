@@ -22,17 +22,14 @@ public:
 	~matrixf(void);
 
 	matrixf transpose(void);
-
+	matrixf inv(void);
+	float det();
 
 	matrixf operator * (matrixf &other);
 	matrixf operator * (float other);
 	tuple3f operator * (tuple3f &other);
 	matrixf operator + (matrixf &other);
-	//arr_44* operator * (matrixf &other);
-	//arr_44* operator * (arr_44* other);
 
-	//arr_44* operator + (matrixf &other);
-	//arr_44* operator + (arr_44 * other);
-	//void operator = (arr_44 * other);
-	//void operator = (const matrixf& other);
+private:
+		float inv_helper( int i, int j );
 };

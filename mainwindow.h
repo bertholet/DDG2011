@@ -27,6 +27,7 @@ private slots:
 	void openObjFile();
 	void generateMesh();
 	void setDisplayMode(int);
+	void resetStrokes();
 
 	void changeMouseMode(int state);
 };

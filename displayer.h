@@ -21,6 +21,7 @@ public:
 	void setMode(DisplayMode aMode);
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap * map);
+	void resetStrokes();
 
 protected:
 	void initializeGL();

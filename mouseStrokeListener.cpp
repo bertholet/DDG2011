@@ -15,25 +15,46 @@ mouseStrokeListener::~mouseStrokeListener(void)
 
 void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 {
-	//speed and position.
-}
+	GLdouble proj[16], model[16];
+	GLint viewPort[4];
+	glGetDoublev(GL_PROJECTION_MATRIX, proj);
+	glGetDoublev(GL_MODELVIEW_MATRIX, model);
+	glGetIntegerv(GL_VIEWPORT, viewPort);
 
-void mouseStrokeListener::onMousePress( QMouseEvent* event )
-{
-	matrixf proj, model;
-	//glGetFloatv(GL_PROJECTION, (GLfloat *) &proj);
-	float height = 1.73205081f; //tan(60)
+	float winx = (float) event->x() , 
+		winy = (float) (viewPort[3] - event->y());
+
+	GLdouble p1x,p1y,p1z;
+	tuple3f start, end;
+
+	gluUnProject(winx, winy,1, model,proj,viewPort,&p1x,&p1y,&p1z);
+	start.x = (float) p1x;
+	start.y = (float) p1y;
+	start.z = (float) p1z;
+
+	gluUnProject(winx, winy,-1, model,proj,viewPort,&p1x,&p1y,&p1z);
+	end.x = (float) p1x;
+	end.y = (float) p1y;
+	end.z = (float) p1z;
+	/*float height = 1.73205081f; //tan(60)
 	float width = (0.f +daddy->width()) / daddy->height() * height;
 
 	tuple3f ray = tuple3f(event->x(), event->y(), 1);
 	ray.x = (ray.x - daddy->width()/2) / daddy->width() * width;
 	ray.y = (ray.y - daddy->width()/2) / daddy->width() * height;
-	//assert aspect etc as induced by the 
+	//assert aspect etc as induced by the */
 
-	tuple3i * fc = Model::getModel()->getMesh()->intersect(ray);
+	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end);
+	if(fc != NULL){
+		this->map->mark(*fc, nrCalls);
+		this->daddy->updateGL();
+	}
+}
+
+void mouseStrokeListener::onMousePress( QMouseEvent* event )
+{
+	onMouseMove(event);
 
 	nrCalls++;
-	this->map->mark(*fc, nrCalls);
 
-	this->daddy->updateGL();
 }

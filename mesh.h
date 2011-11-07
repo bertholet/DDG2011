@@ -82,9 +82,10 @@ public:
 	void setTextures_perVertex( vector<tuple3f> & textures );
 
 	/************************************************************************/
-	/* returns face number hit.                                                                     */
+	/* returns face number hit.  start and to are supposed to already be in
+	/* obj coordinates.!*/
 	/************************************************************************/
-	tuple3i * intersect(tuple3f ray);
+	tuple3i * intersect( tuple3f & start,tuple3f &to);
 
 	void setShowOrientation(bool b){
 		showOrientation = b;

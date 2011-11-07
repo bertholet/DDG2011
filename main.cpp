@@ -4,13 +4,14 @@
 //#include "TutteWeights.h"
 //#include "TutteDemo.h"
 
+#include "matrixf.h"
+
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 	MainWindow window;
 
-	int i = 1;
-	i++;
+
 /*	mesh * bunny= new mesh("C:/Users/bertholet/Dropbox/workspace/RA/objfiles/bunny5k.obj", tuple3f(1.f,0.f,0.f), 2);
 	bunny->normalize();//
 	

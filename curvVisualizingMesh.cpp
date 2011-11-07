@@ -176,19 +176,19 @@ void triangleMarkupMap::mark( tuple3i & face, int _mark)
 {
 	if(marks.size() <= face.a){
 		for(int i = marks.size(); i < face.a+1; i++){
-			marks.push_back(0);
+			marks.push_back(-1);
 		}
 	}
 	marks[face.a] = _mark;
 	if(marks.size() <= face.b){
 		for(int i = marks.size(); i < face.b+1; i++){
-			marks.push_back(0);
+			marks.push_back(-1);
 		}
 	}
 	marks[face.b] = _mark;
 	if(marks.size() <= face.c){
 		for(int i = marks.size(); i < face.c+1; i++){
-			marks.push_back(0);
+			marks.push_back(-1);
 		}
 	}
 	marks[face.c] = _mark;

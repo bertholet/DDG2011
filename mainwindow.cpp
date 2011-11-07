@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <iostream>
 #include <QCheckBox>
+#include <QPushButton>
 #include "mesh.h"
 #include "curvVisualizingMesh.h"
 #include "generatemeshgui.h"
@@ -29,6 +30,7 @@ MainWindow::MainWindow(): QMainWindow()
 	comboBox->addItem("Selections");
 
 	QCheckBox * cbox = new QCheckBox("Draw strokes",this);
+	QPushButton * butt = new QPushButton("Reset", this);
 
 	this->tabs = new QTabWidget(this);
 	QWidget * tab1Widget = new QWidget();
@@ -40,12 +42,16 @@ MainWindow::MainWindow(): QMainWindow()
 	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
 	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(changeMouseMode(int)));
+	connect(butt, SIGNAL(released()), this, SLOT(resetStrokes()));
 
 	//layout the gui
 	QVBoxLayout * rightLayout = new QVBoxLayout();
 	rightLayout->addWidget(comboBox);
 	rightLayout->addWidget(tabs);
-	rightLayout->addWidget(cbox);
+	QHBoxLayout * sublayout = new QHBoxLayout();
+	sublayout->addWidget(cbox);
+	sublayout->addWidget(butt);
+	rightLayout->addLayout(sublayout);
 	
 	QHBoxLayout *mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(myGLDisp,1);
@@ -135,4 +141,9 @@ void MainWindow::changeMouseMode( int state )
 	if(state == 2){//checked
 		this->myGLDisp->setMouseMode(INPUTMODE);
 	}
+}
+
+void MainWindow::resetStrokes()
+{
+	this->myGLDisp->resetStrokes();
 }

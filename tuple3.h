@@ -41,6 +41,13 @@ public:
 		return tuple3f(x,y,z);
 	}
 
+	tuple3f cross(tuple3f &b){
+		float x = this->y*b.z - this->z*b.y;
+		float y = this->z*b.x - this->x*b.z;
+		float z = this->x*b.y - this->y*b.x;
+		return tuple3f(x,y,z);
+	}
+
 	static float crossNorm(tuple3f &a, tuple3f &b){
 		float x = a.y*b.z - a.z*b.y;
 		float y = a.z*b.x - a.x*b.z;

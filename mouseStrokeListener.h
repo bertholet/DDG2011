@@ -3,6 +3,7 @@
 #include <QGLWidget>
 #include <QMouseEvent>
 #include "curvVisualizingMesh.h"
+#include <GL/GLU.h>
 
 class mouseStrokeListener
 {

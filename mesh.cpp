@@ -501,18 +501,53 @@ void mesh::updateObserver( int msg )
 	}
 }
 
-tuple3i * mesh::intersect( tuple3f ray )
+tuple3i * mesh::intersect( tuple3f & start,tuple3f &to)
 {
 
-	int res = 0;
-	float dist = 10000,d;
-	tuple3f normal;
+	//matrixf world2obj = 
+	//tuple3f startObj, endObj;
+	
+	int res = -1;
+	float t,d; // t= dist.
+	float bestdist = 1000000;
+	tuple3f normal,v, insect, sidenormal;
+
 	for(int i = 0; i < faces.size(); i++){
 		normal = face_normals[i];
-		d= -normal.dot()
+		v = to - start; 
+		v.normalize();
+		d= vertices[faces[i].a].dot(normal);
+		t = -(normal.dot(start) + d)/v.dot(normal);
+
+		if(t > bestdist){
+			continue;
+		}
+
+		insect = start + v*t;
+
+		sidenormal = (vertices[faces[i].a] -start).cross(vertices[faces[i].b] -start);
+		if(sidenormal.dot(insect) -sidenormal.dot(start) < 0){
+			continue;
+		}
+
+		sidenormal = (vertices[faces[i].b] -start).cross(vertices[faces[i].c] -start);
+		if(sidenormal.dot(insect) -sidenormal.dot(start) < 0){
+			continue;
+		}
+
+		sidenormal = (vertices[faces[i].c] -start).cross(vertices[faces[i].a] -start);
+		if(sidenormal.dot(insect) -sidenormal.dot(start) < 0){
+			continue;
+		}
+		res = i;
+		bestdist = t;
 	}
-	tuple3i * result = & (faces[res]);
-	return result;
+
+	if(res>-1){
+		tuple3i * result = & (faces[res]);
+		return result;
+	}
+	return NULL;
 }
 
 

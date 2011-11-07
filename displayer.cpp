@@ -38,9 +38,15 @@ void Displayer::initializeGL()
 	glLoadIdentity();
 	gluPerspective(60.0,GLdouble(this->width())/this->height(), 1.0, 10000.0);
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	glEnable(GL_DEPTH_TEST);
 
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+//	glLineWidth(2.0);
 }
 
 void Displayer::paintGL()
@@ -102,7 +108,9 @@ void Displayer::mouseMoveEvent( QMouseEvent* event )
 	if(mouseMode == TRACKBALLMODE){
 		this->tBallListener->onMouseMove(event);
 	}
-
+	else if(mouseMode == INPUTMODE){
+		this->strokeListener->onMouseMove(event);
+	}
 }
 
 void Displayer::mousePressEvent( QMouseEvent* event )
@@ -118,4 +126,10 @@ void Displayer::mousePressEvent( QMouseEvent* event )
 void Displayer::setMouseMode( MouseInputMode aMode )
 {
 	this->mouseMode = aMode;
+}
+
+void Displayer::resetStrokes()
+{
+	this->tmmap->reset();
+	updateGL();
 }

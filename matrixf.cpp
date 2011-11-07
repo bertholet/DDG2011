@@ -114,76 +114,95 @@ matrixf matrixf::transpose( void )
 	return matrixf(temp);
 }
 
-/*arr_44* matrixf::operator+( matrixf &other )
+matrixf matrixf::inv( void )
 {
-	for (int i = 0; i < 4; i++)
-	{
-		for(int j = 0; j < 4; j++){
-			buff->myArr[i][j] = other.mat[i][j] + mat[i][j];
-		}
-	}
-	return buff;
-}
-
-arr_44* matrixf::operator+( arr_44 * other )
-{
-	for (int i = 0; i < 4; i++)
-	{
-		for(int j = 0; j < 4; j++){
-			buff->myArr[i][j] = other->myArr[i][j] + mat[i][j];
-		}
-	}
-	return buff;
-}
-
-arr_44* matrixf::operator*( matrixf &other )
-{
+	float invert[4][4];
+	float _det;
+	_det = det();
 
 	for(int i = 0; i < 4; i++){
-		for(int j= 0; j < 4; j++){
-			buff->myArr[i][j] = mat[i][0]*other.mat[0][j] +
-				mat[i][1]*other.mat[1][j] +
-				mat[i][2]*other.mat[2][j] +
-				mat[i][3]*other.mat[3][j];
-
-		}
-	}
-	return buff;
-}
-
-arr_44* matrixf::operator*( arr_44* other )
-{
-	for(int i = 0; i < 4; i++){
-		for(int j= 0; j < 4; j++){
-			buff->myArr[i][j] = mat[i][0]*other->myArr[0][j] +
-				mat[i][1]*other->myArr[1][j] +
-				mat[i][2]*other->myArr[2][j] +
-				mat[i][3]*other->myArr[3][j];
-
-		}
-	}
-	return buff;
-}
-
-
-
-void matrixf::operator=( arr_44 * other )
-{
-	for (int i = 0; i < 4; i++)
-	{
 		for(int j = 0; j < 4; j++){
-			mat[i][j] = other->myArr[i][j];
+			invert[i][j] = inv_helper(i,j)/_det;
 		}
 	}
+	
+	return matrixf(invert);
 }
 
-void matrixf::operator=( const matrixf& other )
+float matrixf::det()
 {
 
-	for (int i = 0; i < 4; i++)
-	{
-		for(int j = 0; j < 4; j++){
-			mat[i][j] = other.mat[i][j];
+	float _det;
+	_det = mat[0][0]*mat[1][1]*mat[2][2]*mat[3][3] +
+		mat[0][0]*mat[1][2]*mat[2][3]*mat[3][1] +
+		mat[0][0]*mat[1][3]*mat[2][1]*mat[3][2];
+
+	_det+=	mat[0][1]*mat[1][0]*mat[2][3]*mat[3][2] +
+		mat[0][1]*mat[1][2]*mat[2][0]*mat[3][3] +
+		mat[0][1]*mat[1][3]*mat[2][2]*mat[3][0] ;
+
+	_det+=	mat[0][2]*mat[1][0]*mat[2][1]*mat[3][3] +
+		mat[0][2]*mat[1][1]*mat[2][3]*mat[3][0] +
+		mat[0][2]*mat[1][3]*mat[2][0]*mat[3][1] ;
+
+	_det+= mat[0][3]*mat[1][0]*mat[2][2]*mat[3][1] +
+		mat[0][3]*mat[1][1]*mat[2][0]*mat[3][2] +
+		mat[0][3]*mat[1][2]*mat[2][1]*mat[3][0] ;
+
+
+	_det+=	-mat[0][0]*mat[1][1]*mat[2][3]*mat[3][2] -
+		mat[0][0]*mat[1][2]*mat[2][1]*mat[3][3] -
+		mat[0][0]*mat[1][3]*mat[2][2]*mat[3][1] ;
+
+	_det+=	-mat[0][1]*mat[1][0]*mat[2][2]*mat[3][3] -
+		mat[0][1]*mat[1][2]*mat[2][3]*mat[3][0] -
+		mat[0][1]*mat[1][3]*mat[2][0]*mat[3][2] ;
+
+	_det+=	-mat[0][2]*mat[1][0]*mat[2][3]*mat[3][0] -
+		mat[0][2]*mat[1][1]*mat[2][0]*mat[3][3] -
+		mat[0][2]*mat[1][3]*mat[2][1]*mat[3][0] ;
+
+	_det+=	-mat[0][3]*mat[1][0]*mat[2][1]*mat[3][2] -
+		mat[0][3]*mat[1][1]*mat[2][2]*mat[3][0] -
+		mat[0][3]*mat[1][2]*mat[2][0]*mat[3][1];
+	return _det;
+}
+
+float matrixf::inv_helper( int i, int j )
+{
+	float res=0;
+	float res_factor;
+	int ind_i[3];
+	int ind_j[3];
+
+	int ind = 0;
+	for(int k = 0; k < 4; k++){
+		if(k!=j){
+			ind_i[ind] = k;
+			ind++;
 		}
 	}
-}*/
+
+	ind = 0;
+	for(int k = 0; k < 4; k++){
+		if(k!=i){
+			ind_j[ind] = k;
+			ind++;
+		}
+	}
+
+	for(int k = 0; k < 3; k++){
+		res+= mat[ind_i[0]][ind_j[k]] * 
+			mat[ind_i[1]][ind_j[(k+1)%3]] *
+			mat[ind_i[2]][ind_j[(k+2)%3]];
+		res-=mat[ind_i[0]][ind_j[k]] * 
+			mat[ind_i[1]][ind_j[(k+2)%3]] *
+			mat[ind_i[2]][ind_j[(k+1)%3]];
+	}
+
+	res *= pow(-1.f,i+j);
+
+	return res;
+}
+
+
