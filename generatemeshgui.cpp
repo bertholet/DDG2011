@@ -29,7 +29,7 @@ GenMeshDialog::GenMeshDialog( QWidget *parent /*= 0*/ ):QDialog(parent)
 	inputlabel3 = new QLabel("", this);
 
 	input1 = new QSpinBox(this);
-	input1->setMinimum(5);
+	input1->setMinimum(3);
 	input1->setMaximum(1000);
 	input1->setSingleStep(5);
 	input2 = new QSpinBox(this);
@@ -37,7 +37,7 @@ GenMeshDialog::GenMeshDialog( QWidget *parent /*= 0*/ ):QDialog(parent)
 	input2->setMaximum(1000);
 	input2->setSingleStep(5);
 	input3 = new QSpinBox(this);
-	input3->setMinimum(5);
+	input3->setMinimum(3);
 	input3->setMaximum(1000);
 	input3->setSingleStep(5);
 

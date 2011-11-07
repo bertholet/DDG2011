@@ -27,6 +27,8 @@ private slots:
 	void openObjFile();
 	void generateMesh();
 	void setDisplayMode(int);
+
+	void changeMouseMode(int state);
 };
 
 #endif // MAINWINDOW_H

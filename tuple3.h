@@ -19,6 +19,12 @@ public:
 		y=y_;
 		z=z_;
 	}
+	void set(tuple3f & other)
+	{
+		x= other.x;
+		y= other.y;
+		z=other.z;
+	}
 
 	void normalize(void){
 		float temp = x*x + y*y + z*z;
@@ -110,7 +116,13 @@ public:
 		z += other.z;
 	}
 
-	void operator *= (float &other){
+	void operator -= (tuple3f &other){
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
+	}
+
+	void operator *= (float other){
 		x *= other;
 		y *= other;
 		z *= other;

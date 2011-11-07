@@ -4,8 +4,11 @@
 #include "Model.h"
 #include <QGLWidget>
 #include "curvVisualizingMesh.h"
+#include "trackBallListener.h"
+#include "mouseStrokeListener.h"
 
-enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE};
+enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE};
+enum MouseInputMode {TRACKBALLMODE,INPUTMODE};
 
 class Displayer : public QGLWidget
 {
@@ -16,6 +19,7 @@ public:
 	~Displayer();
 
 	void setMode(DisplayMode aMode);
+	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap * map);
 
 protected:
@@ -27,10 +31,15 @@ protected:
 
 private:
 	DisplayMode mode;
+	MouseInputMode mouseMode;
 	colorMap * map;
+	triangleMarkupMap * tmmap;
 
+	bool displayVField;
+	trackBallListener * tBallListener;
+	mouseStrokeListener * strokeListener;
 	//for the trackball
-	float lastx, lasty, lastz;
+//	float lastx, lasty, lastz;
 };
 
 #endif // DISPLAYER_H

@@ -39,6 +39,8 @@ public:
 			0, 0, 1, 0,
 			0,0,0,1);
 	}
+
+	// x,y,z denote the rotation axis.
 	static matrixf rotate( float angle, float x, float y, float z ){
 		float c = cos(angle);
 		float s = sin(angle);

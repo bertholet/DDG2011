@@ -429,12 +429,14 @@ void mesh::normalize( void )
 		}
 	}
 
-	float max = (maxx>maxy? maxx:maxy);
+	float max_min = (maxx-minx > maxy - miny? maxx-minx:maxy-miny);
+	max_min = (max_min > maxz-minz? max_min : maxz-minz);
+	/*float max = (maxx>maxy? maxx:maxy);
 	max = (max>maxz?max:maxz);
 	float min = (minx < miny?minx:miny);
-	min = (min < minz?min:minz);
+	min = (min < minz?min:minz);*/
 
-	float scale = 2.f/(max - min);
+	float scale = 2.f/max_min;
 	/*tuple3f translation((-maxx + minx)/2,(-maxy + miny)/2,(-maxz + minz)/2);
 	for(vector<tuple3f>::iterator it = vertices.begin(); it != vertices.end(); it++){
 		(*it)+=translation;
@@ -497,6 +499,20 @@ void mesh::updateObserver( int msg )
 	for(int i = 0; i < observer.size(); i++){
 		observer[i]->update(this, msg);
 	}
+}
+
+tuple3i * mesh::intersect( tuple3f ray )
+{
+
+	int res = 0;
+	float dist = 10000,d;
+	tuple3f normal;
+	for(int i = 0; i < faces.size(); i++){
+		normal = face_normals[i];
+		d= -normal.dot()
+	}
+	tuple3i * result = & (faces[res]);
+	return result;
 }
 
 

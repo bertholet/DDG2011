@@ -1,9 +1,10 @@
 #include "mainwindow.h"
 #include <iostream>
+#include <QCheckBox>
 #include "mesh.h"
 #include "curvVisualizingMesh.h"
 #include "generatemeshgui.h"
-#include "vectorfieldcontrolwidget.h";
+#include "vectorfieldcontrolwidget.h"
 
 MainWindow::MainWindow(): QMainWindow()
 {
@@ -25,6 +26,9 @@ MainWindow::MainWindow(): QMainWindow()
 	comboBox->addItem("Faces");
 	comboBox->addItem("Border");
 	comboBox->addItem("Curvature");
+	comboBox->addItem("Selections");
+
+	QCheckBox * cbox = new QCheckBox("Draw strokes",this);
 
 	this->tabs = new QTabWidget(this);
 	QWidget * tab1Widget = new QWidget();
@@ -35,11 +39,13 @@ MainWindow::MainWindow(): QMainWindow()
 	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
 	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
+	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(changeMouseMode(int)));
 
 	//layout the gui
 	QVBoxLayout * rightLayout = new QVBoxLayout();
 	rightLayout->addWidget(comboBox);
 	rightLayout->addWidget(tabs);
+	rightLayout->addWidget(cbox);
 	
 	QHBoxLayout *mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(myGLDisp,1);
@@ -110,8 +116,23 @@ void MainWindow::setDisplayMode( int mode )
 	}
 	else if(mode == 3){
 		Model & model = *Model::getModel();
-		model.getMeshInfo()->activateCurvNormals(true);
+		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setColormap((colorMap *) new curvColormap(* Model::getModel()->getMesh()));
 		this->myGLDisp->setMode(COLORMAPMODE);
+	}
+	else if(mode == 4){
+		Model & model = *Model::getModel();
+		//model.getMeshInfo()->activateCurvNormals(true);
+		this->myGLDisp->setMode(MOUSEINPUTMODE);
+	}
+}
+
+void MainWindow::changeMouseMode( int state )
+{
+	if(state == 0){//unchecked
+		this->myGLDisp->setMouseMode(TRACKBALLMODE);
+	}
+	if(state == 2){//checked
+		this->myGLDisp->setMouseMode(INPUTMODE);
 	}
 }

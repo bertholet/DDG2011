@@ -159,6 +159,7 @@ void meshOperation::getHalfEdges( mesh & m, vector<tuple3i> & target_fc_halfEdge
 		halfedge.set(it->c, it->a);
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		halfedge_index.c = el - target_halfEdges.begin();
+		target_fc_halfEdges.push_back(halfedge_index);
 	}
 }
 

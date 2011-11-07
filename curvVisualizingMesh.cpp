@@ -160,3 +160,36 @@ std::string borderMarkupMap::additionalInfo( void )
 {
 	return "";
 }
+
+
+
+
+tuple3f triangleMarkupMap::color( int vertexNr )
+{
+	if(marks.size() < vertexNr+1 || marks[vertexNr] <0){
+		return tuple3f(0.9f,0.9f,0.9f);
+	}
+	return cols[marks[vertexNr] % cols.size()];
+}
+
+void triangleMarkupMap::mark( tuple3i & face, int _mark)
+{
+	if(marks.size() <= face.a){
+		for(int i = marks.size(); i < face.a+1; i++){
+			marks.push_back(0);
+		}
+	}
+	marks[face.a] = _mark;
+	if(marks.size() <= face.b){
+		for(int i = marks.size(); i < face.b+1; i++){
+			marks.push_back(0);
+		}
+	}
+	marks[face.b] = _mark;
+	if(marks.size() <= face.c){
+		for(int i = marks.size(); i < face.c+1; i++){
+			marks.push_back(0);
+		}
+	}
+	marks[face.c] = _mark;
+}

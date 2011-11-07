@@ -153,3 +153,38 @@ public:
 		return max;
 	}
 };
+
+class triangleMarkupMap:colorMap
+{
+	string info;
+	vector<int> marks;
+	vector<tuple3f> cols;
+	tuple3f col;
+public:
+	triangleMarkupMap(){
+		//vector<int>::iterator it = border_.begin();
+		marks.reserve(100);
+
+		col = tuple3f(0,0,1);
+		cols.push_back(tuple3f(1,0,0));
+		cols.push_back(tuple3f(0,1,0));
+		cols.push_back(tuple3f(1,1,0));
+		cols.push_back(tuple3f(0,0,1));
+		cols.push_back(tuple3f(0.5f,0.5f,0.5f));
+		cols.push_back(tuple3f(0.5f,0.5f,0));
+		cols.push_back(tuple3f(0.5f,0,0));
+		cols.push_back(tuple3f(0,0.5f,0));
+	}
+
+	
+	~triangleMarkupMap(){
+	}
+
+	tuple3f color(int vertexNr);
+	string additionalInfo(void){return "";}
+
+	void mark(tuple3i & face, int _mark);
+	void reset(){
+		marks.clear();
+	}
+};

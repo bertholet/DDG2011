@@ -10,8 +10,15 @@ Displayer::Displayer(QWidget *parent)
 	this->setMinimumHeight(300);
 	this->setMinimumWidth(300);
 	mode = EDGEMODE;
+	mouseMode = TRACKBALLMODE;
+
 	this->map = NULL;
+	this->tmmap = new triangleMarkupMap();
 	this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+	displayVField = true;
+	tBallListener = new trackBallListener(this);
+	strokeListener = new mouseStrokeListener(tmmap, this);
 }
 
 Displayer::~Displayer()
@@ -19,6 +26,9 @@ Displayer::~Displayer()
 	if(this->map != NULL){
 		delete map;
 	}
+	delete tBallListener;
+	delete strokeListener;
+	delete tmmap;
 }
 
 void Displayer::initializeGL()
@@ -26,7 +36,7 @@ void Displayer::initializeGL()
 	glViewport(0, 0, this->width(), this->height());       
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60.0,GLdouble(this->width())/this->height(), 2.0, 10000.0);
+	gluPerspective(60.0,GLdouble(this->width())/this->height(), 1.0, 10000.0);
 	glMatrixMode(GL_MODELVIEW);
 
 	glEnable(GL_DEPTH_TEST);
@@ -47,8 +57,15 @@ void Displayer::paintGL()
 		else if(mode == COLORMAPMODE && map != NULL){
 			theMesh->glDisplay(*map);
 		}
+		else if(mode == MOUSEINPUTMODE && tmmap != NULL){
+			theMesh->glDisplay((colorMap &) *tmmap);
+		}
 		else{
 			theMesh->glDisplay();
+		}
+
+		if(displayVField){
+			Model::getModel()->getVField()->glOutputField();
 		}
 		glFlush();
 	}
@@ -60,7 +77,7 @@ void Displayer::resizeGL(int width, int height)
 	glViewport(0, 0, this->width(), this->height());   
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60.0,GLdouble(this->width())/this->height(), 2.0, 10000.0);
+	gluPerspective(60.0,GLdouble(this->width())/this->height(), 1.0, 10000.0);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -82,48 +99,23 @@ void Displayer::setColormap( colorMap * map )
 
 void Displayer::mouseMoveEvent( QMouseEvent* event )
 {
-	float x,y,z;
-	float min = (this->width() > this->height()? this->height(): this->width());
-	x= ((0.f -this->width())/2 +event->x())/(min/2);
-	y = ((0.f +this->height())/2 - event->y())/(min/2);
-	z = 1-x*x -y*y;
-	z = (z < 0? 0: z);
-	z = sqrtf(z);
-	float nrm = sqrtf(x*x+y*y+z*z);
-	x= x/nrm;
-	y= y/nrm;
-	z= z/nrm;
-
-	float axisx=y*lastz-lasty*z,axisy=z*lastx-lastz*x,axisz=x*lasty-y*lastx;
-	float axisnrm = sqrtf(axisx*axisx+axisy*axisy+axisz*axisz);
-	float cos = x*lastx+y*lasty+z*lastz;
-	cos = (cos<-1.f?-1.f :(cos>1?1.f:cos));
-	float angle = acos(cos);
-	Model::getModel()->getMesh()->rot(angle,axisx/axisnrm,
-		axisy/axisnrm,
-		axisz/axisnrm);
-
-	this->updateGL();
-
-	lastx = x;
-	lasty=y;
-	lastz=z;
+	if(mouseMode == TRACKBALLMODE){
+		this->tBallListener->onMouseMove(event);
+	}
 
 }
 
 void Displayer::mousePressEvent( QMouseEvent* event )
 {
-	float min = (this->width() > this->height()? this->height(): this->width());
-	lastx = ((0.f -this->width())/2+event->x()) /(min/2);
-	lasty = ((0.f +this->height())/2 -event->y()) / (min/2);
+	if(mouseMode == TRACKBALLMODE){
+		this->tBallListener->onMousePress(event);
+	}
+	else if(mouseMode == INPUTMODE){
+		this->strokeListener->onMousePress(event);
+	}
+}
 
-	lastz = 1-lastx*lastx -lasty*lasty;
-	lastz = (lastz < 0? 0: lastz);
-	lastz = sqrtf(lastz); 
-
-	float nrm = lastx*lastx + lasty*lasty+ lastz*lastz;
-	nrm = sqrtf(nrm);
-	lastx=lastx/nrm;
-	lasty=lasty/nrm;
-	lastz=lastz/nrm;
+void Displayer::setMouseMode( MouseInputMode aMode )
+{
+	this->mouseMode = aMode;
 }

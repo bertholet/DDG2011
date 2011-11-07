@@ -368,7 +368,8 @@ public:
 	// to the face i.
 	// the indices of the halfedges ar given by target_halfEdge; so 
 	//halfEdge[fc_halfedge[i].a],halfEdge[fc_halfedge[i].b],halfEdge[fc_halfedge[i].c]
-	// are the halfedges of the face i.
+	// are the halfedges of the face i. Here fc_halfedge[i].a is the halfedge 
+	// starting at the vertex face[i].a
 	//
 	//halfedge[i].a is the startVertex id and halfedge[i].b is the 
 	//endVertex ID of edge i

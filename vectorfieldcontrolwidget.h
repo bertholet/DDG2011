@@ -15,7 +15,6 @@ private:
 	
 private slots:
 	void genAxisAllignedField();
-
 };
 
 #endif // VECTORFIELDCONTROLWIDGET_H

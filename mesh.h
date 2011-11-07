@@ -36,7 +36,7 @@ protected:
 
 public:
 	//observer msg
-	static const int MESHVERTICESCHANGED = 0;
+	static const int MESH_POSITIONS_CHANGED = 0;
 	static const int MESH_CONNECTIVITY_CHANGED = 1;
 	//the mesh
 	vector<tuple3f> vertices;
@@ -80,6 +80,11 @@ public:
 	void setTextures_perVertex( double * x, double * y );
 	void setTextures_perVertex( double * xy);
 	void setTextures_perVertex( vector<tuple3f> & textures );
+
+	/************************************************************************/
+	/* returns face number hit.                                                                     */
+	/************************************************************************/
+	tuple3i * intersect(tuple3f ray);
 
 	void setShowOrientation(bool b){
 		showOrientation = b;
