@@ -9,16 +9,41 @@
 
 MainWindow::MainWindow(): QMainWindow()
 {
-	this->setWindowTitle(
-		QApplication::translate("toplevel", "Top-level widget"));
+	setupMenubar();
+	setupButtons();
+	setupQTabs();
 
+	addAction();
+
+
+	layoutGui();
+
+	this->show();
+}
+
+
+MainWindow::~MainWindow()
+{
+
+}
+
+/************************************************************************/
+/* The menubar                                                                     */
+/************************************************************************/
+void MainWindow::setupMenubar() 
+{
 	this->fileMenu = menuBar()->addMenu("File");
 	this->openObjFileAct = new QAction("Open Obj File...", this);
 	this->generateMeshAct = new QAction("Genereate Mesh", this);
 	this->fileMenu->addAction(openObjFileAct);
 	this->fileMenu->addAction(generateMeshAct);
+}
 
-
+/************************************************************************/
+/* Seeting up Buttons, Qcombobox, etc                                   */
+/************************************************************************/
+void MainWindow::setupButtons() 
+{
 	myGLDisp = new Displayer(this);
 
 	comboBox = new QComboBox();
@@ -29,21 +54,40 @@ MainWindow::MainWindow(): QMainWindow()
 	comboBox->addItem("Curvature");
 	comboBox->addItem("Selections");
 
-	QCheckBox * cbox = new QCheckBox("Draw strokes",this);
-	QPushButton * butt = new QPushButton("Reset", this);
+	cbox = new QCheckBox("Draw strokes",this);
+	butt = new QPushButton("Reset", this);
+}
 
+/************************************************************************/
+/* Sets up the Contol elements in the Qtabpanel                         */
+/************************************************************************/
+void MainWindow::setupQTabs() 
+{
 	this->tabs = new QTabWidget(this);
 	QWidget * tab1Widget = new QWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
 	QWidget * tab2Widget = new vectorFieldControlWidget();
 	tabs->addTab(tab2Widget, "Vector Fields");
+}
+
+/************************************************************************/
+/* All the connec methods                                               */
+/************************************************************************/
+void MainWindow::addAction() 
+{
 
 	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
 	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
-	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(changeMouseMode(int)));
+	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
 	connect(butt, SIGNAL(released()), this, SLOT(resetStrokes()));
+}
 
+/************************************************************************/
+/* Layout all the components                                            */
+/************************************************************************/
+void MainWindow::layoutGui() 
+{
 	//layout the gui
 	QVBoxLayout * rightLayout = new QVBoxLayout();
 	rightLayout->addWidget(comboBox);
@@ -52,7 +96,7 @@ MainWindow::MainWindow(): QMainWindow()
 	sublayout->addWidget(cbox);
 	sublayout->addWidget(butt);
 	rightLayout->addLayout(sublayout);
-	
+
 	QHBoxLayout *mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(myGLDisp,1);
 	mainLayout->addLayout(rightLayout,0);
@@ -61,17 +105,15 @@ MainWindow::MainWindow(): QMainWindow()
 	mainWidget->setLayout(mainLayout);
 	this->setCentralWidget(mainWidget);
 
+	this->setWindowTitle(
+		QApplication::translate("toplevel", "DG2011"));
 	this->resize(600, 500);
-	this->show();
 }
 
 
-MainWindow::~MainWindow()
-{
-
-}
-
-
+/************************************************************************/
+/* to Update the GL display in this component                           */
+/************************************************************************/
 void MainWindow::update()
 {
 	this->myGLDisp->updateGL();
@@ -97,6 +139,11 @@ void MainWindow::openObjFile()
 	Model::getModel()->setMesh(amesh);
 	this->update();
 }
+
+//////////////////////////////////////////////////////////////////////////
+//The Slots.
+//////////////////////////////////////////////////////////////////////////
+
 
 /************************************************************************/
 /* Takes care of the generate Mesh action.                              */
@@ -133,7 +180,7 @@ void MainWindow::setDisplayMode( int mode )
 	}
 }
 
-void MainWindow::changeMouseMode( int state )
+void MainWindow::setMouseMode( int state )
 {
 	if(state == 0){//unchecked
 		this->myGLDisp->setMouseMode(TRACKBALLMODE);

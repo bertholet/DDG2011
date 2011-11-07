@@ -23,13 +23,24 @@ private:
 	Displayer * myGLDisp;
 	QComboBox * comboBox;
 	QTabWidget * tabs;
+
+	QCheckBox * cbox;
+	QPushButton * butt;
+
+	void setupQTabs();
+	void setupMenubar() ;
+	void setupButtons();
+
+	void addAction();
+	void layoutGui();
+
 private slots:
 	void openObjFile();
 	void generateMesh();
 	void setDisplayMode(int);
 	void resetStrokes();
 
-	void changeMouseMode(int state);
+	void setMouseMode(int state);
 };
 
 #endif // MAINWINDOW_H
