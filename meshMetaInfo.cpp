@@ -63,7 +63,7 @@ vector<tuple2i> * meshMetaInfo::getHalfedges()
 		return & halfedges;
 	}
 	else{
-		meshOperation::getHalfEdges(*myMesh,fc_halfedges,halfedges);
+		meshOperation::getOrientedEdges(*myMesh,fc_halfedges,halfedges);
 		halfedges_valid = true;
 	}
 	halfedges_active = true;
@@ -76,7 +76,7 @@ vector<tuple3i> * meshMetaInfo::getFace2Halfedges()
 		return & fc_halfedges;
 	}
 	else{
-		meshOperation::getHalfEdges(*myMesh,fc_halfedges,halfedges);
+		meshOperation::getOrientedEdges(*myMesh,fc_halfedges,halfedges);
 		halfedges_valid = true;
 	}
 	halfedges_active = true;

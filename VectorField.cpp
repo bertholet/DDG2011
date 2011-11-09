@@ -66,10 +66,25 @@ void VectorField::setOneForm(int faceNr, tuple3f & dir){
 //	std::cout <<"setting:" << proj.x << ", " << proj.y << ", " << proj.z << "\n";
 //	std::cout <<"Lies in plane:" << proj.dot(normal)<< "\n";
 
-	oneForm[fc2he[faceNr].a] = p_ab.dot(proj);
-	oneForm[fc2he[faceNr].b] = p_bc.dot(proj);
-	oneForm[fc2he[faceNr].c] = p_ca.dot(proj);
+	setOneForm(fc2he[faceNr].a , p_ab.dot(proj));
+	setOneForm(fc2he[faceNr].b , p_bc.dot(proj));
+	setOneForm(fc2he[faceNr].c , p_ca.dot(proj));
+	/*oneForm[abs(fc2he[faceNr].a)] = sgn(fc2he[faceNr].a) * p_ab.dot(proj);
+	oneForm[abs(fc2he[faceNr].b)] = sgn((fc2he[faceNr].b)) * p_bc.dot(proj);
+	oneForm[abs(fc2he[faceNr].c)] = sgn(fc2he[faceNr].c) * p_ca.dot(proj);*/
 }
+
+
+float VectorField::getOneForm( int halfedge )
+{
+	return oneForm[abs(halfedge)] * sgn(halfedge);
+}
+
+void VectorField::setOneForm( int halfedge, float val )
+{
+	oneForm[abs(halfedge)] = sgn(halfedge) * val;
+}
+
 
 //baricentric coordinates
 tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc){
@@ -99,11 +114,11 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 
 
 							//c_ab	alpha_a				//c_bc		alpha_c
-	tuple3f result = p_caT * (oneForm[fc2he[faceNr].a]*bara - oneForm[fc2he[faceNr].b]*barc) +
+	tuple3f result = p_caT * (getOneForm(fc2he[faceNr].a)*bara - getOneForm(fc2he[faceNr].b)*barc) +
 								//c_bc	alpha_b			//c_ca		alpha_a
-		p_abT * (oneForm[fc2he[faceNr].b]*barb - oneForm[fc2he[faceNr].c]*bara) +
+		p_abT * (getOneForm(fc2he[faceNr].b)*barb - getOneForm(fc2he[faceNr].c)*bara) +
 								//c_ca	alpha_c			//c_ab		alpha_b
-		p_bcT * (oneForm[fc2he[faceNr].c]*barc - oneForm[fc2he[faceNr].a]*barb);
+		p_bcT * (getOneForm(fc2he[faceNr].c)*barc - getOneForm(fc2he[faceNr].a)*barb);
 	result *= 1.f/vol2Triangle;
 
 //	std::cout << result.x << ", " << result.y << ", " << result.z << "\n";

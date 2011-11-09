@@ -123,7 +123,7 @@ void meshOperation::mirrorX( std::vector<tuple3f> & borderPos, float x )
 }
 
 
-void meshOperation::getHalfEdges( mesh & m, vector<tuple3i> & target_fc_halfEdges, vector<tuple2i> & target_halfEdges )
+void meshOperation::getOrientedEdges( mesh & m, vector<tuple3i> & target_fc_halfEdges, vector<tuple2i> & target_halfEdges )
 {
 	vector<tuple3i> & faces = m.getFaces();
 	vector<tuple3i>::iterator it;
@@ -132,35 +132,94 @@ void meshOperation::getHalfEdges( mesh & m, vector<tuple3i> & target_fc_halfEdge
 	target_fc_halfEdges.clear();
 
 	tuple2i halfedge;
+	int sign;
 	for(it = faces.begin(); it!= faces.end(); it++){
-		halfedge.set((*it).a, (*it).b);
+
+		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
+			(it->a < it->b ? (*it).b: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		target_halfEdges.insert(el,halfedge);
 
-		halfedge.set((*it).b, (*it).c);
+		//halfedge.set((*it).b, (*it).c);
+		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
+			(it->b < it->c ? (*it).c: (*it).b));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		target_halfEdges.insert(el,halfedge);
 
-		halfedge.set((*it).c, (*it).a);
+		//halfedge.set((*it).c, (*it).a);
+		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
+			(it->a < it->c ? (*it).c: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		target_halfEdges.insert(el,halfedge);
 	}
 
 	tuple3i halfedge_index;
 	for(it = faces.begin(); it!= faces.end(); it++){
-		halfedge.set(it->a, it->b);
+		//halfedge.set(it->a, it->b);
+		sign = (it->a < it->b ? 1: -1);
+		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
+			(it->a < it->b ? (*it).b: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
-		halfedge_index.a = el - target_halfEdges.begin();
+		halfedge_index.a = sign * (el - target_halfEdges.begin());
 
-		halfedge.set(it->b, it->c);
+		//halfedge.set(it->b, it->c);
+		sign = (it->b < it->c ? 1: -1);
+		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
+			(it->b < it->c ? (*it).c: (*it).b));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
-		halfedge_index.b = el - target_halfEdges.begin();
+		halfedge_index.b = sign*(el - target_halfEdges.begin());
 
-		halfedge.set(it->c, it->a);
+		//halfedge.set(it->c, it->a);
+		sign = (it->c < it->a ? 1: -1);
+		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
+			(it->a < it->c ? (*it).c: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
-		halfedge_index.c = el - target_halfEdges.begin();
+		halfedge_index.c = sign*(el - target_halfEdges.begin());
 		target_fc_halfEdges.push_back(halfedge_index);
 	}
+}
+
+void meshOperation::getHalf( mesh & m, mesh & target, tuple3f direction, float dist )
+{
+	vector<int> usedVertices;
+	vector<tuple3i> faces;
+	vector<tuple3f> vertices;
+
+	for(unsigned int i = 0; i < m.faces.size(); i++){
+
+		if(((tuple3f) m.vertices[m.faces[i].a]).dot(direction)>dist ||
+			((tuple3f) m.vertices[m.faces[i].b]).dot(direction)>dist||
+			((tuple3f) m.vertices[m.faces[i].c]).dot(direction)>dist){
+				usedVertices.push_back(m.faces[i].a);
+				usedVertices.push_back(m.faces[i].b);
+				usedVertices.push_back(m.faces[i].c);
+
+				faces.push_back(m.faces[i]);
+		}
+	}
+
+	vector<int>::iterator it;
+
+	// using default comparison (operator <):
+	std::sort (usedVertices.begin(), usedVertices.end());
+	usedVertices.erase(std::unique(usedVertices.begin(), usedVertices.end()), usedVertices.end());
+
+	int k;
+	for(unsigned int i = 0; i < faces.size(); i++){
+		k= (std::find(usedVertices.begin(), usedVertices.end(), faces[i].a)-usedVertices.begin());
+		faces[i].a = k;
+		k= (std::find(usedVertices.begin(), usedVertices.end(), faces[i].b)-usedVertices.begin());
+		faces[i].b = k;
+		k= (std::find(usedVertices.begin(), usedVertices.end(), faces[i].c)-usedVertices.begin());
+		faces[i].c = k;
+
+	}
+
+	for(unsigned int i = 0; i < usedVertices.size(); i++){
+		vertices.push_back(m.vertices[usedVertices[i]]);
+	}
+
+	target.reset(vertices,faces);
 }
 
 
