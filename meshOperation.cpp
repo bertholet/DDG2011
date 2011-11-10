@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "meshOperation.h"
+#include <assert.h>
 
 meshOperation::meshOperation(void)
 {
@@ -221,5 +222,48 @@ void meshOperation::getHalf( mesh & m, mesh & target, tuple3f direction, float d
 
 	target.reset(vertices,faces);
 }
+
+void meshOperation::getNbrFaces( tuple2i & edge, int * fc1, int * fc2, 
+		vector<vector<int>> & vertex2Face)
+{
+	vector<int> & fc_a = vertex2Face[edge.a];
+	vector<int> & fc_b = vertex2Face[edge.b];
+
+	vector<int>::iterator it;
+	(*fc1) = -1;
+	(*fc2) = -1;
+	for(int i = 0; i < fc_a.size(); i++){
+		it = find(fc_b.begin(), fc_b.end(), fc_a[i]);
+		if(*it == fc_a[i]){
+			if(*fc1 == -1){
+				(*fc1) = *it;
+			}
+			else if ( *fc2 == -1){
+				(*fc2) = *it;
+			}
+			else{
+				assert(false);
+			}
+		}
+	}
+
+}
+
+/*int meshOperation::orientation( tuple2i & edge, tuple3i & face )
+{
+	assert(edge.a == face.a || edge.a == face.b || edge.a == face.c);
+	assert(edge.b == face.a || edge.b == face.b || edge.b == face.c);
+	
+	if(face.a == edge.a && face.b == edge.b){
+		return 1;
+	}
+	if(face.b == edge.a && face.c == edge.b){
+		return 1;
+	}
+	if(face.c == edge.a && face.a == edge.b){
+		return 1;
+	}
+	return -1;
+}*/
 
 

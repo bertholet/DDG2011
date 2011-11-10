@@ -302,6 +302,7 @@ public:
 	//Returns an array of vectors. neighbor_faces[i] will be the indices of all faces
 	//neighboring the node i a preallocated and preinitialized vector of sz
 	// nrVertices
+	// not sorted by anything.
 	//////////////////////////////////////////////////////////////////////////
 	static void getNeighborFaces(vector<tuple3i> & faces, vector<vector<int>> & neighbor_faces){
 			
@@ -334,6 +335,16 @@ public:
 	//endVertex ID of edge i
 	//////////////////////////////////////////////////////////////////////////
 	static void getOrientedEdges(mesh & m, vector<tuple3i> & target_fc_halfEdge, vector<tuple2i> & target_halfEdge);
+
+	// finds the one or two neigbor faces of the edge in fc1 and fc2.
+	// fc1 will always be set. fc might be -1 if there is no face.
+	static void getNbrFaces(tuple2i & edge, int * fc1, int * fc2, 
+		vector<vector<int>> & vertex2Face); 
+
+	//////////////////////////////////////////////////////////////////////////
+	//orientation of the edge in the face
+	//////////////////////////////////////////////////////////////////////////
+	//static int orientation(tuple2i & edge, tuple3i & face);
 
 	//////////////////////////////////////////////////////////////////////////
 	//returns the index of the predecessor of v in the neighbors of the center_index

@@ -156,25 +156,6 @@ public:
 
 };
 
-class tuple3i
-{
-public:
-	int a, b, c;
-	tuple3i(void);
-	tuple3i(int x_, int y_, int z_){
-		a = x_;
-		b=y_;
-		c=z_;
-	}
-	~tuple3i(void);
-
-	void set(int x_, int y_, int z_){
-		a = x_;
-		b=y_;
-		c=z_;
-	}
-};
-
 // for fun, could use pair..
 class tuple2i
 {
@@ -196,3 +177,46 @@ public:
 		return this->a <other.a || (this->a == other.a && this->b < other.b);
 	}
 };
+
+class tuple3i
+{
+public:
+	int a, b, c;
+	tuple3i(void);
+	tuple3i(int x_, int y_, int z_){
+		a = x_;
+		b=y_;
+		c=z_;
+	}
+	~tuple3i(void);
+
+	void set(int x_, int y_, int z_){
+		a = x_;
+		b=y_;
+		c=z_;
+	}
+
+	bool contains(tuple2i & tuple){
+		return 	(tuple.a == a || tuple.a == b || tuple.a == c)&&
+			(tuple.b == a || tuple.b == b || tuple.b == c);
+	}
+
+	int orientation(tuple2i & edge){
+		
+		if(a == edge.a && b == edge.b){
+			return 1;
+		}
+		if(b == edge.a && c == edge.b){
+			return 1;
+		}
+		if(c == edge.a && a == edge.b){
+			return 1;
+		}
+		if(contains(edge))
+			return -1;
+
+		return 0;
+	}
+};
+
+

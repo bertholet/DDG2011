@@ -1,9 +1,12 @@
 #include "vectorFieldTools.h"
 
-vectorFieldTools::vectorFieldTools(void)
+
+int vectorFieldTools::abs( int a )
 {
+	return (a >=0?a:-a);
 }
 
-vectorFieldTools::~vectorFieldTools(void)
+int vectorFieldTools::sgn( int a )
 {
+	return (a >=0?1:-1);
 }

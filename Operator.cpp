@@ -189,3 +189,12 @@ float Operator::volume( mesh &m )
 	volume = (volume < 0? -volume:volume);
 	return volume / 6;
 }
+
+float Operator::area( int faceNr, mesh & m )
+{
+	return tuple3f::crossNorm(
+			m.vertices[m.faces[faceNr].b] - 
+			m.vertices[m.faces[faceNr].a],
+			m.vertices[m.faces[faceNr].c] - 
+			m.vertices[m.faces[faceNr].a]) / 2.f;
+	}

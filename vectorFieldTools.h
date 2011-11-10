@@ -2,7 +2,7 @@
 
 class vectorFieldTools
 {
-public:
-	vectorFieldTools(void);
-	~vectorFieldTools(void);
+	static int abs(int a);
+
+	static int sgn(int a);
 };

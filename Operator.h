@@ -13,4 +13,5 @@ public:
 	static void calcAllGaussCurvs(mesh &m, vector<float> &target);
 	static void calcAllAMixed(mesh &m, vector<float> &target);
 	static float volume(mesh &m);
+	static float area(int faceNr, mesh & m);
 };
