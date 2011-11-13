@@ -50,14 +50,8 @@ void mesh::init( const char* file, tuple3f & col, float scale )
 
 	//nbrs = new vector<int>[vertices.size()];
 	//nbr_fcs = new vector<int>[vertices.size()];
-	nbrs.reserve(vertices.size());
-	nbr_fcs.reserve(vertices.size());
-	for(unsigned int i = 0; i < vertices.size(); i++){
-		nbrs.push_back(vector<int>());
-		nbr_fcs.push_back(vector<int>());
-	}
-	meshOperation::getNeighbors(faces, nbrs);
-	meshOperation::getNeighborFaces(faces, nbr_fcs);
+	initNbrNbrfc();
+
 
 	if(f.getNormals().size() != 0){
 		normals = f.getNormals();
@@ -548,6 +542,18 @@ tuple3i * mesh::intersect( tuple3f & start,tuple3f &to)
 		return result;
 	}
 	return NULL;
+}
+
+void mesh::initNbrNbrfc()
+{
+	nbrs.reserve(vertices.size());
+	nbr_fcs.reserve(vertices.size());
+	for(unsigned int i = 0; i < vertices.size(); i++){
+		nbrs.push_back(vector<int>());
+		nbr_fcs.push_back(vector<int>());
+	}
+	meshOperation::getNeighbors(faces, nbrs);
+	meshOperation::getNeighborFaces(faces, nbr_fcs);
 }
 
 

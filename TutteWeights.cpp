@@ -159,24 +159,7 @@ double TutteWeights::cotan_weights_divAvor( int i, int j, mesh & m,
 
 		float Avornoi = 0;
 		for(int k = 0; k < neighbors_i.size(); k++){
-			/*if(tuple3f::a_bDotc_b(verts[k], verts[i], verts[prev]) <0 )
-			{
-				
-			}
-			else if(tuple3f::a_bDotc_b(verts[k], verts[prev], verts[i]) <0 ||
-				tuple3f::a_bDotc_b(verts[k], verts[prev], verts[i])<0)
-			{
 
-			}
-			else 
-			{
-
-			}
-			else{
-				Avornoi += (tuple3f::cotPoints(verts[k], verts[prev], verts[i]) +
-					tuple3f::cotPoints(verts[i], verts[next], verts[k])) *
-					(verts[i]-verts[k]).normSqr();
-			}*/
 			nbr = neighbors_i[k];
 			prev = meshOperation::getPrevious_bc(i, nbr, m);	
 			next = meshOperation::getNext_bc(i,nbr, m);

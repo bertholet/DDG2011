@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+
 class meshOperation
 {
 public:
@@ -318,6 +319,13 @@ public:
 			neighbor_faces[faces[i].c].push_back(i);
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	//This Method will store the edge indices of all the neighbor edges of
+	// vertex in target
+	//////////////////////////////////////////////////////////////////////////
+	static void getNeighborEdges( int vertex, vector<vector<int>> & nbr_fc, 
+		vector<tuple3i> & fc2edge, vector<tuple2i> & edges, vector<int> & target );
 
 	//////////////////////////////////////////////////////////////////////////
 	//returns a representation of the halfedges contained in the mesh,

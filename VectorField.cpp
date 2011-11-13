@@ -15,7 +15,12 @@ VectorField::VectorField( mesh * aMesh )
 	aMesh->attach(this);
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
-	vector<tuple2i> * edges = info->getHalfedges();
+	edges = info->getHalfedges();
+	fc2he = info->getFace2Halfedges();
+	faces = &(aMesh->getFaces());
+	vertices = &(aMesh->getVertices());
+
+
 	oneForm.reserve(edges->size());
 	for(int i = 0; i < edges->size(); i++){
 		oneForm.push_back(0.f);
@@ -41,10 +46,10 @@ void VectorField::update( void * src, int msg )
 //sets the one form values associated to faceNr appropriately: projects dir in the
 //pane spanned by the triangle
 void VectorField::setOneForm(int faceNr, tuple3f & dir){
-	vector<tuple3i> & fc2he = *(Model::getModel()->getMeshInfo()->getFace2Halfedges());
-	vector<tuple3i> & faces = Model::getModel()->getMesh()->getFaces();
-	vector<tuple3f> & vertices = Model::getModel()->getMesh()->getVertices();
-	vector<tuple2i> & hedges = * Model::getModel()->getMeshInfo()->getHalfedges();
+	vector<tuple3i> & fc2he = *(this->fc2he);
+	vector<tuple3i> & faces = *(this->faces);
+	vector<tuple3f> & vertices = *(this->vertices);
+	vector<tuple2i> & hedges = * (this->edges);
 
 	//vector orthogonal to halfedge ab, bc, ca
 	tuple3f  p_ab, p_bc, p_ca;
@@ -66,31 +71,45 @@ void VectorField::setOneForm(int faceNr, tuple3f & dir){
 //	std::cout <<"setting:" << proj.x << ", " << proj.y << ", " << proj.z << "\n";
 //	std::cout <<"Lies in plane:" << proj.dot(normal)<< "\n";
 
-	setOneForm(fc2he[faceNr].a , p_ab.dot(proj));
-	setOneForm(fc2he[faceNr].b , p_bc.dot(proj));
-	setOneForm(fc2he[faceNr].c , p_ca.dot(proj));
+	tuple2i edge;
+	tuple3i face;
+	int edgeID;
+	face = faces[faceNr];
+	edgeID = fc2he[faceNr].a;
+	edge = hedges[edgeID];
+	setOneForm(edgeID , face.orientation(edge), p_ab.dot(proj));
+
+	edgeID = fc2he[faceNr].b;
+	edge = hedges[edgeID];
+	setOneForm(edgeID , face.orientation(edge), p_bc.dot(proj));
+
+	edgeID = fc2he[faceNr].c;
+	edge = hedges[edgeID];
+	setOneForm(edgeID , face.orientation(edge), p_ca.dot(proj));
 	/*oneForm[abs(fc2he[faceNr].a)] = sgn(fc2he[faceNr].a) * p_ab.dot(proj);
 	oneForm[abs(fc2he[faceNr].b)] = sgn((fc2he[faceNr].b)) * p_bc.dot(proj);
 	oneForm[abs(fc2he[faceNr].c)] = sgn(fc2he[faceNr].c) * p_ca.dot(proj);*/
 }
 
 
-float VectorField::getOneForm( int halfedge )
+float VectorField::getOneForm( int halfedge , int orientation)
 {
-	return oneForm[abs(halfedge)] * sgn(halfedge);
+//	return oneForm[abs(halfedge)] * sgn(halfedge);
+	return oneForm[halfedge] * orientation;
 }
 
-void VectorField::setOneForm( int halfedge, float val )
+void VectorField::setOneForm( int halfedge, int orientation, float val )
 {
-	oneForm[abs(halfedge)] = sgn(halfedge) * val;
+//	oneForm[abs(halfedge)] = sgn(halfedge) * val;
+	oneForm[halfedge] = orientation * val;
 }
 
 
 //baricentric coordinates
 tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc){
-	vector<tuple3i> & fc2he = *(Model::getModel()->getMeshInfo()->getFace2Halfedges());
-	vector<tuple3i> & faces = Model::getModel()->getMesh()->getFaces();
-	vector<tuple3f> & vertices = Model::getModel()->getMesh()->getVertices();
+	vector<tuple3i> & fc2he = *(this->fc2he);
+	vector<tuple3i> & faces = *(this->faces);
+	vector<tuple3f> & vertices = *(this->vertices);
 
 	//vector orthogonal to halfedge ab, bc, ca
 	tuple3f  p_abT, p_bcT, p_caT, normal;
@@ -112,13 +131,33 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 	p_bcT = rot*p_bcT;
 	p_caT = rot*p_caT;
 
-
+	tuple3i face = faces[faceNr];
+	int edgeID1 = fc2he[faceNr].a; 
+	int edgeID2 = fc2he[faceNr].b;
+	tuple2i edge1 = (*edges)[edgeID1];
+	tuple2i edge2 = (*edges)[edgeID2];
 							//c_ab	alpha_a				//c_bc		alpha_c
-	tuple3f result = p_caT * (getOneForm(fc2he[faceNr].a)*bara - getOneForm(fc2he[faceNr].b)*barc) +
-								//c_bc	alpha_b			//c_ca		alpha_a
-		p_abT * (getOneForm(fc2he[faceNr].b)*barb - getOneForm(fc2he[faceNr].c)*bara) +
+	//tuple3f result = p_caT * (getOneForm(fc2he[faceNr].a)*bara - getOneForm(fc2he[faceNr].b)*barc) +
+	tuple3f result = p_caT * (getOneForm(edgeID1, face.orientation(edge1))*bara - 
+		getOneForm(edgeID2,face.orientation(edge2))*barc);
+							//c_bc	alpha_b			//c_ca		alpha_a
+	//result += p_abT * (getOneForm(fc2he[faceNr].b)*barb - getOneForm(fc2he[faceNr].c)*bara) +
+	edgeID1 = fc2he[faceNr].b;
+	edgeID2 = fc2he[faceNr].c;
+	edge1 = (*edges)[edgeID1];
+	edge2 = (*edges)[edgeID2];
+	result += p_abT * (getOneForm(edgeID1,face.orientation(edge1))*barb 
+		- getOneForm(edgeID2,face.orientation(edge2))*bara);
 								//c_ca	alpha_c			//c_ab		alpha_b
-		p_bcT * (getOneForm(fc2he[faceNr].c)*barc - getOneForm(fc2he[faceNr].a)*barb);
+//	result+= p_bcT * (getOneForm(fc2he[faceNr].c)*barc - getOneForm(fc2he[faceNr].a)*barb);
+	edgeID1 = fc2he[faceNr].c;
+	edgeID2 = fc2he[faceNr].a;
+	edge1 = (*edges)[edgeID1];
+	edge2 = (*edges)[edgeID2];
+	result+= p_bcT * (getOneForm(edgeID1,face.orientation(edge1))*barc 
+		- getOneForm(edgeID2,face.orientation(edge2))*barb);
+
+
 	result *= 1.f/vol2Triangle;
 
 //	std::cout << result.x << ", " << result.y << ", " << result.z << "\n";
@@ -128,13 +167,14 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 }
 
 void VectorField::glOutputField(){
-	vector<tuple3i> & faces = Model::getModel()->getMesh()->getFaces();
-	vector<tuple3f> & vertices = Model::getModel()->getMesh()->getVertices();
-	vector<tuple2i> * hedges = Model::getModel()->getMeshInfo()->getHalfedges();
-	if(this->oneForm.size() != hedges->size()){
+	vector<tuple3i> & faces = *(this->faces);
+	vector<tuple3f> & vertices = *(this->vertices);
+
+	if(edges == NULL || this->oneForm.size() != edges->size()){
 		return;
 	}
 	tuple3f pos ;
+	tuple3f dir;
 
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
@@ -145,7 +185,9 @@ void VectorField::glOutputField(){
 		glColor3f(0,1,0);
 		glBegin(GL_LINE_LOOP);
 		glVertex3fv((GLfloat *) & pos);
-		pos+= oneForm2Vec(i,1.f/3,1.f/3,1.f/3);
+		dir = oneForm2Vec(i,1.f/3,1.f/3,1.f/3);//*0.3f;
+		//dir.normalize();
+		pos+= dir;
 		glVertex3fv((GLfloat *) & pos);
 		glEnd();
 

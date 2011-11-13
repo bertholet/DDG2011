@@ -2,14 +2,14 @@
 #include <vector>
 #include "tuple3.h"
 #include "mesh.h"
+#include "pardisoMatCreator.h"
 
-class oneFormLaplacian
+class oneFormLaplacian:public pardisoMatCreator
 {
 public:
 	oneFormLaplacian(std::vector<tuple3i> * fc2he, std::vector<tuple2i> * edges,
-		std::vector<std::vector<int>> * nbr_fcs ,
-		std::vector<tuple3i> * faces,
 		mesh * amesh);
+
 	~oneFormLaplacian(void);
 
 	float val(int i , int j);
@@ -19,6 +19,8 @@ public:
 	//will store the edge ids with nonzero edge weight in the target vector. 
 	void indices(int edge, std::vector<int> & target);
 
+	//will store star d faces.*constr in target. target has to have size == nr edges;
+	void stard( vector<int> & faces, vector<float> & constr , double * target, int sz);
 private:
 	std::vector<tuple3i> * fc2he;
 	std::vector<tuple2i> * edges;

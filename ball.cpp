@@ -118,6 +118,7 @@ ball::ball(float r, int verticesPerHalfCycle)
 	}
 	face_normals_perVertex = faces;
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 ball::ball( float r, int nrPhi, int nrPsi, bool FUN)
@@ -189,6 +190,7 @@ ball::ball( float r, int nrPhi, int nrPsi, bool FUN)
 		normals[i].normalize();
 	}
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 ball::ball( float r, int nrPhi, int nrPsi )
@@ -262,6 +264,7 @@ ball::ball( float r, int nrPhi, int nrPsi )
 		normals[i].normalize();
 	}
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
@@ -383,6 +386,7 @@ ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
 	}
 	face_normals_perVertex = faces;
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 

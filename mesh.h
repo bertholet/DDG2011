@@ -53,6 +53,8 @@ public:
 	void initNormalsFromVertices();
 	void initFaceNormals();
 
+	void initNbrNbrfc();
+
 	void addNormalNoise( float max );
 	void scaleVertices(float scale);
 	void translateVertices( float dx,float dy,float dz );
@@ -65,7 +67,11 @@ public:
 
 	vector<tuple3f>& getVertices(void){return vertices;}
 	vector<tuple3i>& getFaces(){return faces;}
+	// nbrs[i] is a vector with the indices of the neighbors
+	//the vertices neighboring vertex i.
 	vector<vector<int>> & getNeighbors() { return nbrs;}
+	// nbrs[i] is a vector with the indices of the neighbors
+	//the faces neighboring vertex i.
 	vector<vector<int>> & getNeighborFaces(){return nbr_fcs;}
 	vector<tuple3f> & getTexCoords(){return tex;}
 	
@@ -98,4 +104,5 @@ public:
 
 private:
 	void init( const char* file, tuple3f & col, float scale );
+
 };

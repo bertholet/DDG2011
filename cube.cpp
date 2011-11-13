@@ -229,6 +229,7 @@ cube::cube(float sidelngth, int n )
 
 	initNormalsFromVertices();
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 cube::~cube(void)

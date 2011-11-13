@@ -139,45 +139,54 @@ void meshOperation::getOrientedEdges( mesh & m, vector<tuple3i> & target_fc_half
 		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
 			(it->a < it->b ? (*it).b: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
-		target_halfEdges.insert(el,halfedge);
+		if(el==target_halfEdges.end() || el->a != halfedge.a || el->b != halfedge.b){
+			target_halfEdges.insert(el,halfedge);
+		}
 
 		//halfedge.set((*it).b, (*it).c);
 		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
 			(it->b < it->c ? (*it).c: (*it).b));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
-		target_halfEdges.insert(el,halfedge);
+		if(el==target_halfEdges.end() || el->a != halfedge.a || el->b != halfedge.b){
+			target_halfEdges.insert(el,halfedge);
+		}
 
 		//halfedge.set((*it).c, (*it).a);
 		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
 			(it->a < it->c ? (*it).c: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
-		target_halfEdges.insert(el,halfedge);
+		if(el==target_halfEdges.end() || el->a != halfedge.a || el->b != halfedge.b){
+			target_halfEdges.insert(el,halfedge);
+		}
 	}
 
+	sign = 1;
 	tuple3i halfedge_index;
 	for(it = faces.begin(); it!= faces.end(); it++){
 		//halfedge.set(it->a, it->b);
-		sign = (it->a < it->b ? 1: -1);
+//		sign = (it->a < it->b ? 1: -1);
 		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
 			(it->a < it->b ? (*it).b: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		halfedge_index.a = sign * (el - target_halfEdges.begin());
 
 		//halfedge.set(it->b, it->c);
-		sign = (it->b < it->c ? 1: -1);
+//		sign = (it->b < it->c ? 1: -1);
 		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
 			(it->b < it->c ? (*it).c: (*it).b));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		halfedge_index.b = sign*(el - target_halfEdges.begin());
 
 		//halfedge.set(it->c, it->a);
-		sign = (it->c < it->a ? 1: -1);
+//		sign = (it->c < it->a ? 1: -1);
 		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
 			(it->a < it->c ? (*it).c: (*it).a));
 		el = lower_bound(target_halfEdges.begin(),target_halfEdges.end(), halfedge);
 		halfedge_index.c = sign*(el - target_halfEdges.begin());
 		target_fc_halfEdges.push_back(halfedge_index);
 	}
+
+
 }
 
 void meshOperation::getHalf( mesh & m, mesh & target, tuple3f direction, float dist )
@@ -234,7 +243,7 @@ void meshOperation::getNbrFaces( tuple2i & edge, int * fc1, int * fc2,
 	(*fc2) = -1;
 	for(int i = 0; i < fc_a.size(); i++){
 		it = find(fc_b.begin(), fc_b.end(), fc_a[i]);
-		if(*it == fc_a[i]){
+		if(it!= fc_b.end() &&  *it == fc_a[i]){
 			if(*fc1 == -1){
 				(*fc1) = *it;
 			}
@@ -247,6 +256,34 @@ void meshOperation::getNbrFaces( tuple2i & edge, int * fc1, int * fc2,
 		}
 	}
 
+}
+
+
+void meshOperation::getNeighborEdges( int vertex, vector<vector<int>> & nbr_fc, 
+		vector<tuple3i> & fc2edge, vector<tuple2i> & edges, vector<int> & target )
+{
+	target.clear();
+	vector<int> & fcs = nbr_fc[vertex];
+	int edgeId;
+	tuple2i edge;
+	for(vector<int>::iterator fc = fcs.begin(); fc != fcs.end(); fc++)
+	{
+		edgeId = abs(fc2edge[*fc].a);
+		edge = edges[edgeId];
+		if(edge.a == vertex || edge.b == vertex){
+			target.push_back(edgeId);
+		}
+		edgeId = abs(fc2edge[*fc].b);
+		edge = edges[edgeId];
+		if(edge.a == vertex || edge.b == vertex){
+			target.push_back(edgeId);
+		}
+		edgeId = abs(fc2edge[*fc].c);
+		edge = edges[edgeId];
+		if(edge.a == vertex || edge.b == vertex){
+			target.push_back(edgeId);
+		}
+	}
 }
 
 /*int meshOperation::orientation( tuple2i & edge, tuple3i & face )

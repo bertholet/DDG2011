@@ -46,7 +46,7 @@ void Displayer::initializeGL()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//	glLineWidth(2.0);
+	glLineWidth(3.0);
 }
 
 void Displayer::paintGL()

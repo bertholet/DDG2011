@@ -1,6 +1,7 @@
 #pragma once
 #include <math.h>
 #include <iostream>
+#include <assert.h>
 
 class tuple3f
 {
@@ -171,6 +172,20 @@ public:
 	void set(int x_, int y_){
 		a = x_;
 		b=y_;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	//Returns +-1 or 0 if vertex is the start vertex -1, end +1 neither: 0
+	//////////////////////////////////////////////////////////////////////////
+	int orientation(int vertex){
+		if(a==vertex){
+			return -1;
+		}
+		if(b==vertex){
+			return 1;
+		}
+		assert(false);
+		return 0;
 	}
 
 	bool operator < (const tuple2i & other) const{

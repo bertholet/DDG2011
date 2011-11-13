@@ -2,6 +2,8 @@
 #include "pardiso.h"
 #include <Windows.h>
 
+bool pardisoSolver::isInUse = false;
+
 void pardisoSolver::init_intParams(int nrRefinementSteps)
 {
 	SYSTEM_INFO sysinfo; 	GetSystemInfo( &sysinfo );  	

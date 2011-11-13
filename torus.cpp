@@ -174,6 +174,7 @@ torus::torus(float r1, float r2,int nrVertices_smallRing)
 
 	face_normals_perVertex = faces;
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 torus::torus(float r1, float r2,int nrVertices_smallRing,int nrVertices_BigRing)
@@ -327,6 +328,7 @@ torus::torus(float r1, float r2,int nrVertices_smallRing,int nrVertices_BigRing)
 
 	face_normals_perVertex = faces;
 	initFaceNormals();
+	initNbrNbrfc();
 }
 
 torus::~torus(void)

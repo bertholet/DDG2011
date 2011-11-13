@@ -6,6 +6,7 @@
 /* PARDISO prototype. */
 #pragma once
 #include "pardisoMatrix.h"
+#include <assert.h>
 
 
 extern "C" __declspec(dllimport) void pardisoinit (void   *, int    *,   int *, int *, double *, int *);
@@ -35,6 +36,8 @@ private:
 	int error;
 	int nrhs;
 
+	static bool isInUse;
+
 	void init_intParams(int nrRefinementSteps);
 	void checkError_init() 
 	{
@@ -63,15 +66,20 @@ public:
 	//solver types
 	static const int SOLVER_DIRECT = 0, SOLVER_ITERATIVE=1;
 	pardisoMatrix * matrix;
+
 	pardisoSolver(
 			int  matrix_typ, int solver,
 			int nr_refinement_steps){
+
+		assert(!isInUse);
 		error = 0;
 		matrix = NULL; 
 		matrix_type = matrix_typ;
 		init_intParams(nr_refinement_steps);
 		pardisoinit(intern_memory, &matrix_type, &solver, int_params, double_params, &error);
 		checkError_init();
+
+		isInUse = true;
 
 	}
 
@@ -85,6 +93,7 @@ public:
 		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
 			&n, &matrix->a[0], &matrix->ia[0], &matrix->ja[0], NULL, &nrhs,
 			int_params, &print_stats, NULL, NULL, &error, double_params);
+		isInUse = false;
 	}
 
 	/************************************************************************/

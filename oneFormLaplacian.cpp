@@ -9,14 +9,12 @@ using namespace std;
 
 oneFormLaplacian::oneFormLaplacian( vector<tuple3i> * faces2he, 
 		vector<tuple2i> * edges, 
-		vector<vector<int>> * nbr_fcs,
-		vector<tuple3i> * faces,
 		mesh * amesh)
 {
 	this->fc2he = faces2he;
 	this->edges = edges;
-	this->v2nbrf = nbr_fcs;
-	this->faces = faces;
+	this->v2nbrf = &(amesh->getNeighborFaces());
+	this->faces = &(amesh->getFaces());
 	this->myMesh = amesh;
 }
 
@@ -30,9 +28,9 @@ float oneFormLaplacian::val( int i , int j )
 }
 
 //weight of edgej for laplacian at edgei
-float oneFormLaplacian::valdd( int edgi , int edgj )
+float oneFormLaplacian::valdd( int edgij , int edgj )
 {
-	tuple2i e_ij = (*edges)[edgi];
+	tuple2i e_ij = (*edges)[edgij];
 	tuple2i e_other = (*edges)[edgj];
 
 	int fc1, fc2;
@@ -52,17 +50,52 @@ float oneFormLaplacian::valdd( int edgi , int edgj )
 			1.f/Operator::area(fc1,*myMesh) ;
 	}
 
-	if(face2.contains(e_other)){
+	/*if(face2.contains(e_other)){
 		result += face1.orientation(e_ij) * face1.orientation(e_other) *
+			1.f/Operator::area(fc2,*myMesh) ;
+	}*/
+
+	if(face2.contains(e_other)){
+		result += face2.orientation(e_ij) * face2.orientation(e_other) *
 			1.f/Operator::area(fc2,*myMesh) ;
 	}
 
 	return result;
 }
 
-float oneFormLaplacian::val_deltadelta( int i, int j )
+float oneFormLaplacian::val_deltadelta( int edgij, int edgother )
 {
-	return 0;
+	//if other contains j: + ....
+	tuple2i e_ij = (*edges)[edgij];
+	tuple2i e_other = (*edges)[edgother];
+
+	int j = e_ij.b, i = e_ij.a;
+	float result = 0;
+
+	//plus
+	if(e_other.a == j){
+		result += 1.f/ Operator::aVornoi(j, *myMesh) * Operator::dualEdge_edge_ratio(e_ij.a,e_ij.b,*myMesh) * 
+			Operator::dualEdge_edge_ratio(e_other.a,e_other.b, *myMesh);
+	}
+	//minus, because of orientation
+	else if (e_other.b ==j){
+		result -= 1.f/ Operator::aVornoi(j, *myMesh) * Operator::dualEdge_edge_ratio(e_ij.a,e_ij.b,*myMesh) * 
+			Operator::dualEdge_edge_ratio(e_other.a,e_other.b, *myMesh);
+	}
+
+	//note: the following two ifs can not be incorporated in the aboves because different vornoi area.
+	//minus
+	if(e_other.a == i){
+		result -= 1.f/ Operator::aVornoi(i, *myMesh) * Operator::dualEdge_edge_ratio(e_ij.a,e_ij.b,*myMesh) * 
+			Operator::dualEdge_edge_ratio(e_other.a,e_other.b, *myMesh);
+	}
+	//plus, because of orientation
+	else if (e_other.b == i){
+		result += 1.f/ Operator::aVornoi(i, *myMesh) * Operator::dualEdge_edge_ratio(e_ij.a,e_ij.b,*myMesh) * 
+			Operator::dualEdge_edge_ratio(e_other.a,e_other.b, *myMesh);
+	}
+
+	return result;
 }
 void oneFormLaplacian::indices( int edg, vector<int> & target )
 {
@@ -118,4 +151,27 @@ void oneFormLaplacian::indices( int edg, vector<int> & target )
 	
 	std::sort(target.begin(), target.end());
 	target.erase(std::unique(target.begin(), target.end()), target.end());
+	int lk = 0;
+}
+
+void oneFormLaplacian::stard( vector<int> & srcsink_verts, vector<float> & constr , double * target, int sz)
+{
+	assert(sz == edges->size());
+	vector<int> nbrEdges;
+	vector<int>::iterator nbr_edge;
+	tuple2i edge;
+	int vert;
+	for(int i = 0; i < srcsink_verts.size(); i++){
+		vert = srcsink_verts[i];
+	//for(vector<int>::iterator vert = srcsink_verts.begin(); vert!= srcsink_verts.end(); vert++){
+		meshOperation::getNeighborEdges(vert, *v2nbrf, *fc2he, *edges, nbrEdges);
+
+		for(nbr_edge = nbrEdges.begin(); nbr_edge != nbrEdges.end(); nbr_edge++){
+			assert(*nbr_edge< sz);
+			edge = (*edges)[*nbr_edge];
+			target[*nbr_edge] += edge.orientation(vert) * constr[i];
+				Operator::dualEdge_edge_ratio(edge.a,edge.b, *myMesh);
+		}
+	}
+		
 }
