@@ -145,6 +145,10 @@ public:
 		return tuple3f(x - other.x, y- other.y, z - other.z);
 	}
 
+	tuple3f operator - (){
+		return tuple3f(-x , -y, -z );
+	}
+
 	tuple3f operator - (float &other){
 		return tuple3f(x - other, y- other, z - other);
 	}

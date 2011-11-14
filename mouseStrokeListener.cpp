@@ -30,12 +30,12 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 	GLdouble p1x,p1y,p1z;
 	tuple3f start, end;
 
-	gluUnProject(winx, winy,1, model,proj,viewPort,&p1x,&p1y,&p1z);
+	gluUnProject(winx, winy,-1, model,proj,viewPort,&p1x,&p1y,&p1z);
 	start.x = (float) p1x;
 	start.y = (float) p1y;
 	start.z = (float) p1z;
 
-	gluUnProject(winx, winy,-1, model,proj,viewPort,&p1x,&p1y,&p1z);
+	gluUnProject(winx, winy,0, model,proj,viewPort,&p1x,&p1y,&p1z);
 	end.x = (float) p1x;
 	end.y = (float) p1y;
 	end.z = (float) p1z;
@@ -49,6 +49,8 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 
 	int vertex;
 	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end, &vertex);
+
+
 	if(fc != NULL){
 		//this->map->mark(*fc, nrCalls);
 		this->map->mark(vertex, nrCalls);
@@ -60,8 +62,7 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 
 void mouseStrokeListener::onMousePress( QMouseEvent* event )
 {
-	onMouseMove(event);
-
 	nrCalls++;
+	onMouseMove(event);
 
 }

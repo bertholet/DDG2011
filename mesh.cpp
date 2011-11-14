@@ -507,11 +507,15 @@ tuple3i * mesh::intersect( tuple3f & start,tuple3f &to, int * closestVertex)
 	tuple3f normal,v, insect, sidenormal, bestIntersect;
 
 	for(int i = 0; i < faces.size(); i++){
-		normal = face_normals[i];
+		normal = vertices[faces[i].b]- vertices[faces[i].a];
+		normal = normal.cross(vertices[faces[i].c] -vertices[faces[i].a]);
+		normal.normalize();
+
 		v = to - start; 
 		v.normalize();
 		d= vertices[faces[i].a].dot(normal);
-		t = -(normal.dot(start) + d)/v.dot(normal);
+		//t = -(normal.dot(start) + d)/v.dot(normal);
+		t= (vertices[faces[i].a] - start).dot(normal) / v.dot(normal);
 
 		if(t > bestdist){
 			continue;
@@ -519,17 +523,17 @@ tuple3i * mesh::intersect( tuple3f & start,tuple3f &to, int * closestVertex)
 
 		insect = start + v*t;
 
-		sidenormal = (vertices[faces[i].a] -start).cross(vertices[faces[i].b] -start);
+		sidenormal = -(vertices[faces[i].a] -start).cross(vertices[faces[i].b] -start);
 		if(sidenormal.dot(insect) -sidenormal.dot(start) < 0){
 			continue;
 		}
 
-		sidenormal = (vertices[faces[i].b] -start).cross(vertices[faces[i].c] -start);
+		sidenormal = -(vertices[faces[i].b] -start).cross(vertices[faces[i].c] -start);
 		if(sidenormal.dot(insect) -sidenormal.dot(start) < 0){
 			continue;
 		}
 
-		sidenormal = (vertices[faces[i].c] -start).cross(vertices[faces[i].a] -start);
+		sidenormal = -(vertices[faces[i].c] -start).cross(vertices[faces[i].a] -start);
 		if(sidenormal.dot(insect) -sidenormal.dot(start) < 0){
 			continue;
 		}

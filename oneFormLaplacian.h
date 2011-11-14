@@ -21,6 +21,7 @@ public:
 
 	//will store star d faces.*constr in target. target has to have size == nr edges;
 	void stard( vector<int> & faces, vector<float> & constr , double * target, int sz);
+	void perturb( vector<int>& verts, vector<float> & constr );
 private:
 	std::vector<tuple3i> * fc2he;
 	std::vector<tuple2i> * edges;

@@ -170,3 +170,23 @@ void oneFormLaplacian::stard( vector<int> & srcsink_verts, vector<float> & const
 	}
 		
 }
+
+void oneFormLaplacian::perturb( vector<int>& verts, vector<float> & constr )
+{
+	float mu = 0;
+	float overallVornoi = 0;
+	float vornoi;
+
+	assert(verts.size() == constr.size());
+	for(int i =0; i< verts.size(); i++){
+		vornoi = Operator::aVornoi(verts[i], *myMesh);
+		mu+= constr[i] *vornoi;
+		overallVornoi += vornoi;
+	}
+
+	mu = mu/overallVornoi;
+	
+	for(int i =0; i< verts.size(); i++){
+		constr[i] -= mu;
+	}
+}

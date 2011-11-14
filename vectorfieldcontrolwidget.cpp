@@ -71,6 +71,7 @@ void vectorFieldControlWidget::solveVField()
 		constr.push_back(-1.f);
 	}
 
+	solver.perturb(verts, constr);
 	/*verts.push_back(0);
 	verts.push_back(Model::getModel()->getMesh()->getVertices().size()/2);
 	constr.push_back(1.f);

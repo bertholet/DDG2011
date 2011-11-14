@@ -20,6 +20,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void solve(vector<int> & vertices, vector<float> & constraints, VectorField * target );
 	void constraints(vector<int> & vertIds, vector<float> & constr, double * b );
+	void perturb( vector<int>&  verts, vector<float> & constr );
 private:
 	pardisoMatrix *mat;
 	pardisoSolver *solver;

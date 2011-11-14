@@ -45,3 +45,8 @@ void VectorFieldSolver::constraints(vector<int> & vertIds, vector<float> & const
 	l->stard(vertIds, constr, b, mat->dim());
 
 }
+
+void VectorFieldSolver::perturb( vector<int>& verts, vector<float> & constr )
+{
+	l->perturb(verts, constr);
+}
