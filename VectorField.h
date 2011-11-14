@@ -1,6 +1,7 @@
 #pragma once
 #include "mesh.h"
 #include "Observer.h"
+#include "tuple3.h"
 
 class VectorField:Observer
 {
@@ -13,6 +14,7 @@ public:
 		edges = NULL;
 	}
 	VectorField(mesh * aMesh);
+	VectorField(mesh * aMesh, tuple3f & dir);
 	~VectorField(void);
 
 	void update(void * src, int msg);

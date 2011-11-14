@@ -495,7 +495,7 @@ void mesh::updateObserver( int msg )
 	}
 }
 
-tuple3i * mesh::intersect( tuple3f & start,tuple3f &to)
+tuple3i * mesh::intersect( tuple3f & start,tuple3f &to, int * closestVertex)
 {
 
 	//matrixf world2obj = 
@@ -504,7 +504,7 @@ tuple3i * mesh::intersect( tuple3f & start,tuple3f &to)
 	int res = -1;
 	float t,d; // t= dist.
 	float bestdist = 1000000;
-	tuple3f normal,v, insect, sidenormal;
+	tuple3f normal,v, insect, sidenormal, bestIntersect;
 
 	for(int i = 0; i < faces.size(); i++){
 		normal = face_normals[i];
@@ -535,10 +535,28 @@ tuple3i * mesh::intersect( tuple3f & start,tuple3f &to)
 		}
 		res = i;
 		bestdist = t;
+		bestIntersect = insect;
 	}
 
 	if(res>-1){
 		tuple3i * result = & (faces[res]);
+		if((vertices[result->a] - bestIntersect).norm() < (vertices[result->b] - bestIntersect).norm()){
+			if((vertices[result->a] - bestIntersect).norm()< (vertices[result->c] - bestIntersect).norm()){
+				*closestVertex = result->a;
+			}
+			else{
+				*closestVertex = result->c;
+			}
+		}
+		else{
+			if((vertices[result->b] - bestIntersect).norm()< (vertices[result->c] - bestIntersect).norm()){
+				*closestVertex = result->b;
+			}
+			else{
+				*closestVertex = result->c;
+			}
+		}
+
 		return result;
 	}
 	return NULL;

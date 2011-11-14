@@ -70,7 +70,7 @@ void Displayer::paintGL()
 			theMesh->glDisplay();
 		}
 
-		if(displayVField){
+		if(displayVField && Model::getModel()->getVField() != NULL){
 			Model::getModel()->getVField()->glOutputField();
 		}
 		glFlush();

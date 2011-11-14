@@ -2,13 +2,33 @@
 #include "Model.h"
 #include "meshMetaInfo.h"
 #include <vector>
-#include "tuple3.h"
 #include "matrixFactory.h"
 #include "matrixf.h"
 #include "stdafx.h"
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/glut.h>
+
+VectorField::VectorField( mesh * aMesh, tuple3f & dir)
+{
+	//aMesh->attach(this);
+	meshMetaInfo * info = Model::getModel()->getMeshInfo();
+	//info->
+	edges = info->getHalfedges();
+	fc2he = info->getFace2Halfedges();
+	faces = &(aMesh->getFaces());
+	vertices = &(aMesh->getVertices());
+
+
+	oneForm.reserve(edges->size());
+	for(int i = 0; i < edges->size(); i++){
+		oneForm.push_back(0.f);
+	}
+
+	for(int i = 0; i < aMesh->faces.size(); i++){
+		setOneForm(i,dir);
+	}
+}
 
 VectorField::VectorField( mesh * aMesh )
 {
@@ -25,12 +45,6 @@ VectorField::VectorField( mesh * aMesh )
 	for(int i = 0; i < edges->size(); i++){
 		oneForm.push_back(0.f);
 	}
-
-	for(int i = 0; i < aMesh->faces.size(); i++){
-		setOneForm(i,tuple3f(0,0,1));
-	}
-
-	cout << ";";
 }
 
 VectorField::~VectorField(void)
@@ -186,8 +200,8 @@ void VectorField::glOutputField(){
 		glBegin(GL_LINE_LOOP);
 		glVertex3fv((GLfloat *) & pos);
 		dir = oneForm2Vec(i,1.f/3,1.f/3,1.f/3);//*0.3f;
-		//dir.normalize();
-		pos+= dir;
+		dir.normalize();
+		pos+= dir*0.3f;
 		glVertex3fv((GLfloat *) & pos);
 		glEnd();
 

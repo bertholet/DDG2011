@@ -6,7 +6,8 @@ Model::Model(void)
 {
 	myMesh = new mesh();
 	metaInfo = new meshMetaInfo(myMesh);
-	vField = new VectorField();
+	vField = NULL;
+	vFieldValid = true;
 }
 
 Model::~Model(void)
@@ -52,9 +53,12 @@ void Model::setMesh( mesh * aMesh )
 	if(metaInfo != NULL){
 		delete metaInfo;
 	}
+	if(vField != NULL){
+		delete vField;
+	}
 	myMesh = aMesh;
 	metaInfo = new meshMetaInfo(myMesh);
-
+	vField = NULL;
 }
 
 void Model::setVField( VectorField * field )
@@ -68,4 +72,14 @@ void Model::setVField( VectorField * field )
 VectorField * Model::getVField()
 {
 	return this->vField;
+}
+
+void Model::initVectorField()
+{
+	vField = new VectorField(myMesh);
+}
+
+fieldConstraintCollector & Model::getInputCollector()
+{
+	return this->collector;
 }

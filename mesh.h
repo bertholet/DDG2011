@@ -91,7 +91,7 @@ public:
 	/* returns face number hit.  start and to are supposed to already be in
 	/* obj coordinates.!*/
 	/************************************************************************/
-	tuple3i * intersect( tuple3f & start,tuple3f &to);
+	tuple3i * intersect( tuple3f & start,tuple3f &to, int * closestVertex);
 
 	void setShowOrientation(bool b){
 		showOrientation = b;

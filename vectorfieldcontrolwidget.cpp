@@ -7,6 +7,8 @@
 #include "meshOperation.h"
 #include "VectorField.h"
 #include "VectorFieldSolver.h"
+#include "constraintCollector.h"
+#include <QRadioButton>
 
 vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
@@ -17,10 +19,16 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	QPushButton *butt2 = new QPushButton("Solve VField!");
 	connect(butt2, SIGNAL(released()), this, SLOT(solveVField()));
 
+	QRadioButton * rbutt = new QRadioButton("Select Sources", this);
+	connect(rbutt, SIGNAL(toggled(bool)), this, SLOT(sourceSelection(bool)));
+	QRadioButton * rbutt2 = new QRadioButton("Select Sinks", this);
+	connect(rbutt2, SIGNAL(toggled(bool)), this, SLOT(sinkSelection(bool)));
 //	QCheckBox * cbox = new QCheckBox("Draw strokes",this);
 
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
+	layout->addWidget(rbutt);
+	layout->addWidget(rbutt2);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
 
@@ -37,7 +45,7 @@ void vectorFieldControlWidget::genAxisAllignedField()
 	std::cout << "click";
 	/* generate VField */
 	mesh * m = Model::getModel()->getMesh();
-	VectorField * field = new VectorField(m);
+	VectorField * field = new VectorField(m, tuple3f(0,0,1));
 	//get halfEdge stuff...
 	Model::getModel()->setVField(field);
 	
@@ -50,10 +58,40 @@ void vectorFieldControlWidget::solveVField()
 		*Model::getModel()->getMeshInfo()->getFace2Halfedges());
 
 	vector<int> verts;
-	verts.push_back(0);
-	verts.push_back(Model::getModel()->getMesh()->getVertices().size()/2);
 	vector<float> constr;
+
+	fieldConstraintCollector & collector = Model::getModel()->getInputCollector();
+
+	for(int i = 0; i < collector.sinkVert.size(); i++){
+		verts.push_back(collector.sinkVert[i]);
+		constr.push_back(1.f);
+	}
+	for(int i = 0; i < collector.sourceVert.size(); i++){
+		verts.push_back(collector.sourceVert[i]);
+		constr.push_back(-1.f);
+	}
+
+	/*verts.push_back(0);
+	verts.push_back(Model::getModel()->getMesh()->getVertices().size()/2);
 	constr.push_back(1.f);
-	constr.push_back(-1.f);
+	constr.push_back(-1.f);*/
+
+	if(Model::getModel()->getVField() == NULL){
+		Model::getModel()->initVectorField();
+	}
 	solver.solve(verts, constr,Model::getModel()->getVField());
+}
+
+void vectorFieldControlWidget::sourceSelection( bool active )
+{
+	if(active){
+		Model::getModel()->getInputCollector().setWhatToCollect(SOURCE_VERTS);
+	}
+}
+
+void vectorFieldControlWidget::sinkSelection( bool active )
+{
+	if(active){
+		Model::getModel()->getInputCollector().setWhatToCollect(SINK_VERTS);
+	}
 }

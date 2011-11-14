@@ -193,3 +193,13 @@ void triangleMarkupMap::mark( tuple3i & face, int _mark)
 	}
 	marks[face.c] = _mark;
 }
+
+void triangleMarkupMap::mark( int vertex, int _mark )
+{
+	if(marks.size() <= vertex){
+		for(int i = marks.size(); i < vertex+1; i++){
+			marks.push_back(-1);
+		}
+	}
+	marks[vertex] = _mark;
+}

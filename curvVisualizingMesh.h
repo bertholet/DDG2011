@@ -184,6 +184,7 @@ public:
 	string additionalInfo(void){return "";}
 
 	void mark(tuple3i & face, int _mark);
+	void mark(int vertex, int _mark);
 	void reset(){
 		marks.clear();
 	}

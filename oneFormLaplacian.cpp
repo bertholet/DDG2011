@@ -2,7 +2,6 @@
 #include "meshOperation.h"
 #include <algorithm>
 #include <assert.h>
-#include "vectorFieldTools.h"
 #include "Operator.h"
 
 using namespace std;
@@ -50,10 +49,6 @@ float oneFormLaplacian::valdd( int edgij , int edgj )
 			1.f/Operator::area(fc1,*myMesh) ;
 	}
 
-	/*if(face2.contains(e_other)){
-		result += face1.orientation(e_ij) * face1.orientation(e_other) *
-			1.f/Operator::area(fc2,*myMesh) ;
-	}*/
 
 	if(face2.contains(e_other)){
 		result += face2.orientation(e_ij) * face2.orientation(e_other) *

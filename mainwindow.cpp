@@ -66,7 +66,7 @@ void MainWindow::setupQTabs()
 	this->tabs = new QTabWidget(this);
 	QWidget * tab1Widget = new QWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
-	QWidget * tab2Widget = new vectorFieldControlWidget();
+	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
 	tabs->addTab(tab2Widget, "Vector Fields");
 }
 
@@ -187,10 +187,12 @@ void MainWindow::setMouseMode( int state )
 	}
 	if(state == 2){//checked
 		this->myGLDisp->setMouseMode(INPUTMODE);
+		this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}
 }
 
 void MainWindow::resetStrokes()
 {
 	this->myGLDisp->resetStrokes();
+	Model::getModel()->getInputCollector().clear();
 }

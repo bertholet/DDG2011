@@ -15,14 +15,17 @@ mouseStrokeListener::~mouseStrokeListener(void)
 
 void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 {
-	GLdouble proj[16], model[16];
+	GLdouble proj[16], model[16], Z;
 	GLint viewPort[4];
 	glGetDoublev(GL_PROJECTION_MATRIX, proj);
 	glGetDoublev(GL_MODELVIEW_MATRIX, model);
 	glGetIntegerv(GL_VIEWPORT, viewPort);
 
 	float winx = (float) event->x() , 
-		winy = (float) (viewPort[3] - event->y());
+		winy = (float) (viewPort[3] - event->y()), winz;
+
+	/*glReadPixels(winy, winy, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &Z );
+	winz = (float) Z;*/
 
 	GLdouble p1x,p1y,p1z;
 	tuple3f start, end;
@@ -44,10 +47,14 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 	ray.y = (ray.y - daddy->width()/2) / daddy->width() * height;
 	//assert aspect etc as induced by the */
 
-	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end);
+	int vertex;
+	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end, &vertex);
 	if(fc != NULL){
-		this->map->mark(*fc, nrCalls);
+		//this->map->mark(*fc, nrCalls);
+		this->map->mark(vertex, nrCalls);
 		this->daddy->updateGL();
+
+		Model::getModel()->getInputCollector().collect(vertex);
 	}
 }
 

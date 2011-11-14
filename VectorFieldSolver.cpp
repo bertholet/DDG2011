@@ -41,6 +41,7 @@ void VectorFieldSolver::constraints(vector<int> & vertIds, vector<float> & const
 	for(int i = 0; i < mat->dim(); i++){
 		b[i] = 0;
 	}
+
 	l->stard(vertIds, constr, b, mat->dim());
 
 }
