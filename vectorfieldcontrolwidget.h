@@ -18,6 +18,7 @@ private slots:
 	void solveVField();
 	void sourceSelection( bool active );
 	void sinkSelection( bool active );
+	void fieldSelection( bool active );
 };
 
 #endif // VECTORFIELDCONTROLWIDGET_H

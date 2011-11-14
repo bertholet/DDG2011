@@ -495,7 +495,8 @@ void mesh::updateObserver( int msg )
 	}
 }
 
-tuple3i * mesh::intersect( tuple3f & start,tuple3f &to, int * closestVertex)
+tuple3i * mesh::intersect( tuple3f & start,tuple3f &to, int * closestVertex,
+						  int * face, tuple3f & intersectPosition)
 {
 
 	//matrixf world2obj = 
@@ -544,6 +545,9 @@ tuple3i * mesh::intersect( tuple3f & start,tuple3f &to, int * closestVertex)
 
 	if(res>-1){
 		tuple3i * result = & (faces[res]);
+		*face = res;
+		intersectPosition.set(bestIntersect);
+
 		if((vertices[result->a] - bestIntersect).norm() < (vertices[result->b] - bestIntersect).norm()){
 			if((vertices[result->a] - bestIntersect).norm()< (vertices[result->c] - bestIntersect).norm()){
 				*closestVertex = result->a;

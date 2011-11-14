@@ -23,12 +23,14 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	connect(rbutt, SIGNAL(toggled(bool)), this, SLOT(sourceSelection(bool)));
 	QRadioButton * rbutt2 = new QRadioButton("Select Sinks", this);
 	connect(rbutt2, SIGNAL(toggled(bool)), this, SLOT(sinkSelection(bool)));
-//	QCheckBox * cbox = new QCheckBox("Draw strokes",this);
+	QRadioButton * rbutt3 = new QRadioButton("Select Guide Field", this);
+	connect(rbutt3, SIGNAL(toggled(bool)), this, SLOT(fieldSelection(bool)));
 
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
 	layout->addWidget(rbutt);
 	layout->addWidget(rbutt2);
+	layout->addWidget(rbutt3);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
 
@@ -94,5 +96,12 @@ void vectorFieldControlWidget::sinkSelection( bool active )
 {
 	if(active){
 		Model::getModel()->getInputCollector().setWhatToCollect(SINK_VERTS);
+	}
+}
+
+void vectorFieldControlWidget::fieldSelection( bool active )
+{
+	if(active){
+		Model::getModel()->getInputCollector().setWhatToCollect(GUIDING_FIELD);
 	}
 }

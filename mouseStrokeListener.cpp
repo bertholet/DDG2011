@@ -39,17 +39,11 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 	end.x = (float) p1x;
 	end.y = (float) p1y;
 	end.z = (float) p1z;
-	/*float height = 1.73205081f; //tan(60)
-	float width = (0.f +daddy->width()) / daddy->height() * height;
 
-	tuple3f ray = tuple3f(event->x(), event->y(), 1);
-	ray.x = (ray.x - daddy->width()/2) / daddy->width() * width;
-	ray.y = (ray.y - daddy->width()/2) / daddy->width() * height;
-	//assert aspect etc as induced by the */
 
-	int vertex;
-	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end, &vertex);
-
+	int vertex, face;
+	tuple3f next;
+	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end, &vertex, &face, next);
 
 	if(fc != NULL){
 		//this->map->mark(*fc, nrCalls);
@@ -57,12 +51,22 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 		this->daddy->updateGL();
 
 		Model::getModel()->getInputCollector().collect(vertex);
+
+		if(lastValid){
+			Model::getModel()->getInputCollector().collect(face, next - last);
+		}
+		last.set(next);
+		lastValid = true;
+	}
+	else{
+		lastValid = false;
 	}
 }
 
 void mouseStrokeListener::onMousePress( QMouseEvent* event )
 {
 	nrCalls++;
+	lastValid = false;
 	onMouseMove(event);
 
 }

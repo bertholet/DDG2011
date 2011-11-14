@@ -72,6 +72,8 @@ void Displayer::paintGL()
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
 			Model::getModel()->getVField()->glOutputField();
+
+			Model::getModel()->getInputCollector().glOutputConstraints(theMesh);
 		}
 		glFlush();
 	}

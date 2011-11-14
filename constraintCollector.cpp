@@ -1,4 +1,5 @@
 #include "constraintCollector.h"
+#include <algorithm>
 
 fieldConstraintCollector::fieldConstraintCollector(void)
 {
@@ -14,13 +15,31 @@ void fieldConstraintCollector::setWhatToCollect( collect_type sth)
 	this->what = sth;
 }
 
-void fieldConstraintCollector::collect( int val )
+void fieldConstraintCollector::collect( int vertex)
 {
 	if(what== SINK_VERTS){
-		sinkVert.push_back(val);
+		if(sinkVert.size() == 0 || sinkVert.back() != vertex){
+			sinkVert.push_back(vertex);
+		}
 	}
 	else if(what== SOURCE_VERTS){
-		sourceVert.push_back(val);
+		if(sourceVert.size() == 0 || sourceVert.back() != vertex){
+			sourceVert.push_back(vertex);
+		}
+	}
+}
+
+void fieldConstraintCollector::collect( int face, tuple3f & dir )
+{
+	if(what == GUIDING_FIELD){
+		std::vector<int>::iterator it = find(faces.begin(), faces.end(), face);
+		if(it == faces.end()){
+			faces.push_back(face);
+			face_dir.push_back(dir);
+		}
+		else{
+			face_dir[it - faces.begin()] += dir;
+		}
 	}
 }
 
@@ -28,4 +47,27 @@ void fieldConstraintCollector::clear()
 {
 	sinkVert.clear();
 	sourceVert.clear();
+	faces.clear();
+	face_dir.clear();
+}
+
+void fieldConstraintCollector::glOutputConstraints( mesh * theMesh )
+{
+	int fc;
+	std::vector<tuple3i> & fcs = theMesh->getFaces();
+	std::vector<tuple3f> & vrt = theMesh->getVertices();
+	glColor3f(1.f,1.f,0.f);
+
+	glBegin(GL_LINES);
+	tuple3f pos;
+	for(int i = 0; i < faces.size(); i++){
+		if(i < fcs.size()){
+			fc = faces[i];
+			pos = (vrt[fcs[fc].a]+vrt[fcs[fc].b]+vrt[fcs[fc].c]) * (1.f/3);
+			glVertex3fv( (GLfloat *) & pos);
+			pos += face_dir[i];
+			glVertex3fv( (GLfloat *) & pos);
+		}
+	}
+	glEnd();
 }
