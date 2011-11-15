@@ -74,6 +74,8 @@ void vectorFieldControlWidget::solveVField()
 	}
 
 	solver.perturb(verts, constr);
+
+
 	/*verts.push_back(0);
 	verts.push_back(Model::getModel()->getMesh()->getVertices().size()/2);
 	constr.push_back(1.f);
@@ -82,7 +84,10 @@ void vectorFieldControlWidget::solveVField()
 	if(Model::getModel()->getVField() == NULL){
 		Model::getModel()->initVectorField();
 	}
-	solver.solve(verts, constr,Model::getModel()->getVField());
+	solver.solve(verts, constr,
+		Model::getModel()->getInputCollector().getFaces(),
+		Model::getModel()->getInputCollector().getFaceDirs(),
+		Model::getModel()->getVField());
 }
 
 void vectorFieldControlWidget::sourceSelection( bool active )

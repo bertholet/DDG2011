@@ -65,6 +65,7 @@ void Displayer::paintGL()
 		}
 		else if(mode == MOUSEINPUTMODE && tmmap != NULL){
 			theMesh->glDisplay((colorMap &) *tmmap);
+			Model::getModel()->getInputCollector().glOutputConstraints(theMesh);
 		}
 		else{
 			theMesh->glDisplay();
@@ -72,8 +73,6 @@ void Displayer::paintGL()
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
 			Model::getModel()->getVField()->glOutputField();
-
-			Model::getModel()->getInputCollector().glOutputConstraints(theMesh);
 		}
 		glFlush();
 	}

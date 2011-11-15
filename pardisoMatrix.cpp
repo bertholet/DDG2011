@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "pardisoMatrix.h"
+#include <assert.h>
 
 pardisoMatrix::pardisoMatrix(void)
 {
@@ -84,4 +85,23 @@ void pardisoMatrix::saveMatrix( std::string file )
 int pardisoMatrix::dim()
 {
 	return ia.size()-1;
+}
+
+void pardisoMatrix::getDiagonalIndices( std::vector<int> & target_ind )
+{
+	target_ind.clear();
+	target_ind.reserve(ia.size()-1);
+	bool hasDiagEl;
+
+	for(int i = 0; i <ia.size()-1; i++){
+		hasDiagEl = false;
+		for(int j = 0; j < ia[i+1]-ia[i]; j++){
+			if(ja[ia[i] - 1 + j] == i+1) { //stupid one-based notation
+				hasDiagEl = true;
+				target_ind.push_back(ia[i] + j -1);
+			}
+		}
+		assert(hasDiagEl);
+		assert(ja[target_ind.back()] == i+1); //i really do hate one based stuff.
+	}
 }

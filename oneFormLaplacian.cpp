@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <assert.h>
 #include "Operator.h"
+#include "vectorFieldTools.h"
 
 using namespace std;
 
@@ -149,7 +150,9 @@ void oneFormLaplacian::indices( int edg, vector<int> & target )
 	int lk = 0;
 }
 
-void oneFormLaplacian::stard( vector<int> & srcsink_verts, vector<float> & constr , double * target, int sz)
+void oneFormLaplacian::stard( vector<int> & srcsink_verts, 
+		vector<float> & constr , 
+		double * target, int sz)
 {
 	assert(sz == edges->size());
 	vector<int> nbrEdges;
@@ -171,6 +174,7 @@ void oneFormLaplacian::stard( vector<int> & srcsink_verts, vector<float> & const
 		
 }
 
+
 void oneFormLaplacian::perturb( vector<int>& verts, vector<float> & constr )
 {
 	float mu = 0;
@@ -188,5 +192,49 @@ void oneFormLaplacian::perturb( vector<int>& verts, vector<float> & constr )
 	
 	for(int i =0; i< verts.size(); i++){
 		constr[i] -= mu;
+	}
+}
+
+void oneFormLaplacian::addZToB( vector<int> & constr_fc, 
+							   vector<tuple3f> & constr_fc_dir,
+							   double * b, int sz)
+{
+	assert(sz == edges->size());
+	tuple3i edgeIDs;
+	tuple3f edgeVals;
+	for(int i = 0; i < constr_fc.size(); i++){
+		vectorFieldTools::vectorToOneForm(constr_fc_dir[i], constr_fc[i],
+			*fc2he,*edges, myMesh, edgeIDs,edgeVals);
+
+		b[edgeIDs.a] += edgeVals.x;
+		b[edgeIDs.b] += edgeVals.y;
+		b[edgeIDs.c] += edgeVals.z;
+	}
+}
+
+
+void oneFormLaplacian::addZToMat( vector<int> & constr_fc, 
+			vector<int> & diagonalMatInd, 
+			pardisoMatrix * mat )
+{
+	tuple3i edgs;
+	for(int i = 0; i < constr_fc.size(); i++){
+		edgs = (*fc2he)[constr_fc[i]];
+		diagonalMatInd[edgs.a] +=1;
+		diagonalMatInd[edgs.b] +=1;
+		diagonalMatInd[edgs.c] +=1;
+	}
+}
+
+void oneFormLaplacian::substractZFromMat( vector<int> & constr_fc, 
+			vector<int> & diagonalMatInd, 
+			pardisoMatrix * mat )
+{
+	tuple3i edgs;
+	for(int i = 0; i < constr_fc.size(); i++){
+		edgs = (*fc2he)[constr_fc[i]];
+		diagonalMatInd[edgs.a] -=1;
+		diagonalMatInd[edgs.b] -=1;
+		diagonalMatInd[edgs.c] -=1;
 	}
 }

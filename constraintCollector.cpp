@@ -32,13 +32,20 @@ void fieldConstraintCollector::collect( int vertex)
 void fieldConstraintCollector::collect( int face, tuple3f & dir )
 {
 	if(what == GUIDING_FIELD){
-		std::vector<int>::iterator it = find(faces.begin(), faces.end(), face);
-		if(it == faces.end()){
-			faces.push_back(face);
-			face_dir.push_back(dir);
-		}
-		else{
-			face_dir[it - faces.begin()] += dir;
+		if(faces.size() == 0 || faces.back() != face){
+			tuple3f dirToPush;
+			dirToPush.set(dir);
+			dirToPush.normalize();
+
+			std::vector<int>::iterator it = find(faces.begin(), faces.end(), face);
+			if(it == faces.end()){
+				faces.push_back(face);
+				face_dir.push_back(dirToPush);
+			}
+			else{
+				face_dir[it - faces.begin()] += dirToPush;
+				face_dir[it - faces.begin()].normalize();
+			}
 		}
 	}
 }
@@ -59,13 +66,16 @@ void fieldConstraintCollector::glOutputConstraints( mesh * theMesh )
 	glColor3f(1.f,1.f,0.f);
 
 	glBegin(GL_LINES);
-	tuple3f pos;
+	tuple3f pos, dir;
 	for(int i = 0; i < faces.size(); i++){
 		if(i < fcs.size()){
 			fc = faces[i];
 			pos = (vrt[fcs[fc].a]+vrt[fcs[fc].b]+vrt[fcs[fc].c]) * (1.f/3);
 			glVertex3fv( (GLfloat *) & pos);
-			pos += face_dir[i];
+			/*dir = face_dir[i];
+			dir.normalize();
+			dir = dir * (0.3f);*/
+			pos += face_dir[i] *(0.25f);
 			glVertex3fv( (GLfloat *) & pos);
 		}
 	}

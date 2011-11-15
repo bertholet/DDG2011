@@ -200,8 +200,9 @@ void VectorField::glOutputField(){
 		glBegin(GL_LINE_LOOP);
 		glVertex3fv((GLfloat *) & pos);
 		dir = oneForm2Vec(i,1.f/3,1.f/3,1.f/3);//*0.3f;
-		dir.normalize();
-		pos+= dir*0.3f;
+		/*dir.normalize();
+		pos+= dir*0.3f;*/
+		pos += dir;
 		glVertex3fv((GLfloat *) & pos);
 		glEnd();
 

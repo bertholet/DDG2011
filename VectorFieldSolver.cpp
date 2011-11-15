@@ -11,6 +11,7 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
 	solver->setMatrix(*mat, 1);
+	mat->getDiagonalIndices(this->diagonalMatInd);
 
 	x= new double[mat->dim()];
 	b = new double[mat->dim()];
@@ -26,27 +27,41 @@ VectorFieldSolver::~VectorFieldSolver(void)
 	delete l;
 }
 
-void VectorFieldSolver::solve(vector<int> & vertIDs, vector<float> & src_sink_constr, VectorField * target )
+void VectorFieldSolver::solve(vector<int> & vertIDs, 
+			vector<float> & src_sink_constr, 
+			vector<int> & constr_fc,
+			vector<tuple3f> & constr_fc_dir, 
+			VectorField * target )
 {
-	constraints(vertIDs, src_sink_constr, b);
+	constraints(vertIDs, src_sink_constr, constr_fc, constr_fc_dir, b);
+
+	//want to store the oneform laplacian matrix M between two
+	//calls.... this means it has to be tidied up 
+	//after having added the extra constraints
+	l->addZToMat(constr_fc, diagonalMatInd, mat);
 	solver->solve(x,b);
+	l->substractZFromMat(constr_fc, diagonalMatInd, mat);
 
 	for(int i = 0; i < mat->dim(); i++){
-		target->setOneForm(i,1,(float) x[i]); //solved for the edges as they are oriented.
+		target->setOneForm(i,1,(float) x[i]); //orientation = 1: solved for the edges as they are oriented.
 	}
 }
 
-void VectorFieldSolver::constraints(vector<int> & vertIds, vector<float> & constr, double * b )
+void VectorFieldSolver::constraints(vector<int> & vertIds, 
+			vector<float> & src_sink_constr, 
+			vector<int> & faceIds,
+			vector<tuple3f> & face_dir_constr,
+			double * b )
 {
 	for(int i = 0; i < mat->dim(); i++){
 		b[i] = 0;
 	}
-
-	l->stard(vertIds, constr, b, mat->dim());
+	l->addZToB(faceIds, face_dir_constr,b, mat->dim());
+	l->stard(vertIds, src_sink_constr, b, mat->dim());
 
 }
 
-void VectorFieldSolver::perturb( vector<int>& verts, vector<float> & constr )
+void VectorFieldSolver::perturb( vector<int>& verts, vector<float> & src_sink_constr )
 {
-	l->perturb(verts, constr);
+	l->perturb(verts, src_sink_constr);
 }
