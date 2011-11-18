@@ -85,8 +85,8 @@ void vectorFieldControlWidget::solveVField()
 		Model::getModel()->initVectorField();
 	}
 	solver.solve(verts, constr,
-		Model::getModel()->getInputCollector().getFaces(),
-		Model::getModel()->getInputCollector().getFaceDirs(),
+		Model::getModel()->getInputCollector().getEdges(),
+		Model::getModel()->getInputCollector().getEdgeDirs(),
 		Model::getModel()->getVField());
 }
 

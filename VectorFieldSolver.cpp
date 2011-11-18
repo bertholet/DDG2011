@@ -29,18 +29,36 @@ VectorFieldSolver::~VectorFieldSolver(void)
 
 void VectorFieldSolver::solve(vector<int> & vertIDs, 
 			vector<float> & src_sink_constr, 
-			vector<int> & constr_fc,
-			vector<tuple3f> & constr_fc_dir, 
+			vector<int> & constr_edges,
+			vector<tuple3f> & constr_edge_dir, 
 			VectorField * target )
 {
-	constraints(vertIDs, src_sink_constr, constr_fc, constr_fc_dir, b);
+
+	float weight = 1;
+	constraints(vertIDs, src_sink_constr, constr_edges, constr_edge_dir, weight, b);
 
 	//want to store the oneform laplacian matrix M between two
-	//calls.... this means it has to be tidied up 
+	//calls, even Z changes.... this means it has to be tidied up 
 	//after having added the extra constraints
-	l->addZToMat(constr_fc, diagonalMatInd, mat);
+
+
+	//TO DELETE:
+	for(int i = 0; i < mat->a.size(); i++){
+		mat->a[i] = 0;
+	}
+	for(int i = 0; i< diagonalMatInd.size(); i++){
+		mat->a[diagonalMatInd[i]] = 1;
+	}
+	for(int i = 0; i < mat->dim(); i++){
+		x[i]=0;
+	}
+
+	//LOOK OUT DELETE THE STUFF BEFORE HERE
+
+	l->addZToMat(constr_edges, diagonalMatInd, weight, mat);
+	solver->setMatrix(*mat,1);
 	solver->solve(x,b);
-	l->substractZFromMat(constr_fc, diagonalMatInd, mat);
+	l->substractZFromMat(constr_edges, diagonalMatInd, weight, mat);
 
 	for(int i = 0; i < mat->dim(); i++){
 		target->setOneForm(i,1,(float) x[i]); //orientation = 1: solved for the edges as they are oriented.
@@ -49,15 +67,17 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 
 void VectorFieldSolver::constraints(vector<int> & vertIds, 
 			vector<float> & src_sink_constr, 
-			vector<int> & faceIds,
-			vector<tuple3f> & face_dir_constr,
+			vector<int> & edgeIds,
+			vector<tuple3f> & edge_dir_constr,
+			float weight,
 			double * b )
 {
 	for(int i = 0; i < mat->dim(); i++){
 		b[i] = 0;
 	}
-	l->addZToB(faceIds, face_dir_constr,b, mat->dim());
-	l->stard(vertIds, src_sink_constr, b, mat->dim());
+	l->addZToB(edgeIds, edge_dir_constr,weight, b, mat->dim());
+
+	l->add_star_d(vertIds, src_sink_constr, b, mat->dim());
 
 }
 

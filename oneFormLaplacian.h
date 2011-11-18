@@ -25,7 +25,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//will add star d faces.*constr to tge target. target has to have size == nr edges;
 	//////////////////////////////////////////////////////////////////////////
-	void stard( vector<int> & faces, vector<float> & constr , double * target, int sz);
+	void add_star_d( vector<int> & faces, vector<float> & constr , double * target, int sz);
 	
 	//////////////////////////////////////////////////////////////////////////
 	//will perturb the source sink constraints such that the problem is well
@@ -34,24 +34,31 @@ public:
 	void perturb( vector<int>& verts, vector<float> & constr );
 
 	//////////////////////////////////////////////////////////////////////////
-	// Adds the additional constaint matrix Z to the matrix
+	// Adds the additional constaint matrix Z to the matrix.
+	// diagonalMatInd are the indices of diagonal elements in pardisoMatrix.a
+	// as returned by pardisoMatrix.getDiagElements
 	//////////////////////////////////////////////////////////////////////////
-	void addZToMat( vector<int> & constr_fc, 
+	void addZToMat( vector<int> & constr_edges, 
 		vector<int> & diagonalMatInd, 
+		float weight,
 		pardisoMatrix * mat );
 
 	//////////////////////////////////////////////////////////////////////////
 	//Removes the additional constraint matrix.
+	// diagonalMatInd are the indices of diagonal elements in pardisoMatrix.a
+	// as returned by pardisoMatrix.getDiagElements
 	//////////////////////////////////////////////////////////////////////////
-	void substractZFromMat( vector<int> & constr_fc, 
+	void substractZFromMat( vector<int> & constr_edges, 
 		vector<int> & diagonalMatInd, 
+		float weight,
 		pardisoMatrix * mat );
 
 	//////////////////////////////////////////////////////////////////////////
 	// Adds the additional directional constraints to target ( target is the
 	// b in (M+Z)x=b
 	//////////////////////////////////////////////////////////////////////////
-	void addZToB( vector<int> & faceIds, vector<tuple3f> & face_dir_constr ,
+	void addZToB( vector<int> & edgeIds, vector<tuple3f> & edge_dir_constr ,
+		float weight ,
 		double * target, int sz);
 private:
 	std::vector<tuple3i> * fc2he;

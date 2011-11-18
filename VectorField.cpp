@@ -8,6 +8,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include "vectorFieldTools.h"
 
 VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 {
@@ -18,6 +19,7 @@ VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 	fc2he = info->getFace2Halfedges();
 	faces = &(aMesh->getFaces());
 	vertices = &(aMesh->getVertices());
+	myMesh = aMesh;
 
 
 	oneForm.reserve(edges->size());
@@ -66,7 +68,7 @@ void VectorField::setOneForm(int faceNr, tuple3f & dir){
 	vector<tuple2i> & hedges = * (this->edges);
 
 	//vector orthogonal to halfedge ab, bc, ca
-	tuple3f  p_ab, p_bc, p_ca;
+/*	tuple3f  p_ab, p_bc, p_ca;
 	p_ab.set(vertices[faces[faceNr].b]);
 	p_ab -= vertices[faces[faceNr].a];
 
@@ -99,10 +101,16 @@ void VectorField::setOneForm(int faceNr, tuple3f & dir){
 
 	edgeID = fc2he[faceNr].c;
 	edge = hedges[edgeID];
-	setOneForm(edgeID , face.orientation(edge), p_ca.dot(proj));
-	/*oneForm[abs(fc2he[faceNr].a)] = sgn(fc2he[faceNr].a) * p_ab.dot(proj);
-	oneForm[abs(fc2he[faceNr].b)] = sgn((fc2he[faceNr].b)) * p_bc.dot(proj);
-	oneForm[abs(fc2he[faceNr].c)] = sgn(fc2he[faceNr].c) * p_ca.dot(proj);*/
+	setOneForm(edgeID , face.orientation(edge), p_ca.dot(proj));*/
+	tuple3i target_edg;
+	tuple3f target_val;
+
+	vectorFieldTools::vectorToOneForm(dir,faceNr,fc2he,hedges,myMesh,target_edg, target_val);
+
+	this->oneForm[target_edg.a] = target_val.x;
+	this->oneForm[target_edg.b] = target_val.y;
+	this->oneForm[target_edg.c] = target_val.z;
+
 }
 
 
@@ -136,7 +144,7 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 	p_caT.set(vertices[faces[faceNr].a]);
 	p_caT -= vertices[faces[faceNr].c];
 
-	normal = p_abT.cross(p_abT,p_bcT);
+	normal = - p_abT.cross(p_bcT);
 	float vol2Triangle = normal.norm();
 	normal.normalize();
 

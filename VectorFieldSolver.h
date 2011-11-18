@@ -30,6 +30,7 @@ public:
 		vector<float> & src_sink_constr, 
 		vector<int> & faceIds,
 		vector<tuple3f> & face_dir_constr,
+		float weight,
 		double * b );
 	void perturb( vector<int>&  verts, vector<float> & constr );
 private:

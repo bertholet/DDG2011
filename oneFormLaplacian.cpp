@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "Operator.h"
 #include "vectorFieldTools.h"
+#include <set>
 
 using namespace std;
 
@@ -150,7 +151,7 @@ void oneFormLaplacian::indices( int edg, vector<int> & target )
 	int lk = 0;
 }
 
-void oneFormLaplacian::stard( vector<int> & srcsink_verts, 
+void oneFormLaplacian::add_star_d( vector<int> & srcsink_verts, 
 		vector<float> & constr , 
 		double * target, int sz)
 {
@@ -195,46 +196,92 @@ void oneFormLaplacian::perturb( vector<int>& verts, vector<float> & constr )
 	}
 }
 
-void oneFormLaplacian::addZToB( vector<int> & constr_fc, 
-							   vector<tuple3f> & constr_fc_dir,
+void oneFormLaplacian::addZToB( vector<int> & constr_edges, 
+							   vector<tuple3f> & constr_edges_dir,
+							   float weight,
 							   double * b, int sz)
 {
 	assert(sz == edges->size());
-	tuple3i edgeIDs;
+/*	tuple3i edgeIDs;
 	tuple3f edgeVals;
 	for(int i = 0; i < constr_fc.size(); i++){
 		vectorFieldTools::vectorToOneForm(constr_fc_dir[i], constr_fc[i],
 			*fc2he,*edges, myMesh, edgeIDs,edgeVals);
 
-		b[edgeIDs.a] += edgeVals.x;
-		b[edgeIDs.b] += edgeVals.y;
-		b[edgeIDs.c] += edgeVals.z;
+		b[edgeIDs.a] = weight * edgeVals.x;
+		b[edgeIDs.b] = weight * edgeVals.y;
+		b[edgeIDs.c] = weight * edgeVals.z;
+	}*/
+
+	int edgeNr;
+	tuple2i edge;
+	for(int i = 0; i < constr_edges.size(); i++){
+		edgeNr = constr_edges[i];
+		edge = (*edges)[edgeNr];
+
+		//edge orientation cancels out. it results in the same to store .dot(ba)
+		// in the edge ab as directly storing dot(ab)
+		b[edgeNr] = weight * constr_edges_dir[i].dot(
+			myMesh->getVertices()[edge.b] - myMesh->getVertices()[edge.a]);
+
 	}
+
 }
 
 
-void oneFormLaplacian::addZToMat( vector<int> & constr_fc, 
-			vector<int> & diagonalMatInd, 
+void oneFormLaplacian::addZToMat( vector<int> & constr_edges, 
+			vector<int> & diagonalMatInd, float weight,
 			pardisoMatrix * mat )
 {
+
+	for(int i = 0; i < constr_edges.size(); i++){ //edgenrs unique
+		mat->a[diagonalMatInd[constr_edges[i]]] +=weight;
+	}
+
+/*	set<int> indices;
 	tuple3i edgs;
 	for(int i = 0; i < constr_fc.size(); i++){
 		edgs = (*fc2he)[constr_fc[i]];
-		diagonalMatInd[edgs.a] +=1;
-		diagonalMatInd[edgs.b] +=1;
-		diagonalMatInd[edgs.c] +=1;
-	}
+		//add weight once for every edge.
+		if(indices.find(edgs.a)==indices.end()){
+			indices.insert(edgs.a);
+			mat->a[diagonalMatInd[edgs.a]] +=weight;
+		}
+		if(indices.find(edgs.b)==indices.end()){
+			indices.insert(edgs.b);
+			mat->a[diagonalMatInd[edgs.b]] +=weight;
+		}
+		if(indices.find(edgs.c)==indices.end()){
+			indices.insert(edgs.c);
+			mat->a[diagonalMatInd[edgs.c]] +=weight;
+		}
+	}*/
+
 }
 
-void oneFormLaplacian::substractZFromMat( vector<int> & constr_fc, 
-			vector<int> & diagonalMatInd, 
+void oneFormLaplacian::substractZFromMat( vector<int> & constr_edges, 
+			vector<int> & diagonalMatInd,  float weight,
 			pardisoMatrix * mat )
 {
-	tuple3i edgs;
+
+	for(int i = 0; i < constr_edges.size(); i++){ //edgenrs unique?
+		mat->a[diagonalMatInd[constr_edges[i]]] -=weight;
+	}
+	/*tuple3i edgs;
+	set<int> indices;
 	for(int i = 0; i < constr_fc.size(); i++){
 		edgs = (*fc2he)[constr_fc[i]];
-		diagonalMatInd[edgs.a] -=1;
-		diagonalMatInd[edgs.b] -=1;
-		diagonalMatInd[edgs.c] -=1;
-	}
+		if(indices.find(edgs.a)==indices.end()){
+			indices.insert(edgs.a);
+			mat->a[diagonalMatInd[edgs.a]] -=weight;
+		}
+		if(indices.find(edgs.b)==indices.end()){
+			indices.insert(edgs.b);
+			mat->a[diagonalMatInd[edgs.b]] -=weight;
+		}
+		if(indices.find(edgs.c)==indices.end()){
+			indices.insert(edgs.c);
+			mat->a[diagonalMatInd[edgs.c]] -=weight;
+		}
+	}*/
 }

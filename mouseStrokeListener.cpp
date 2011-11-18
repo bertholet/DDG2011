@@ -1,6 +1,7 @@
 #include "mouseStrokeListener.h"
 #include "matrixf.h"
 #include "Model.h"
+#include <vector>
 
 mouseStrokeListener::mouseStrokeListener(triangleMarkupMap * _map, QGLWidget *_daddy)
 {
@@ -53,7 +54,8 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 		Model::getModel()->getInputCollector().collect(vertex);
 
 		if(lastValid){
-			Model::getModel()->getInputCollector().collect(face, next - last);
+			int edge = edgeCrossed(face, last, next - last);
+			Model::getModel()->getInputCollector().collect(face,edge, next - last);
 		}
 		last.set(next);
 		lastValid = true;
@@ -68,5 +70,39 @@ void mouseStrokeListener::onMousePress( QMouseEvent* event )
 	nrCalls++;
 	lastValid = false;
 	onMouseMove(event);
+
+}
+
+int mouseStrokeListener::edgeCrossed( int faceNr, tuple3f & pos, tuple3f & dir )
+{
+	tuple3i fc = Model::getModel()->getMesh()->getFaces()[faceNr];
+	tuple3i & f2e = (*(Model::getModel()->getMeshInfo()->getFace2Halfedges()))[faceNr];
+	std::vector<tuple3f> & verts = Model::getModel()->getMesh()->getVertices();
+	tuple3f fcNormal = verts[fc.b] - verts[fc.a];
+	fcNormal = -fcNormal.cross(verts[fc.c]-verts[fc.a]);
+	fcNormal.normalize();
+
+	tuple3f dir_cross_normal = dir.cross(fcNormal);
+	dir_cross_normal.normalize();
+
+	float d = dir_cross_normal.dot(pos);
+	float a = (verts[fc.a]).dot(dir_cross_normal) -d;
+	float b = (verts[fc.b]).dot(dir_cross_normal) -d;
+	float c = (verts[fc.c]).dot(dir_cross_normal) -d;
+
+	if(a<= 0 && b>=0){
+		return f2e.a;
+	}
+	else if(b<=0 && c>=0){
+		return f2e.b;
+	}
+	else if(c<=0 && a>=0){
+		return f2e.c;
+	}
+	else{
+		assert(false);
+		throw runtime_error("Error in Mousestrokelistened:: Edge resolve");
+		return -1;
+	}
 
 }

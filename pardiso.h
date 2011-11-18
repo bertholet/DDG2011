@@ -75,6 +75,7 @@ public:
 		error = 0;
 		matrix = NULL; 
 		matrix_type = matrix_typ;
+		print_stats = 0;
 		init_intParams(nr_refinement_steps);
 		pardisoinit(intern_memory, &matrix_type, &solver, int_params, double_params, &error);
 		checkError_init();

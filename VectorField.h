@@ -36,7 +36,7 @@ private:
 	vector<tuple3i> * faces;
 	vector<tuple3f> *vertices;
 	vector<tuple2i> *edges;
-
+	mesh * myMesh;
 
 	//will get the oneForm value associated to the halfedge.
 	//note: if halfedge is negative the convention is that this

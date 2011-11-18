@@ -17,17 +17,23 @@ public:
 
 	void setWhatToCollect(collect_type);
 	void collect(int val);
-	void collect( int face, tuple3f & dir );
+	//void collect( int face, tuple3f & pos , tuple3f & dir );
+	void collect(int face, int edge, tuple3f & dir );
+
 	void clear();
 	void glOutputConstraints( mesh * theMesh );
-	std::vector<int> & getFaces(){
-		return faces;
+	
+	std::vector<int> & getEdges(){
+		return edges;
 	}
-	std::vector<tuple3f> & getFaceDirs(){
-		return face_dir;
+	std::vector<tuple3f> & getEdgeDirs(){
+		return edge_dir;
 	}
+
 private:
 	collect_type what;
-	std::vector<int> faces;
+	std::vector<int> edges;
 	std::vector<tuple3f> face_dir;
+	std::vector<tuple3f> edge_dir;
+	std::vector<int> faces;
 };

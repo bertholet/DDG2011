@@ -29,7 +29,7 @@ void vectorFieldTools::vectorToOneForm( tuple3f & dir,
 	p_ca -= vertices[faces[faceNr].c];
 
 
-	tuple3f normal = p_ab.cross(p_bc,p_ab);
+	tuple3f normal = p_bc.cross(p_ab);
 	normal.normalize();
 
 	tuple3f proj = dir - (normal*dir.dot(normal));  
@@ -44,17 +44,17 @@ void vectorFieldTools::vectorToOneForm( tuple3f & dir,
 	edgeID = fc2e[faceNr].a;
 	edge = edges[edgeID];
 	target_edges.a = edgeID;
-	target_vals.x = face.orientation(edge) * p_ab.dot(proj);
+	target_vals.x =  face.orientation(edge) * p_ab.dot(proj);
 
 	edgeID = fc2e[faceNr].b;
 	edge = edges[edgeID];
 	target_edges.b = edgeID;
-	target_vals.y = face.orientation(edge) * p_bc.dot(proj);
+	target_vals.y =  face.orientation(edge) * p_bc.dot(proj);
 
 	edgeID = fc2e[faceNr].c;
 	edge = edges[edgeID];
 	target_edges.c = edgeID;
-	target_vals.z = face.orientation(edge) * p_ca.dot(proj);
+	target_vals.z =  face.orientation(edge) * p_ca.dot(proj);
 
 }
 

@@ -29,7 +29,7 @@ void fieldConstraintCollector::collect( int vertex)
 	}
 }
 
-void fieldConstraintCollector::collect( int face, tuple3f & dir )
+/*void fieldConstraintCollector::collect( int face, tuple3f & pos, tuple3f & dir )
 {
 	if(what == GUIDING_FIELD){
 		if(faces.size() == 0 || faces.back() != face){
@@ -43,8 +43,39 @@ void fieldConstraintCollector::collect( int face, tuple3f & dir )
 				face_dir.push_back(dirToPush);
 			}
 			else{
-				face_dir[it - faces.begin()] += dirToPush;
+				face_dir[it - faces.begin()] += dirToPush * 0.5f;
 				face_dir[it - faces.begin()].normalize();
+			}
+		}
+	}
+}*/
+
+void fieldConstraintCollector::collect( int face, int edge, tuple3f & dir )
+{
+	if(what == GUIDING_FIELD){
+		if(faces.size() == 0 || faces.back() != face){
+			tuple3f dirToPush;
+			dirToPush.set(dir);
+			dirToPush.normalize();
+
+			std::vector<int>::iterator it = find(faces.begin(), faces.end(), face);
+			if(it == faces.end()){
+				faces.push_back(face);
+				face_dir.push_back(dirToPush);
+			}
+			else{
+				face_dir[it - faces.begin()] += dirToPush * 0.5f;
+				face_dir[it - faces.begin()].normalize();
+			}
+
+			it = find(edges.begin(), edges.end(), edge);
+			if(it == edges.end()){
+				edges.push_back(edge);
+				edge_dir.push_back(dirToPush);
+			}
+			else{
+				edge_dir[it - edges.begin()] += dirToPush * 0.5f;
+				edge_dir[it - edges.begin()].normalize();
 			}
 		}
 	}
@@ -55,6 +86,8 @@ void fieldConstraintCollector::clear()
 	sinkVert.clear();
 	sourceVert.clear();
 	faces.clear();
+	edges.clear();
+	edge_dir.clear();
 	face_dir.clear();
 }
 
