@@ -219,11 +219,14 @@ float Operator::aVornoi( int vertNr, mesh & m)
 		tempcot1 = (tempcot1 >0 ? tempcot1: -tempcot1);
 		tempcot2 = tuple3f::cotPoints(verts[vertNr], verts[next], verts[nbr]);
 		tempcot2 = (tempcot2 >0 ? tempcot2: -tempcot2);
+
+		float dbg =  (verts[vertNr]-verts[nbr]).normSqr();
+
 		Avornoi += (tempcot1 +
 			tempcot2) *
 			(verts[vertNr]-verts[nbr]).normSqr();
 	}
-	return Avornoi;
+	return Avornoi / 8;
 }
 
 float Operator::dualEdge_edge_ratio( int i, int j, mesh & m )
@@ -240,5 +243,5 @@ float Operator::dualEdge_edge_ratio( int i, int j, mesh & m )
 	float cot_alpha1 = tuple3f::cotPoints(verts[j], verts[prev], verts[i]);
 	float cot_alpha2 = tuple3f::cotPoints(verts[i], verts[next], verts[j]);
 
-	return cot_alpha1 + cot_alpha2;
+	return (cot_alpha1 + cot_alpha2)/2;
 }

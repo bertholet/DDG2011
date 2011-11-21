@@ -14,14 +14,16 @@ private:
 
 	tuple3f last;
 	bool lastValid;
+
+	//calculate the index of the edge that was crossed (if moving in dir dir 
+	// from point pos on face face).
+	int edgeCrossed( int face, tuple3f & pos, tuple3f & dirt );
+	tuple3i & edges(int faceNr);
+
 public:
 	mouseStrokeListener(triangleMarkupMap * _map, QGLWidget *daddy);
 	~mouseStrokeListener(void);
 
 	void onMouseMove(QMouseEvent* event );
 	void onMousePress(QMouseEvent* event );
-
-	//calculate the index of the edge that was crossed (if moving in dir dir 
-	// from point pos on face face).
-	int edgeCrossed( int face, tuple3f & pos, tuple3f & dirt );
 };

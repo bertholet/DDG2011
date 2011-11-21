@@ -18,7 +18,7 @@ public:
 	~VectorField(void);
 
 	void update(void * src, int msg);
-	void glOutputField();
+	void glOutputField(bool normalizd);
 
 	void setOneForm(int faceNr, tuple3f & dir);
 

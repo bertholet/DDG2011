@@ -17,6 +17,7 @@ Displayer::Displayer(QWidget *parent)
 	this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
 	displayVField = true;
+	normedVField = true;
 	tBallListener = new trackBallListener(this);
 	strokeListener = new mouseStrokeListener(tmmap, this);
 }
@@ -72,7 +73,7 @@ void Displayer::paintGL()
 		}
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
-			Model::getModel()->getVField()->glOutputField();
+			Model::getModel()->getVField()->glOutputField(normedVField);
 		}
 		glFlush();
 	}

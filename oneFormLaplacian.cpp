@@ -68,6 +68,11 @@ float oneFormLaplacian::val_deltadelta( int edgij, int edgother )
 
 	int j = e_ij.b, i = e_ij.a;
 	float result = 0;
+	float dbg1, dbg2, dbg3, dbg4;
+	dbg1 = Operator::aVornoi(j, *myMesh);
+	dbg2 = Operator::aVornoi(i, *myMesh) ;
+	dbg3 = Operator::dualEdge_edge_ratio(e_ij.a,e_ij.b,*myMesh);
+	dbg4 = Operator::dualEdge_edge_ratio(e_other.a,e_other.b,*myMesh);
 
 	//plus
 	if(e_other.a == j){

@@ -66,11 +66,11 @@ void vectorFieldControlWidget::solveVField()
 
 	for(int i = 0; i < collector.sinkVert.size(); i++){
 		verts.push_back(collector.sinkVert[i]);
-		constr.push_back(1.f);
+		constr.push_back(-1.f);
 	}
 	for(int i = 0; i < collector.sourceVert.size(); i++){
 		verts.push_back(collector.sourceVert[i]);
-		constr.push_back(-1.f);
+		constr.push_back(1.f);
 	}
 
 	solver.perturb(verts, constr);

@@ -133,7 +133,7 @@ void GenMeshDialog::okButtonAct()
 	mesh *m;
 	if(what == 0){
 		m = new ball(1,input1->value(), input2->value());
-		m->normalize();
+		//m->normalize();
 		Model::getModel()->setMesh(m);
 	}
 	else if(what ==1){
@@ -148,7 +148,7 @@ void GenMeshDialog::okButtonAct()
 	}
 	else if(what ==3){
 		m = new ball(1,input1->value(),input2->value(),input3->value());
-		m->normalize();
+		//m->normalize();
 		Model::getModel()->setMesh(m);
 	}
 	done(0);

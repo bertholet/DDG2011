@@ -13,8 +13,13 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	solver->setMatrix(*mat, 1);
 	mat->getDiagonalIndices(this->diagonalMatInd);
 
-	x= new double[mat->dim()];
-	b = new double[mat->dim()];
+	/*x= new double[mat->dim()];
+	b = new double[mat->dim()];*/
+
+	for(int i = 0; i < mat->dim(); i++){
+		b.push_back(0.0);
+		x.push_back(0.0);
+	}
 	//solver->solve();
 }
 
@@ -22,8 +27,8 @@ VectorFieldSolver::~VectorFieldSolver(void)
 {
 	delete solver;
 	delete mat;
-	delete[] x;
-	delete[] b;
+/*	delete[] x;
+	delete[] b;*/
 	delete l;
 }
 
@@ -34,8 +39,8 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 			VectorField * target )
 {
 
-	float weight = 1;
-	constraints(vertIDs, src_sink_constr, constr_edges, constr_edge_dir, weight, b);
+	float weight = 5;
+	constraints(vertIDs, src_sink_constr, constr_edges, constr_edge_dir, weight, &(b[0]));
 
 	//want to store the oneform laplacian matrix M between two
 	//calls, even Z changes.... this means it has to be tidied up 
@@ -43,7 +48,7 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 
 
 	//TO DELETE:
-	for(int i = 0; i < mat->a.size(); i++){
+/*	for(int i = 0; i < mat->a.size(); i++){
 		mat->a[i] = 0;
 	}
 	for(int i = 0; i< diagonalMatInd.size(); i++){
@@ -51,13 +56,17 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 	}
 	for(int i = 0; i < mat->dim(); i++){
 		x[i]=0;
-	}
+	}*/
 
 	//LOOK OUT DELETE THE STUFF BEFORE HERE
 
 	l->addZToMat(constr_edges, diagonalMatInd, weight, mat);
+	delete solver;
+	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
+		pardisoSolver::SOLVER_ITERATIVE, 3);
+
 	solver->setMatrix(*mat,1);
-	solver->solve(x,b);
+	solver->solve(&(x[0]),&(b[0]));
 	l->substractZFromMat(constr_edges, diagonalMatInd, weight, mat);
 
 	for(int i = 0; i < mat->dim(); i++){

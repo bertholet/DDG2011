@@ -40,6 +40,8 @@ private:
 
 	vector<int> diagonalMatInd;
 
-	double * x;
-	double * b;
+	vector<double> x;
+	vector<double> b;
+	/*double * x;
+	double * b;*/
 };

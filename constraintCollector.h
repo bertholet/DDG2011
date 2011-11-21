@@ -2,6 +2,7 @@
 #include <vector>
 #include "tuple3.h"
 #include "mesh.h"
+#include "VectorField.h"
 
 enum collect_type { SOURCE_VERTS, SINK_VERTS, GUIDING_FIELD, NOTHING};
 
@@ -19,6 +20,7 @@ public:
 	void collect(int val);
 	//void collect( int face, tuple3f & pos , tuple3f & dir );
 	void collect(int face, int edge, tuple3f & dir );
+	void collect(int face, tuple3i & edges, tuple3f & dir );
 
 	void clear();
 	void glOutputConstraints( mesh * theMesh );

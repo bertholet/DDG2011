@@ -34,14 +34,14 @@ VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 
 VectorField::VectorField( mesh * aMesh )
 {
-	aMesh->attach(this);
+	//aMesh->attach(this);
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
 	edges = info->getHalfedges();
 	fc2he = info->getFace2Halfedges();
 	faces = &(aMesh->getFaces());
 	vertices = &(aMesh->getVertices());
-
+	myMesh = aMesh;
 
 	oneForm.reserve(edges->size());
 	for(int i = 0; i < edges->size(); i++){
@@ -188,7 +188,7 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 	return result;
 }
 
-void VectorField::glOutputField(){
+void VectorField::glOutputField(bool normed){
 	vector<tuple3i> & faces = *(this->faces);
 	vector<tuple3f> & vertices = *(this->vertices);
 
@@ -208,9 +208,13 @@ void VectorField::glOutputField(){
 		glBegin(GL_LINE_LOOP);
 		glVertex3fv((GLfloat *) & pos);
 		dir = oneForm2Vec(i,1.f/3,1.f/3,1.f/3);//*0.3f;
-		/*dir.normalize();
-		pos+= dir*0.3f;*/
-		pos += dir;
+		if(normed){
+			dir.normalize();
+			pos+= dir*0.3f;
+		}
+		else{
+			pos += dir;
+		}
 		glVertex3fv((GLfloat *) & pos);
 		glEnd();
 

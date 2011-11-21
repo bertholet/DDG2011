@@ -36,6 +36,7 @@ private:
 	colorMap * map;
 	triangleMarkupMap * tmmap;
 
+	bool normedVField;
 	bool displayVField;
 	trackBallListener * tBallListener;
 	mouseStrokeListener * strokeListener;

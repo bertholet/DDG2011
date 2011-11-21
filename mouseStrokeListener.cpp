@@ -54,7 +54,8 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 		Model::getModel()->getInputCollector().collect(vertex);
 
 		if(lastValid){
-			int edge = edgeCrossed(face, last, next - last);
+		/*	int edge = edgeCrossed(face, last, next - last);*/
+			tuple3i & edge = edges(face);
 			Model::getModel()->getInputCollector().collect(face,edge, next - last);
 		}
 		last.set(next);
@@ -71,6 +72,10 @@ void mouseStrokeListener::onMousePress( QMouseEvent* event )
 	lastValid = false;
 	onMouseMove(event);
 
+}
+
+tuple3i & mouseStrokeListener::edges(int faceNr){
+	return (*(Model::getModel()->getMeshInfo()->getFace2Halfedges()))[faceNr];
 }
 
 int mouseStrokeListener::edgeCrossed( int faceNr, tuple3f & pos, tuple3f & dir )
