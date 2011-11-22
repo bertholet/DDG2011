@@ -55,6 +55,7 @@ void MainWindow::setupButtons()
 	comboBox->addItem("Selections");
 
 	cbox = new QCheckBox("Draw strokes",this);
+	cbox2 = new QCheckBox("Display Normed Field",this);
 	butt = new QPushButton("Reset", this);
 }
 
@@ -67,6 +68,7 @@ void MainWindow::setupQTabs()
 	QWidget * tab1Widget = new QWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
 	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
+	tab2Widget->setMainWindow(this);
 	tabs->addTab(tab2Widget, "Vector Fields");
 }
 
@@ -80,6 +82,7 @@ void MainWindow::addAction()
 	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
 	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
+	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
 	connect(butt, SIGNAL(released()), this, SLOT(resetStrokes()));
 }
 
@@ -96,6 +99,7 @@ void MainWindow::layoutGui()
 	sublayout->addWidget(cbox);
 	sublayout->addWidget(butt);
 	rightLayout->addLayout(sublayout);
+	rightLayout->addWidget(cbox2);
 
 	QHBoxLayout *mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(myGLDisp,1);
@@ -191,8 +195,21 @@ void MainWindow::setMouseMode( int state )
 	}
 }
 
+void MainWindow::setVFieldMode( int state)
+{
+	if(state == 0){//unchecked
+		this->myGLDisp->setNormedFieldDisplay(false);
+	}
+	if(state == 2){//checked
+		this->myGLDisp->setNormedFieldDisplay(true);
+	}
+	this->update();
+}
+
 void MainWindow::resetStrokes()
 {
 	this->myGLDisp->resetStrokes();
 	Model::getModel()->getInputCollector().clear();
 }
+
+

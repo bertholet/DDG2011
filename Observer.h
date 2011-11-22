@@ -4,11 +4,12 @@
 /* Extremely basic Observer implementation. Allows Observed objects to 
 call update with an int msg*/
 /************************************************************************/
+template <typename _enum>
 class Observer
 {
 public:
-	Observer(void);
+	Observer(void){}
 	virtual ~Observer(void){}
 
-	virtual void update(void * src, int type) = 0;
+	virtual void update(void * src, _enum msg) = 0;
 };

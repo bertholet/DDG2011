@@ -1,9 +1,8 @@
 #pragma once
 #include "mesh.h"
-#include "Observer.h"
 #include "tuple3.h"
 
-class VectorField:Observer
+class VectorField
 {
 
 public:
@@ -17,7 +16,7 @@ public:
 	VectorField(mesh * aMesh, tuple3f & dir);
 	~VectorField(void);
 
-	void update(void * src, int msg);
+//	void update(void * src, int msg);
 	void glOutputField(bool normalizd);
 
 	void setOneForm(int faceNr, tuple3f & dir);

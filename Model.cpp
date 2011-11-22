@@ -1,4 +1,6 @@
 #include "Model.h"
+#include <algorithm>
+#include <assert.h>
 
 Model * Model::instance = 0;
 
@@ -59,6 +61,8 @@ void Model::setMesh( mesh * aMesh )
 	myMesh = aMesh;
 	metaInfo = new meshMetaInfo(myMesh);
 	vField = NULL;
+
+	this->updateObserver(NEW_MESH_CREATED);
 }
 
 void Model::setVField( VectorField * field )
@@ -82,4 +86,29 @@ void Model::initVectorField()
 fieldConstraintCollector & Model::getInputCollector()
 {
 	return this->collector;
+}
+
+void Model::attach( Observer<modelMsg> * obs )
+{
+	this->observer.push_back(obs);
+}
+
+void Model::detatch( Observer<modelMsg> * obs )
+{
+	vector<Observer<modelMsg> * >::iterator it;
+	it = find(observer.begin(), observer.end(), obs);
+	if(it != observer.end()){
+		this->observer.erase(it);
+	}
+	else{
+		assert(false);
+	}
+
+}
+
+void Model::updateObserver( modelMsg msg )
+{
+	for(int i = 0; i < observer.size(); i++){
+		observer[i]->update(this, msg);
+	}
 }

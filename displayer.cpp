@@ -135,3 +135,8 @@ void Displayer::resetStrokes()
 	this->tmmap->reset();
 	updateGL();
 }
+
+void Displayer::setNormedFieldDisplay( bool what )
+{
+	this->normedVField = what;
+}

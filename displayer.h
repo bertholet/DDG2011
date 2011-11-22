@@ -7,6 +7,7 @@
 #include "trackBallListener.h"
 #include "mouseStrokeListener.h"
 
+
 enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE};
 
@@ -21,6 +22,7 @@ public:
 	void setMode(DisplayMode aMode);
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap * map);
+	void setNormedFieldDisplay(bool);
 	void resetStrokes();
 
 protected:

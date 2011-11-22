@@ -26,7 +26,7 @@ private:
 
 	QCheckBox * cbox;
 	QPushButton * butt;
-
+	QCheckBox * cbox2;
 	void setupQTabs();
 	void setupMenubar() ;
 	void setupButtons();
@@ -41,6 +41,7 @@ private slots:
 	void resetStrokes();
 
 	void setMouseMode(int state);
+	void setVFieldMode( int );
 };
 
 #endif // MAINWINDOW_H

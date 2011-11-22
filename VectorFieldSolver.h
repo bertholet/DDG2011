@@ -17,10 +17,12 @@ public:
 	// Takes the vertex constraints (constrains[i] = contraint of vertex[i]).
 	// whoch denote source and sink vertices and uses them to solve
 	// for the vector field.
+	// weight is the weight the edge constraints shall get.
 	//////////////////////////////////////////////////////////////////////////
 	void solve(vector<int> & vertices, vector<float> & constraints, 
 		vector<int> & constr_fc,
 		vector<tuple3f> & constr_fc_dir, 
+		float weight,
 		VectorField * target );
 
 	//////////////////////////////////////////////////////////////////////////

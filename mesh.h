@@ -9,8 +9,12 @@
 
 using namespace std;
 
+enum meshMsg{POS_CHANGED, CONNECTIVITY_CHANGED};
+
 class mesh
 {
+//public:
+
 protected:
 	matrixf position;
 	matrixf rotation;
@@ -32,7 +36,7 @@ protected:
 	bool showOrientation;
 
 	//Observer List
-	vector<Observer *> observer;
+	vector<Observer<meshMsg> *> observer;
 
 public:
 	//observer msg
@@ -100,8 +104,8 @@ public:
 	void setPosition( tuple3f &pos );
 
 
-	void attach(Observer * o);
-	void updateObserver(int msg);
+	void attach(Observer<meshMsg> * o);
+	void updateObserver(meshMsg msg);
 
 private:
 	void init( const char* file, tuple3f & col, float scale );

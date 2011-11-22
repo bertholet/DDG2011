@@ -12,7 +12,6 @@
 
 VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 {
-	//aMesh->attach(this);
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
 	edges = info->getHalfedges();
@@ -34,7 +33,6 @@ VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 
 VectorField::VectorField( mesh * aMesh )
 {
-	//aMesh->attach(this);
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
 	edges = info->getHalfedges();
@@ -54,10 +52,7 @@ VectorField::~VectorField(void)
 
 }
 
-void VectorField::update( void * src, int msg )
-{
 
-}
 
 //sets the one form values associated to faceNr appropriately: projects dir in the
 //pane spanned by the triangle

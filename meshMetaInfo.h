@@ -8,7 +8,7 @@
 /* This class contains information like border, normal curvature etc
 /* if computed.
 /************************************************************************/
-class meshMetaInfo:Observer
+class meshMetaInfo:Observer<meshMsg>
 {
 private:
 	mesh * myMesh;
@@ -24,7 +24,7 @@ public:
 	~meshMetaInfo(void);
 	
 	//overloaded from observer
-	void update(void * src, int type);
+	void update(void * src, meshMsg type);
 
 	//if curvatures are deactivated the internal memory reserved for them is cleared.-
 	//void activateCurvNormals(bool activated);

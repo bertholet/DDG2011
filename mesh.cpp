@@ -483,12 +483,12 @@ void mesh::setTextures_perVertex( vector<tuple3f> & textures )
 /* Observers will be notified about changes in the mesh structure
 /* or positions
 /************************************************************************/
-void mesh::attach( Observer * o )
+void mesh::attach( Observer<meshMsg> * o )
 {
 	this->observer.push_back(o);
 }
 
-void mesh::updateObserver( int msg )
+void mesh::updateObserver( meshMsg msg )
 {
 	for(int i = 0; i < observer.size(); i++){
 		observer[i]->update(this, msg);

@@ -16,12 +16,12 @@ meshMetaInfo::~meshMetaInfo(void)
 {
 }
 
-void meshMetaInfo::update(void * src, int type )
+void meshMetaInfo::update(void * src, meshMsg type )
 {
-	if(type == mesh::MESH_POSITIONS_CHANGED && src == myMesh){
+	if(type == POS_CHANGED && src == myMesh){
 		curvNormalsValid = false;
 	}
-	else if(type == mesh::MESH_CONNECTIVITY_CHANGED && src == myMesh){
+	else if(type == CONNECTIVITY_CHANGED && src == myMesh){
 		curvNormalsValid = false;
 		halfedges_valid = false;
 	}
