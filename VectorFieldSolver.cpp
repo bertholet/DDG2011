@@ -37,11 +37,14 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 			vector<int> & constr_edges,
 			vector<tuple3f> & constr_edge_dir, 
 			float edgeConstrWeight,
+			float constrLength,
 			VectorField * target )
 {
 
+
+	// * constrLength: Hack!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	float weight = edgeConstrWeight;
-	constraints(vertIDs, src_sink_constr, constr_edges, constr_edge_dir, weight, &(b[0]));
+	constraints(vertIDs, src_sink_constr, constr_edges, constr_edge_dir, weight * constrLength, &(b[0]));
 
 	//want to store the oneform laplacian matrix M between two
 	//calls, even Z changes.... this means it has to be tidied up 

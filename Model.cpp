@@ -61,6 +61,7 @@ void Model::setMesh( mesh * aMesh )
 	myMesh = aMesh;
 	metaInfo = new meshMetaInfo(myMesh);
 	vField = NULL;
+	collector.clear();
 
 	this->updateObserver(NEW_MESH_CREATED);
 }

@@ -27,9 +27,9 @@ extern "C" __declspec(dllimport) void pardiso_printstats (int *, int *, double *
 class pardisoSolver{
 
 private: 
-	int int_params[64];
-	double double_params[64];
-	void *intern_memory[64];
+	int int_params[128];
+	double double_params[128];
+	void *intern_memory[128];
 
 	int matrix_type;
 	int print_stats;
@@ -92,18 +92,25 @@ public:
 		int n = matrix->ia.size()-1;
 
 		if(matrix->a.size() > 0){
-		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &matrix->a[0], &matrix->ia[0], &matrix->ja[0], NULL, &nrhs,
-			int_params, &print_stats, NULL, NULL, &error, double_params);
-		}
-		else{
-/*			double ddumm;
 			int idumm;
 			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &ddumm, &idumm, &idumm, NULL, &nrhs,
-				int_params, &print_stats, NULL, NULL, &error, double_params);*/
+				&n, &matrix->a[0], &matrix->ia[0], &matrix->ja[0], &idumm, &nrhs,
+				int_params, &print_stats, NULL, NULL, &error, double_params);
+
+		}
+		else{
+			double ddumm;
+			int idumm;
+			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
+				&n, &ddumm, &matrix->ia[0], &idumm, &idumm, &nrhs,
+				int_params, &print_stats, &ddumm, &ddumm, &error, double_params);
 		}
 		isInUse = false;
+
+		if(error != 0){
+			throw std::runtime_error("Exception in pardiso solve-");
+		}
+
 	}
 
 	/************************************************************************/
@@ -121,9 +128,25 @@ public:
 			int maxfct =1; /*max nr of factorizations*/
 			int mnum =1; /* Which factorization to use. */
 			int n = mat.ia.size()-1;
+
 			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
 				&n, &mat.a[0], &mat.ia[0], &mat.ja[0], NULL, &nr_righthandsides,
 				int_params, &print_stats, NULL, NULL, &error, double_params);
+		}
+		else{
+			//factorization: symbolic and numerical
+			int phase = 12;
+			int maxfct =1; /*max nr of factorizations*/
+			int mnum =1; /* Which factorization to use. */
+			int n = mat.ia.size()-1;
+			double ddumm;
+			int idumm;
+			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
+				&n, &ddumm, &mat.ia[0], &idumm, NULL, &nr_righthandsides,
+				int_params, &print_stats, NULL, NULL, &error, double_params);
+		}
+		if(error != 0){
+			throw std::runtime_error("Exception in pardiso solve-");
 		}
 	}
 
@@ -149,7 +172,7 @@ public:
 			int_params, &print_stats, b, x, &error, double_params);
 
 		if(error != 0){
-			throw std::exception("Exception in pardiso solve-");
+			throw std::runtime_error("Exception in pardiso solve-");
 		}
 	}
 

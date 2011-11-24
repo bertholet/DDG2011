@@ -21,7 +21,10 @@ private:
 	VectorFieldSolver * solver;
 	QSlider * slider;
 	MainWindow * mainWindow;
-	
+	QSlider * slider2;
+
+	int weightStep, srcFlowStep;
+	QSlider * slider3;
 private slots:
 	void genAxisAllignedField();
 	void solveVField();

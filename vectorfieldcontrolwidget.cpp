@@ -11,9 +11,15 @@
 #include "constraintCollector.h"
 #include <QRadioButton>
 
+#include <math.h>
+
 vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
+
+	weightStep = 100;
+	srcFlowStep = 10;
+
 	QPushButton *butt = new QPushButton("Generate VField!");
 	connect(butt, SIGNAL(released()), this, SLOT(genAxisAllignedField()));
 
@@ -29,18 +35,41 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 
 	slider = new QSlider(Qt::Horizontal, this);
 	slider->setMinimum(0);
-	slider->setMaximum(1000);
+	slider->setMaximum(10* weightStep);
 	slider->setTickPosition(QSlider::TicksAbove);
-	slider->setValue(200);
-
+	slider->setValue(weightStep);
 	connect(slider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+
+	slider2 = new QSlider(Qt::Horizontal, this);
+	slider2->setMinimum(0);
+	slider2->setMaximum(50*srcFlowStep);
+	slider2->setTickPosition(QSlider::TicksAbove);
+	slider2->setValue(srcFlowStep);
+	connect(slider2, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+
+	slider3 = new QSlider(Qt::Horizontal, this);
+	slider3->setMinimum(0);
+	slider3->setMaximum(10*srcFlowStep);
+	slider3->setTickPosition(QSlider::TicksAbove);
+	slider3->setValue(0);
+	connect(slider3, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+
+
+	QLabel * sliderLabel1 = new QLabel("Guide Field Enforcement:", this);
+	QLabel * sliderLabel2 = new QLabel("Source Flow:", this);
+	QLabel * sliderLabel3 = new QLabel("Constraint Field length:", this);
 
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
 	layout->addWidget(rbutt);
 	layout->addWidget(rbutt2);
 	layout->addWidget(rbutt3);
+	layout->addWidget(sliderLabel2);
+	layout->addWidget(slider2);
+	layout->addWidget(sliderLabel1);
 	layout->addWidget(slider);
+	layout->addWidget(sliderLabel3);
+	layout->addWidget(slider3);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
 
@@ -83,13 +112,22 @@ void vectorFieldControlWidget::solveVField()
 
 	fieldConstraintCollector & collector = Model::getModel()->getInputCollector();
 
+	float srcFlow = slider2->value();
+	srcFlow /= srcFlowStep;
+
+	float weight = slider->value();
+	weight = pow(10.f, weight/ weightStep) -1;
+	weight = (weight > 0 ? weight: 0.f);
+
+	float constraintLength = pow(10, (-1.f / srcFlowStep) * slider3->value());
+
 	for(int i = 0; i < collector.sinkVert.size(); i++){
 		verts.push_back(collector.sinkVert[i]);
-		constr.push_back(1.f);
+		constr.push_back(-srcFlow);
 	}
 	for(int i = 0; i < collector.sourceVert.size(); i++){
 		verts.push_back(collector.sourceVert[i]);
-		constr.push_back(-1.f);
+		constr.push_back(srcFlow);
 	}
 
 	solver->perturb(verts, constr);
@@ -106,7 +144,8 @@ void vectorFieldControlWidget::solveVField()
 	solver->solve(verts, constr,
 		Model::getModel()->getInputCollector().getEdges(),
 		Model::getModel()->getInputCollector().getEdgeDirs(),
-		(0.f + slider->value())/200,
+		weight,
+		constraintLength,
 		Model::getModel()->getVField());
 
 	if(mainWindow != NULL){

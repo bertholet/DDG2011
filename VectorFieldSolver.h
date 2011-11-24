@@ -23,6 +23,7 @@ public:
 		vector<int> & constr_fc,
 		vector<tuple3f> & constr_fc_dir, 
 		float weight,
+		float constrLength,
 		VectorField * target );
 
 	//////////////////////////////////////////////////////////////////////////
