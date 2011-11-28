@@ -4,6 +4,7 @@
 #include "Model.h"
 #include <QtGui>
 #include "displayer.h"
+#include <QSlider>
 
 class MainWindow : public QMainWindow
 {
@@ -27,6 +28,8 @@ private:
 	QCheckBox * cbox;
 	QPushButton * butt;
 	QCheckBox * cbox2;
+	QSlider * fieldSlider;
+	QSlider * linewidthSlider;
 	void setupQTabs();
 	void setupMenubar() ;
 	void setupButtons();
@@ -42,6 +45,8 @@ private slots:
 
 	void setMouseMode(int state);
 	void setVFieldMode( int );
+	void lineWidthChanged();
+	void fieldLengthChanged();
 };
 
 #endif // MAINWINDOW_H

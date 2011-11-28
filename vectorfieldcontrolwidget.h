@@ -25,6 +25,8 @@ private:
 
 	int weightStep, srcFlowStep;
 	QSlider * slider3;
+
+	void initSolver();
 private slots:
 	void genAxisAllignedField();
 	void solveVField();

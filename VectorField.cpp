@@ -14,6 +14,7 @@ VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 {
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
+	displayLength = 0.3f;
 	edges = info->getHalfedges();
 	fc2he = info->getFace2Halfedges();
 	faces = &(aMesh->getFaces());
@@ -199,19 +200,25 @@ void VectorField::glOutputField(bool normed){
 		pos = vertices[faces[i].a] + vertices[faces[i].b] + vertices[faces[i].c];
 		pos *= 1.f/3;
 
-		glColor3f(0,1,0);
+		glColor3f(0,0,0);
 		glBegin(GL_LINE_LOOP);
 		glVertex3fv((GLfloat *) & pos);
 		dir = oneForm2Vec(i,1.f/3,1.f/3,1.f/3);//*0.3f;
 		if(normed){
 			dir.normalize();
-			pos+= dir*0.3f;
+			pos+= dir*displayLength;
 		}
 		else{
-			pos += dir;
+			pos += dir*displayLength;
 		}
+		glColor3f(0,1,0);
 		glVertex3fv((GLfloat *) & pos);
 		glEnd();
 
 	}
+}
+
+void VectorField::setDisplayLength( double param1 )
+{
+	this->displayLength = (float) param1;
 }

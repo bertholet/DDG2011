@@ -7,6 +7,9 @@
 #include "generatemeshgui.h"
 #include "vectorfieldcontrolwidget.h"
 
+#define SLIDER_STEPSPERUNIT 20
+
+
 MainWindow::MainWindow(): QMainWindow()
 {
 	setupMenubar();
@@ -57,6 +60,18 @@ void MainWindow::setupButtons()
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Display Normed Field",this);
 	butt = new QPushButton("Reset", this);
+
+	fieldSlider = new QSlider(Qt::Horizontal, this);
+	fieldSlider->setMinimum(0);
+	fieldSlider->setMaximum(2* SLIDER_STEPSPERUNIT);
+	fieldSlider->setTickPosition(QSlider::TicksAbove);
+	fieldSlider->setValue(SLIDER_STEPSPERUNIT);
+
+	linewidthSlider = new QSlider(Qt::Horizontal, this);
+	linewidthSlider->setMinimum(0);
+	linewidthSlider->setMaximum(3* SLIDER_STEPSPERUNIT);
+	linewidthSlider->setTickPosition(QSlider::TicksAbove);
+	linewidthSlider->setValue(SLIDER_STEPSPERUNIT);
 }
 
 /************************************************************************/
@@ -84,6 +99,9 @@ void MainWindow::addAction()
 	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
 	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
 	connect(butt, SIGNAL(released()), this, SLOT(resetStrokes()));
+
+	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
+	connect(fieldSlider, SIGNAL(sliderReleased()), this, SLOT(fieldLengthChanged()));
 }
 
 /************************************************************************/
@@ -100,6 +118,8 @@ void MainWindow::layoutGui()
 	sublayout->addWidget(butt);
 	rightLayout->addLayout(sublayout);
 	rightLayout->addWidget(cbox2);
+	rightLayout->addWidget(fieldSlider);
+	rightLayout->addWidget(linewidthSlider);	
 
 	QHBoxLayout *mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(myGLDisp,1);
@@ -210,6 +230,18 @@ void MainWindow::resetStrokes()
 {
 	this->myGLDisp->resetStrokes();
 	Model::getModel()->getInputCollector().clear();
+}
+
+void MainWindow::lineWidthChanged()
+{
+	this->myGLDisp->setLineWidth((0.f + this->linewidthSlider->value())/SLIDER_STEPSPERUNIT);
+	this->update();
+}
+
+void MainWindow::fieldLengthChanged()
+{
+	Model::getModel()->getVField()->setDisplayLength( (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT);
+	this->update();
 }
 
 

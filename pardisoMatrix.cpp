@@ -10,10 +10,16 @@ pardisoMatrix::~pardisoMatrix(void)
 {
 }
 
-void pardisoMatrix::initMatrix( pardisoMatCreator & creator, int dim )
+void pardisoMatrix::initMatrix( pardisoMatCreator & creator, int dim , myStatusBar * bar )
 {
 	std::vector<int> js;
 	int j;
+	int stp = dim/100 +1;
+	int max = (dim - dim%stp)/stp;
+	int nrStp = 0;
+	if(bar != NULL){
+		bar->setBar(0,max);
+	}
 
 	ia.clear();
 	ja.clear();
@@ -28,6 +34,12 @@ void pardisoMatrix::initMatrix( pardisoMatCreator & creator, int dim )
 			a.push_back(creator.val(i,j));
 			ja.push_back(j+1);
 		}
+
+		if(bar != NULL && i % stp == 0){
+			bar->updateBar(nrStp++);
+		}
+
+
 	}
 	ia.push_back(a.size() +1);
 }

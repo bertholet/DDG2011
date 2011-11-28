@@ -27,6 +27,7 @@ public:
 	//By defining the method like this it forces the user to think about the 
 	//orientation
 	void setOneForm(int halfedge, int orientation, float val);
+	void setDisplayLength( double param1 );
 
 private:
 	//oneForm[i] is the value on the edge i
@@ -36,7 +37,7 @@ private:
 	vector<tuple3f> *vertices;
 	vector<tuple2i> *edges;
 	mesh * myMesh;
-
+	float displayLength;
 	//will get the oneForm value associated to the halfedge.
 	//note: if halfedge is negative the convention is that this
 	//means that the oposingly oriented halfedge is meant.
@@ -44,7 +45,6 @@ private:
 	float getOneForm(int halfedge, int orientation);
 
 	tuple3f oneForm2Vec(int faceNr, float bara, float barb, float barc);
-
 /*	int abs(int a){
 		return (a >=0?a:-a);
 	}

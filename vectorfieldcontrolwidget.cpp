@@ -12,6 +12,7 @@
 #include <QRadioButton>
 
 #include <math.h>
+#include "mystatusbar.h"
 
 vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
@@ -75,9 +76,11 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 
 	this->setLayout(layout);
 
-	this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
-		*Model::getModel()->getMeshInfo()->getHalfedges(), 
-		*Model::getModel()->getMeshInfo()->getFace2Halfedges());
+//	this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
+//		*Model::getModel()->getMeshInfo()->getHalfedges(), //
+//		*Model::getModel()->getMeshInfo()->getFace2Halfedges());
+
+	this->solver = NULL;
 
 	Model::getModel()->attach(this);
 
@@ -106,6 +109,10 @@ void vectorFieldControlWidget::solveVField()
 	/*VectorFieldSolver solver(Model::getModel()->getMesh(), 
 		*Model::getModel()->getMeshInfo()->getHalfedges(), 
 		*Model::getModel()->getMeshInfo()->getFace2Halfedges());*/
+
+	if(solver == NULL){
+		this->initSolver();
+	}
 
 	vector<int> verts;
 	vector<float> constr;
@@ -177,14 +184,25 @@ void vectorFieldControlWidget::fieldSelection( bool active )
 void vectorFieldControlWidget::update( void * src, Model::modelMsg msg )
 {
 	if(msg == Model::NEW_MESH_CREATED){
-		delete solver;
-		this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
-			*Model::getModel()->getMeshInfo()->getHalfedges(), 
-			*Model::getModel()->getMeshInfo()->getFace2Halfedges());
+		if(solver != NULL){
+			delete solver;
+		}
+		solver = NULL;
 	}
 }
 
 void vectorFieldControlWidget::setMainWindow( MainWindow * w)
 {
 	this->mainWindow = w;
+}
+
+void vectorFieldControlWidget::initSolver()
+{
+	myStatusBar bar(NULL);
+	bar.open();
+	bar.setBar(0,10);
+	bar.updateBar(0);
+	this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
+		*Model::getModel()->getMeshInfo()->getHalfedges(), 
+		*Model::getModel()->getMeshInfo()->getFace2Halfedges(), &bar);
 }

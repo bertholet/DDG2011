@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 #include "pardisoMatCreator.h"
+#include "mystatusbar.h"
 
 
 class pardisoMatrix
@@ -18,7 +19,7 @@ public:
 	pardisoMatrix(void);
 	~pardisoMatrix(void);
 
-	void initMatrix(pardisoMatCreator & creator, int dim);
+	void initMatrix(pardisoMatCreator & creator, int dim, myStatusBar * bar = NULL);
 
 	int dim();
 	void saveMatrix(std::string file);

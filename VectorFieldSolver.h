@@ -6,11 +6,13 @@
 #include "tuple3.h"
 #include "VectorField.h"
 #include "oneFormLaplacian.h"
+#include "mystatusbar.h"
 
 class VectorFieldSolver
 {
 public:
-	VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he);
+	VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
+		myStatusBar * statusBar);
 	~VectorFieldSolver(void);
 
 	//////////////////////////////////////////////////////////////////////////

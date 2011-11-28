@@ -140,3 +140,8 @@ void Displayer::setNormedFieldDisplay( bool what )
 {
 	this->normedVField = what;
 }
+
+void Displayer::setLineWidth( float param1 )
+{
+	glLineWidth(param1);
+}

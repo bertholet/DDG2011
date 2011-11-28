@@ -24,6 +24,7 @@ public:
 	void setColormap(colorMap * map);
 	void setNormedFieldDisplay(bool);
 	void resetStrokes();
+	void setLineWidth( float param1 );
 
 protected:
 	void initializeGL();

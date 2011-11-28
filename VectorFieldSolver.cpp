@@ -1,11 +1,12 @@
 #include "VectorFieldSolver.h"
 
 
-VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he)
+VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
+									 myStatusBar * statusBar)
 {
 	l = new oneFormLaplacian(&f2he,&edges,aMesh);
 	mat = new pardisoMatrix();
-	mat->initMatrix(*l, edges.size());
+	mat->initMatrix(*l, edges.size(), statusBar);
 
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
