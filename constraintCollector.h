@@ -31,7 +31,12 @@ public:
 	std::vector<tuple3f> & getEdgeDirs(){
 		return edge_dir;
 	}
-
+	vector<int> & getFaces(){
+		return faces;
+	}
+	vector<tuple3f> & getFaceDir(){
+		return face_dir;
+	}
 private:
 	collect_type what;
 	std::vector<int> edges;

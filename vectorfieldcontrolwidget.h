@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QSlider>
+#include <QCheckBox>
 #include "Observer.h"
 #include "Model.h"
 #include "VectorFieldSolver.h"
@@ -19,13 +20,14 @@ public:
 	void setMainWindow(MainWindow *);
 private:
 	VectorFieldSolver * solver;
-	QSlider * slider;
+	QSlider * weightSlider;
 	MainWindow * mainWindow;
-	QSlider * slider2;
+	QSlider * srcSlider;
+	QCheckBox * cBoxDirectional;
 
 	int weightStep, srcFlowStep;
-	QSlider * slider3;
-
+	QSlider * vfLengthSlider;
+	int vfLengthStep;
 	void initSolver();
 private slots:
 	void genAxisAllignedField();

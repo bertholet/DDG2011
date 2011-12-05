@@ -194,11 +194,12 @@ float Operator::volume( mesh &m )
 
 float Operator::area( int faceNr, mesh & m )
 {
-	return tuple3f::crossNorm(
-			m.vertices[m.faces[faceNr].b] - 
-			m.vertices[m.faces[faceNr].a],
-			m.vertices[m.faces[faceNr].c] - 
-			m.vertices[m.faces[faceNr].a]) / 2.f;
+	float res = tuple3f::crossNorm(
+		m.vertices[m.faces[faceNr].b] - 
+		m.vertices[m.faces[faceNr].a],
+		m.vertices[m.faces[faceNr].c] - 
+		m.vertices[m.faces[faceNr].a]) / 2.f;
+	return res;
 	}
 
 float Operator::aVornoi( int vertNr, mesh & m)

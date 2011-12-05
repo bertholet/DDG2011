@@ -29,6 +29,17 @@ public:
 		VectorField * target );
 
 	//////////////////////////////////////////////////////////////////////////
+	//Instead of enforcing vectors of the vector fields only their direction
+	//is inforced
+	//
+	//////////////////////////////////////////////////////////////////////////
+	void solveDirectional(vector<int> & vertices, vector<float> & constraints, 
+		vector<int> & constr_fc,
+		vector<tuple3f> & constr_fc_dir, 
+		float weight,
+		float constrLength,
+		VectorField * target );
+	//////////////////////////////////////////////////////////////////////////
 	// calculate the constraints Vector b in (M+Z)x = b.
 	//////////////////////////////////////////////////////////////////////////
 	void constraints(vector<int> & vertIds, 
@@ -37,7 +48,10 @@ public:
 		vector<tuple3f> & face_dir_constr,
 		float weight,
 		double * b );
+
+
 	void perturb( vector<int>&  verts, vector<float> & constr );
+
 private:
 	pardisoMatrix *mat;
 	pardisoSolver *solver;
@@ -49,4 +63,12 @@ private:
 	vector<double> b;
 	/*double * x;
 	double * b;*/
+
+	void addDirConstraint2Mat( vector<int> & constr_faces ,
+		vector<tuple3f> & constr_face_dir, 
+		float weight, 
+		pardisoMatrix * target );
+	void constraintsSrcSinkOnly(vector<int> & vertIds, 
+		vector<float> & src_sink_constr, 
+		double * b);
 };

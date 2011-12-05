@@ -189,7 +189,11 @@ void MainWindow::setDisplayMode( int mode )
 		this->myGLDisp->setMode(FLATMODE);
 	}
 	else if(mode == 2){
-		this->myGLDisp->setMode(FLATMODE);
+		Model & model = *Model::getModel();
+		this->myGLDisp->setColormap((colorMap *)
+			new borderColorMap(model.getMeshInfo()->getBorder(),
+			tuple3f(0,0,1),tuple3f(1,0,0)));
+		this->myGLDisp->setMode(COLORMAPMODE);
 	}
 	else if(mode == 3){
 		Model & model = *Model::getModel();

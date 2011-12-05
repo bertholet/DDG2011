@@ -165,3 +165,4 @@ void fieldConstraintCollector::glOutputConstraints( mesh * theMesh )
 	}
 	glEnd();
 }
+

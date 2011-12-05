@@ -17,7 +17,8 @@ private:
 	std::vector<tuple3i> fc_halfedges;
 	std::vector<tuple2i> halfedges;
 	bool halfedges_active, halfedges_valid;
-
+	vector<vector<int>> border;
+	bool border_valid;
 
 public:
 	meshMetaInfo(mesh * aMesh);
@@ -34,4 +35,5 @@ public:
 	vector<tuple3f> * getCurvNormals();
 	vector<tuple2i> * getHalfedges();
 	vector<tuple3i> * getFace2Halfedges();
+	vector<vector<int>> & getBorder();
 };

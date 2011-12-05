@@ -18,8 +18,9 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
 
-	weightStep = 100;
+	weightStep = 50;
 	srcFlowStep = 10;
+	vfLengthStep = 10;
 
 	QPushButton *butt = new QPushButton("Generate VField!");
 	connect(butt, SIGNAL(released()), this, SLOT(genAxisAllignedField()));
@@ -34,31 +35,33 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	QRadioButton * rbutt3 = new QRadioButton("Select Guide Field", this);
 	connect(rbutt3, SIGNAL(toggled(bool)), this, SLOT(fieldSelection(bool)));
 
-	slider = new QSlider(Qt::Horizontal, this);
-	slider->setMinimum(0);
-	slider->setMaximum(10* weightStep);
-	slider->setTickPosition(QSlider::TicksAbove);
-	slider->setValue(weightStep);
-	connect(slider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+	weightSlider = new QSlider(Qt::Horizontal, this);
+	weightSlider->setMinimum(0);
+	weightSlider->setMaximum(3* weightStep);
+	weightSlider->setTickPosition(QSlider::TicksAbove);
+	weightSlider->setValue(weightStep);
+	connect(weightSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
-	slider2 = new QSlider(Qt::Horizontal, this);
-	slider2->setMinimum(0);
-	slider2->setMaximum(50*srcFlowStep);
-	slider2->setTickPosition(QSlider::TicksAbove);
-	slider2->setValue(srcFlowStep);
-	connect(slider2, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+	srcSlider = new QSlider(Qt::Horizontal, this);
+	srcSlider->setMinimum(0);
+	srcSlider->setMaximum(50*srcFlowStep);
+	srcSlider->setTickPosition(QSlider::TicksAbove);
+	srcSlider->setValue(srcFlowStep);
+	connect(srcSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
-	slider3 = new QSlider(Qt::Horizontal, this);
-	slider3->setMinimum(0);
-	slider3->setMaximum(10*srcFlowStep);
-	slider3->setTickPosition(QSlider::TicksAbove);
-	slider3->setValue(0);
-	connect(slider3, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+	vfLengthSlider = new QSlider(Qt::Horizontal, this);
+	vfLengthSlider->setMinimum(0);
+	vfLengthSlider->setMaximum(100*vfLengthStep);
+	vfLengthSlider->setTickPosition(QSlider::TicksAbove);
+	vfLengthSlider->setValue(vfLengthStep);
+	connect(vfLengthSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
 
 	QLabel * sliderLabel1 = new QLabel("Guide Field Enforcement:", this);
 	QLabel * sliderLabel2 = new QLabel("Source Flow:", this);
 	QLabel * sliderLabel3 = new QLabel("Constraint Field length:", this);
+
+	cBoxDirectional = new QCheckBox("Directional Constraint", this);
 
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
@@ -66,13 +69,14 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	layout->addWidget(rbutt2);
 	layout->addWidget(rbutt3);
 	layout->addWidget(sliderLabel2);
-	layout->addWidget(slider2);
+	layout->addWidget(srcSlider);
 	layout->addWidget(sliderLabel1);
-	layout->addWidget(slider);
+	layout->addWidget(weightSlider);
 	layout->addWidget(sliderLabel3);
-	layout->addWidget(slider3);
+	layout->addWidget(vfLengthSlider);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
+	layout->addWidget(cBoxDirectional);
 
 	this->setLayout(layout);
 
@@ -119,14 +123,14 @@ void vectorFieldControlWidget::solveVField()
 
 	fieldConstraintCollector & collector = Model::getModel()->getInputCollector();
 
-	float srcFlow = slider2->value();
+	float srcFlow = srcSlider->value();
 	srcFlow /= srcFlowStep;
 
-	float weight = slider->value();
+	float weight = weightSlider->value();
 	weight = pow(10.f, weight/ weightStep) -1;
 	weight = (weight > 0 ? weight: 0.f);
 
-	float constraintLength = pow(10, (-1.f / srcFlowStep) * slider3->value());
+	float constraintLength = (0.f + vfLengthSlider->value())/vfLengthStep;
 
 	for(int i = 0; i < collector.sinkVert.size(); i++){
 		verts.push_back(collector.sinkVert[i]);
@@ -140,20 +144,26 @@ void vectorFieldControlWidget::solveVField()
 	solver->perturb(verts, constr);
 
 
-	/*verts.push_back(0);
-	verts.push_back(Model::getModel()->getMesh()->getVertices().size()/2);
-	constr.push_back(1.f);
-	constr.push_back(-1.f);*/
-
 	if(Model::getModel()->getVField() == NULL){
 		Model::getModel()->initVectorField();
 	}
-	solver->solve(verts, constr,
-		Model::getModel()->getInputCollector().getEdges(),
-		Model::getModel()->getInputCollector().getEdgeDirs(),
-		weight,
-		constraintLength,
-		Model::getModel()->getVField());
+
+	if(! cBoxDirectional->isChecked()){
+		solver->solve(verts, constr,
+			Model::getModel()->getInputCollector().getEdges(),
+			Model::getModel()->getInputCollector().getEdgeDirs(),
+			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
+			constraintLength,
+			Model::getModel()->getVField());
+	}
+	else{
+		solver->solveDirectional(verts, constr,
+			Model::getModel()->getInputCollector().getFaces(),
+			Model::getModel()->getInputCollector().getFaceDir(),
+			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
+			constraintLength,
+			Model::getModel()->getVField());
+	}
 
 	if(mainWindow != NULL){
 		mainWindow->update();
