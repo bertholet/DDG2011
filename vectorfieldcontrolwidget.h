@@ -19,13 +19,13 @@ public:
 	void setMainWindow(MainWindow *);
 private:
 	VectorFieldSolver * solver;
-	QSlider * slider;
+	QSlider * gfWeihgtSlider;
 	MainWindow * mainWindow;
-	QSlider * slider2;
+	QSlider * flowSlider;
 
 	int weightStep, srcFlowStep;
-	QSlider * slider3;
-
+	QSlider * gfLengthSlider;
+	int lengthStep;
 	void initSolver();
 private slots:
 	void genAxisAllignedField();

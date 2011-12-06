@@ -18,8 +18,9 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
 
-	weightStep = 100;
+	weightStep = 20;
 	srcFlowStep = 10;
+	lengthStep = 100;
 
 	QPushButton *butt = new QPushButton("Generate VField!");
 	connect(butt, SIGNAL(released()), this, SLOT(genAxisAllignedField()));
@@ -34,26 +35,26 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	QRadioButton * rbutt3 = new QRadioButton("Select Guide Field", this);
 	connect(rbutt3, SIGNAL(toggled(bool)), this, SLOT(fieldSelection(bool)));
 
-	slider = new QSlider(Qt::Horizontal, this);
-	slider->setMinimum(0);
-	slider->setMaximum(10* weightStep);
-	slider->setTickPosition(QSlider::TicksAbove);
-	slider->setValue(weightStep);
-	connect(slider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+	gfWeihgtSlider = new QSlider(Qt::Horizontal, this);
+	gfWeihgtSlider->setMinimum(0);
+	gfWeihgtSlider->setMaximum(10* weightStep);
+	gfWeihgtSlider->setTickPosition(QSlider::TicksAbove);
+	gfWeihgtSlider->setValue(2*weightStep);
+	connect(gfWeihgtSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
-	slider2 = new QSlider(Qt::Horizontal, this);
-	slider2->setMinimum(0);
-	slider2->setMaximum(50*srcFlowStep);
-	slider2->setTickPosition(QSlider::TicksAbove);
-	slider2->setValue(srcFlowStep);
-	connect(slider2, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+	flowSlider = new QSlider(Qt::Horizontal, this);
+	flowSlider->setMinimum(0);
+	flowSlider->setMaximum(50*srcFlowStep);
+	flowSlider->setTickPosition(QSlider::TicksAbove);
+	flowSlider->setValue(srcFlowStep);
+	connect(flowSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
-	slider3 = new QSlider(Qt::Horizontal, this);
-	slider3->setMinimum(0);
-	slider3->setMaximum(10*srcFlowStep);
-	slider3->setTickPosition(QSlider::TicksAbove);
-	slider3->setValue(0);
-	connect(slider3, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
+	gfLengthSlider = new QSlider(Qt::Horizontal, this);
+	gfLengthSlider->setMinimum(0);
+	gfLengthSlider->setMaximum(5*lengthStep);
+	gfLengthSlider->setTickPosition(QSlider::TicksAbove);
+	gfLengthSlider->setValue(lengthStep);
+	connect(gfLengthSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
 
 	QLabel * sliderLabel1 = new QLabel("Guide Field Enforcement:", this);
@@ -66,11 +67,11 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	layout->addWidget(rbutt2);
 	layout->addWidget(rbutt3);
 	layout->addWidget(sliderLabel2);
-	layout->addWidget(slider2);
+	layout->addWidget(flowSlider);
 	layout->addWidget(sliderLabel1);
-	layout->addWidget(slider);
+	layout->addWidget(gfWeihgtSlider);
 	layout->addWidget(sliderLabel3);
-	layout->addWidget(slider3);
+	layout->addWidget(gfLengthSlider);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
 
@@ -119,14 +120,14 @@ void vectorFieldControlWidget::solveVField()
 
 	fieldConstraintCollector & collector = Model::getModel()->getInputCollector();
 
-	float srcFlow = slider2->value();
+	float srcFlow = flowSlider->value();
 	srcFlow /= srcFlowStep;
 
-	float weight = slider->value();
-	weight = pow(10.f, weight/ weightStep) -1;
+	float weight = gfWeihgtSlider->value();
+	weight = weight/weightStep;
 	weight = (weight > 0 ? weight: 0.f);
 
-	float constraintLength = pow(10, (-1.f / srcFlowStep) * slider3->value());
+	float constraintLength = pow(10, -1 + (0.f + gfLengthSlider->value())/lengthStep);
 
 	for(int i = 0; i < collector.sinkVert.size(); i++){
 		verts.push_back(collector.sinkVert[i]);

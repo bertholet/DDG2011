@@ -16,8 +16,11 @@ class mesh
 //public:
 
 protected:
+	
+	//position of object in cam coordinates (cam coords = world coords)
 	matrixf position;
 	matrixf rotation;
+
 	matrixf lighTransform;
 		//the normals at the vertice positions
 	vector<tuple3f> normals;
@@ -69,6 +72,8 @@ public:
 	void scaleXYZ(float scale );
 	void normalize(void);
 
+	void move(float dz);
+
 	vector<tuple3f>& getVertices(void){return vertices;}
 	vector<tuple3i>& getFaces(){return faces;}
 	// nbrs[i] is a vector with the indices of the neighbors
@@ -102,6 +107,7 @@ public:
 		showOrientation = b;
 	}
 	void setPosition( tuple3f &pos );
+
 
 
 	void attach(Observer<meshMsg> * o);

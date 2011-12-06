@@ -23,5 +23,7 @@ public:
 
 	int dim();
 	void saveMatrix(std::string file);
+	void saveVector(std::vector<double> & vctor, std::string  name, 
+		std::string  file );
 	void getDiagonalIndices( std::vector<int> & target_ind );
 };

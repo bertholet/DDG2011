@@ -1,4 +1,5 @@
 #include "VectorFieldSolver.h"
+#include "Model.h"
 
 
 VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
@@ -44,7 +45,7 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 
 
 	// * constrLength: Hack!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	float weight = edgeConstrWeight;
+	float weight = edgeConstrWeight * (Model::getModel()->getMeshInfo()->getHalfedges()->size());
 	constraints(vertIDs, src_sink_constr, constr_edges, constr_edge_dir, weight * constrLength, &(b[0]));
 
 	//want to store the oneform laplacian matrix M between two
@@ -53,7 +54,7 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 
 
 	//TO DELETE:
-/*	for(int i = 0; i < mat->a.size(); i++){
+	/*for(int i = 0; i < mat->a.size(); i++){
 		mat->a[i] = 0;
 	}
 	for(int i = 0; i< diagonalMatInd.size(); i++){
@@ -65,7 +66,12 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 
 	//LOOK OUT DELETE THE STUFF BEFORE HERE
 
+mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_before.m");
+mat->saveVector(b, "b", "C:/Users/bertholet/Dropbox/To Delete/b_constr.m" );
+
 	l->addZToMat(constr_edges, diagonalMatInd, weight, mat);
+mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_wConstraints.m");
+
 	delete solver;
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
@@ -73,6 +79,8 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 	solver->setMatrix(*mat,1);
 	solver->solve(&(x[0]),&(b[0]));
 	l->substractZFromMat(constr_edges, diagonalMatInd, weight, mat);
+	
+mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_after.m");
 
 	for(int i = 0; i < mat->dim(); i++){
 		target->setOneForm(i,1,(float) x[i]); //orientation = 1: solved for the edges as they are oriented.

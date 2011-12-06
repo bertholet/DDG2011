@@ -36,6 +36,7 @@ VectorField::VectorField( mesh * aMesh )
 {
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
+		displayLength = 0.3f;
 	edges = info->getHalfedges();
 	fc2he = info->getFace2Halfedges();
 	faces = &(aMesh->getFaces());

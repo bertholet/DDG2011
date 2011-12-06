@@ -32,6 +32,7 @@ protected:
 	void paintGL();
 	void mouseMoveEvent(QMouseEvent* event);
 	void mousePressEvent(QMouseEvent* event);
+	void wheelEvent(QWheelEvent* ev);
 
 private:
 	DisplayMode mode;

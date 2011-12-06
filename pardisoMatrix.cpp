@@ -94,10 +94,32 @@ void pardisoMatrix::saveMatrix( std::string file )
 	myFile.close();
 }
 
+void pardisoMatrix::saveVector(std::vector<double> & vctor, std::string  name, 
+							   std::string  file )
+{
+	std::ofstream myFile;
+	int internI;
+	myFile.open(file.c_str());
+	myFile << name << " = [";
+
+	for(int i = 0; i < vctor.size(); i++){
+		myFile << vctor[i];
+		if(i != vctor.size() -1){
+			myFile << ", ";
+		}
+	}
+
+	myFile << "];";
+	myFile.close();
+}
+ 
+
 int pardisoMatrix::dim()
 {
 	return ia.size()-1;
 }
+
+
 
 void pardisoMatrix::getDiagonalIndices( std::vector<int> & target_ind )
 {
@@ -117,3 +139,4 @@ void pardisoMatrix::getDiagonalIndices( std::vector<int> & target_ind )
 		assert(ja[target_ind.back()] == i+1); //i really do hate one based stuff.
 	}
 }
+

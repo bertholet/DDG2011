@@ -582,6 +582,11 @@ void mesh::initNbrNbrfc()
 	meshOperation::getNeighborFaces(faces, nbr_fcs);
 }
 
+void mesh::move( float dz )
+{
+	this->position = this->position * matrixFactory::translate(0,0,dz);
+}
+
 
 
 
