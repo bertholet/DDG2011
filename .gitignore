@@ -3,3 +3,4 @@ Resources/*
 *.out
 *.vcproj*
 objfiles/*
+*.orig

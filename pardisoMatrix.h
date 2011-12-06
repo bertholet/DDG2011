@@ -26,4 +26,11 @@ public:
 	void saveVector(std::vector<double> & vctor, std::string  name, 
 		std::string  file );
 	void getDiagonalIndices( std::vector<int> & target_ind );
+
+	//////////////////////////////////////////////////////////////////////////
+	// IF and only IF mat has an entry at i,j, val is added.
+	// i, j in ZERO based notation
+	// ELSE an assertion will fail and an error be thrown
+	//////////////////////////////////////////////////////////////////////////
+	void add( int i, int j, float val );
 };

@@ -61,6 +61,8 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	QLabel * sliderLabel2 = new QLabel("Source Flow:", this);
 	QLabel * sliderLabel3 = new QLabel("Constraint Field length:", this);
 
+	cBoxDirectional = new QCheckBox("Directional Constraint", this);
+
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
 	layout->addWidget(rbutt);
@@ -74,6 +76,7 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	layout->addWidget(gfLengthSlider);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
+	layout->addWidget(cBoxDirectional);
 
 	this->setLayout(layout);
 
@@ -149,12 +152,23 @@ void vectorFieldControlWidget::solveVField()
 	if(Model::getModel()->getVField() == NULL){
 		Model::getModel()->initVectorField();
 	}
-	solver->solve(verts, constr,
-		Model::getModel()->getInputCollector().getEdges(),
-		Model::getModel()->getInputCollector().getEdgeDirs(),
-		weight,
-		constraintLength,
-		Model::getModel()->getVField());
+
+	if(! cBoxDirectional->isChecked()){
+		solver->solve(verts, constr,
+			Model::getModel()->getInputCollector().getEdges(),
+			Model::getModel()->getInputCollector().getEdgeDirs(),
+			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
+			constraintLength,
+			Model::getModel()->getVField());
+	}
+	else{
+		solver->solveDirectional(verts, constr,
+			Model::getModel()->getInputCollector().getFaces(),
+			Model::getModel()->getInputCollector().getFaceDir(),
+			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
+			constraintLength,
+			Model::getModel()->getVField());
+	}
 
 	if(mainWindow != NULL){
 		mainWindow->update();

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QSlider>
+#include <QCheckBox>
 #include "Observer.h"
 #include "Model.h"
 #include "VectorFieldSolver.h"
@@ -22,6 +23,7 @@ private:
 	QSlider * gfWeihgtSlider;
 	MainWindow * mainWindow;
 	QSlider * flowSlider;
+	QCheckBox * cBoxDirectional;
 
 	int weightStep, srcFlowStep;
 	QSlider * gfLengthSlider;

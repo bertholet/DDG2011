@@ -8,7 +8,7 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	l = new oneFormLaplacian(&f2he,&edges,aMesh);
 	mat = new pardisoMatrix();
 	mat->initMatrix(*l, edges.size(), statusBar);
-
+mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_before.m");
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
@@ -76,6 +76,7 @@ mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_wConstraints.m");
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
+mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_wConstraints.m");
 	solver->setMatrix(*mat,1);
 	solver->solve(&(x[0]),&(b[0]));
 	l->substractZFromMat(constr_edges, diagonalMatInd, weight, mat);
@@ -103,7 +104,90 @@ void VectorFieldSolver::constraints(vector<int> & vertIds,
 
 }
 
+
+void VectorFieldSolver::constraintsSrcSinkOnly( vector<int> & vertIds, vector<float> & src_sink_constr, double * b )
+{
+	for(int i = 0; i < mat->dim(); i++){
+		b[i] = 0;
+	}
+	l->add_star_d(vertIds, src_sink_constr, b, mat->dim());
+}
+
+
 void VectorFieldSolver::perturb( vector<int>& verts, vector<float> & src_sink_constr )
 {
 	l->perturb(verts, src_sink_constr);
+}
+
+void VectorFieldSolver::solveDirectional(vector<int> & vertIDs, 
+										 vector<float> & src_sink_constr, 
+										 vector<int> & constr_faces,
+										 vector<tuple3f> & constr_face_dir, 
+										 float edgeConstrWeight,
+										 float constrLength,
+										 VectorField * target )
+{
+	float weight = edgeConstrWeight;
+	constraintsSrcSinkOnly(vertIDs, src_sink_constr, &(b[0]));
+
+	addDirConstraint2Mat(constr_faces, constr_face_dir, weight, mat);
+	
+	delete solver;
+	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
+		pardisoSolver::SOLVER_ITERATIVE, 3);
+
+mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_wConstraints.m");
+	solver->setMatrix(*mat,1);
+	solver->solve(&(x[0]),&(b[0]));
+	//subDirConstraint2Mat(constr_faces, constr_face_dir,  weight, mat);
+	addDirConstraint2Mat(constr_faces, constr_face_dir, -weight, mat);
+
+	for(int i = 0; i < mat->dim(); i++){
+		target->setOneForm(i,1,(float) x[i]); //orientation = 1: solved for the edges as they are oriented.
+	}
+}
+
+void VectorFieldSolver::addDirConstraint2Mat( vector<int> & constr_faces ,
+											 vector<tuple3f> & constr_face_dir, 
+											 float weight, 
+											 pardisoMatrix * target )
+{
+	float eps = 0.001;
+
+	vector<tuple3i> & f2e = * Model::getModel()->getMeshInfo()->getFace2Halfedges();
+	vector<tuple2i> & edges = * Model::getModel()->getMeshInfo()->getHalfedges();
+	vector<tuple3i> & faces = Model::getModel()->getMesh()->getFaces();
+	vector<tuple3f> & vert = Model::getModel()->getMesh()->getVertices();
+	float e1,e2, e3, c1,c2,c3;
+	int fcID;
+	tuple3i fc, edgeIDs;
+	tuple3f dir;
+
+	for(int i = 0; i < constr_faces.size(); i++){
+		fcID = constr_faces[i];
+		fc = faces[fcID];
+		edgeIDs = f2e[fcID];
+		dir = constr_face_dir[i];
+
+		e1= dir.dot(vert[fc.b]-vert[fc.a]) *fc.orientation(edges[edgeIDs.a]);
+		e2= dir.dot(vert[fc.c]-vert[fc.b])*fc.orientation(edges[edgeIDs.b]);;
+		e3= dir.dot(vert[fc.a]-vert[fc.c])*fc.orientation(edges[edgeIDs.c]);
+
+		//the values under assumption of positive orientation
+		c1 = e1/(e2+ eps);
+		c2 = e2/(e3+ eps);
+		c3 = e3/(e1+ eps);
+
+		mat->add(edgeIDs.a,edgeIDs.a, weight* (1-c3*c3));
+		mat->add(edgeIDs.a,edgeIDs.b, -weight * c1);
+		mat->add(edgeIDs.a,edgeIDs.c, -weight * c3);
+
+		mat->add(edgeIDs.b,edgeIDs.a, -weight* c1);
+		mat->add(edgeIDs.b,edgeIDs.b, weight * (1-c1*c1));
+		mat->add(edgeIDs.b,edgeIDs.c, -weight * c2);
+
+		mat->add(edgeIDs.c,edgeIDs.a, -weight* c3);
+		mat->add(edgeIDs.c,edgeIDs.b, -weight * c2);
+		mat->add(edgeIDs.c,edgeIDs.c, weight * (1-c2*c2));
+	}
 }

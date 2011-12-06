@@ -9,6 +9,7 @@ meshMetaInfo::meshMetaInfo(mesh * aMesh)
 	curvNormalsValid = false;
 	halfedges_active = false;
 	halfedges_valid = false;
+	border_valid = false;
 	myMesh =aMesh;
 }
 
@@ -24,6 +25,8 @@ void meshMetaInfo::update(void * src, meshMsg type )
 	else if(type == CONNECTIVITY_CHANGED && src == myMesh){
 		curvNormalsValid = false;
 		halfedges_valid = false;
+		border.clear();
+		border_valid = false;
 	}
 }
 
@@ -81,4 +84,13 @@ vector<tuple3i> * meshMetaInfo::getFace2Halfedges()
 	}
 	halfedges_active = true;
 	return & fc_halfedges;
+}
+
+vector<vector<int>> & meshMetaInfo::getBorder()
+{
+	if(!border_valid){
+		meshOperation::getBorder(*myMesh,border);
+		border_valid = true;
+	}
+	return border;
 }

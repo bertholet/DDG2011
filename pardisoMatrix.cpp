@@ -140,3 +140,20 @@ void pardisoMatrix::getDiagonalIndices( std::vector<int> & target_ind )
 	}
 }
 
+void pardisoMatrix::add( int i, int j, float val )
+{
+	int bs = ia[i]-1;
+	bool added = false;
+	for(int k = bs; k < ia[i+1]-1; k++){
+		if(ja[k] == j+1){
+			a[k]+= val;
+			added = true;
+			break;
+		}
+	}
+
+	if(!added){
+		assert(false);
+		throw std::runtime_error("Error in pardisoMatrix::add : (i,j) not a Matrix Entry");
+	}
+}
