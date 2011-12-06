@@ -28,6 +28,7 @@ private:
 	int weightStep, srcFlowStep;
 	QSlider * gfLengthSlider;
 	int lengthStep;
+	int weightMax;
 	void initSolver();
 private slots:
 	void genAxisAllignedField();

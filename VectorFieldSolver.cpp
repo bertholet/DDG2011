@@ -8,7 +8,7 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	l = new oneFormLaplacian(&f2he,&edges,aMesh);
 	mat = new pardisoMatrix();
 	mat->initMatrix(*l, edges.size(), statusBar);
-mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_before.m");
+//mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_before.m");
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
@@ -54,7 +54,7 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 
 
 	//TO DELETE:
-	/*for(int i = 0; i < mat->a.size(); i++){
+/*	for(int i = 0; i < mat->a.size(); i++){
 		mat->a[i] = 0;
 	}
 	for(int i = 0; i< diagonalMatInd.size(); i++){
@@ -62,9 +62,9 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 	}
 	for(int i = 0; i < mat->dim(); i++){
 		x[i]=0;
-	}*/
+	}
 
-	//LOOK OUT DELETE THE STUFF BEFORE HERE
+	//LOOK OUT DELETE THE STUFF BEFORE HERE*/
 
 mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_before.m");
 mat->saveVector(b, "b", "C:/Users/bertholet/Dropbox/To Delete/b_constr.m" );
@@ -130,17 +130,22 @@ void VectorFieldSolver::solveDirectional(vector<int> & vertIDs,
 	float weight = edgeConstrWeight;
 	constraintsSrcSinkOnly(vertIDs, src_sink_constr, &(b[0]));
 
+mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_before.m");
+mat->saveVector(b, "b", "C:/Users/bertholet/Dropbox/To Delete/b_constr.m" );
+
 	addDirConstraint2Mat(constr_faces, constr_face_dir, weight, mat);
 	
 	delete solver;
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
-mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_wConstraints.m");
+mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_wConstraints.m");
+//mat->saveMatrix("C:/Users/Petje/Documents/My Dropbox/To Delete/matrix_wConstraints.m");
 	solver->setMatrix(*mat,1);
 	solver->solve(&(x[0]),&(b[0]));
 	//subDirConstraint2Mat(constr_faces, constr_face_dir,  weight, mat);
 	addDirConstraint2Mat(constr_faces, constr_face_dir, -weight, mat);
+mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_after.m");
 
 	for(int i = 0; i < mat->dim(); i++){
 		target->setOneForm(i,1,(float) x[i]); //orientation = 1: solved for the edges as they are oriented.
@@ -174,9 +179,12 @@ void VectorFieldSolver::addDirConstraint2Mat( vector<int> & constr_faces ,
 		e3= dir.dot(vert[fc.a]-vert[fc.c])*fc.orientation(edges[edgeIDs.c]);
 
 		//the values under assumption of positive orientation
-		c1 = e1/(e2+ eps);
+		/*c1 = e1/(e2+ eps);
 		c2 = e2/(e3+ eps);
-		c3 = e3/(e1+ eps);
+		c3 = e3/(e1+ eps);*/
+		c1 = e1/(e2);
+		c2 = e2/(e3);
+		c3 = e3/(e1);
 
 		mat->add(edgeIDs.a,edgeIDs.a, weight* (1-c3*c3));
 		mat->add(edgeIDs.a,edgeIDs.b, -weight * c1);

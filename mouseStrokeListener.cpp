@@ -47,15 +47,21 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end, &vertex, &face, next);
 
 	if(fc != NULL){
-		//this->map->mark(*fc, nrCalls);
 		this->map->mark(vertex, nrCalls);
+		//this->map->mark(Model::getModel()->getMesh()->getFaces()[face], nrCalls);
 		this->daddy->updateGL();
 
 		Model::getModel()->getInputCollector().collect(vertex);
 
 		if(lastValid){
-		/*	int edge = edgeCrossed(face, last, next - last);*/
+//			int edge = edgeCrossed(face, last, next - last);//*/
 			tuple3i & edge = edges(face);
+			/*this->map->mark((*Model::getModel()->getMeshInfo()->getHalfedges())[edge.a].a, nrCalls);
+			this->map->mark((*Model::getModel()->getMeshInfo()->getHalfedges())[edge.a].b, nrCalls);
+			this->map->mark((*Model::getModel()->getMeshInfo()->getHalfedges())[edge.b].a, nrCalls);
+			this->map->mark((*Model::getModel()->getMeshInfo()->getHalfedges())[edge.b].b, nrCalls);
+			this->map->mark((*Model::getModel()->getMeshInfo()->getHalfedges())[edge.c].a, nrCalls);
+			this->map->mark((*Model::getModel()->getMeshInfo()->getHalfedges())[edge.c].b, nrCalls);*/
 			Model::getModel()->getInputCollector().collect(face,edge, next - last);
 		}
 		last.set(next);

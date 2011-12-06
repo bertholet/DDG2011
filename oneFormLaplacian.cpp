@@ -168,7 +168,7 @@ void oneFormLaplacian::add_star_d( vector<int> & srcsink_verts,
 		for(nbr_edge = nbrEdges.begin(); nbr_edge != nbrEdges.end(); nbr_edge++){
 			assert(*nbr_edge< sz);
 			edge = (*edges)[*nbr_edge];
-			target[*nbr_edge] += edge.orientation(vert) * constr[i];
+			target[*nbr_edge] += edge.orientation(vert) * constr[i]*
 				Operator::dualEdge_edge_ratio(edge.a,edge.b, *myMesh);
 		}
 	}

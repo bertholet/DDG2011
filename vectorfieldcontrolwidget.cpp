@@ -19,7 +19,8 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 {
 
 	weightStep = 20;
-	srcFlowStep = 10;
+	weightMax = 10;
+	srcFlowStep = 20;
 	lengthStep = 100;
 
 	QPushButton *butt = new QPushButton("Generate VField!");
@@ -37,14 +38,14 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 
 	gfWeihgtSlider = new QSlider(Qt::Horizontal, this);
 	gfWeihgtSlider->setMinimum(0);
-	gfWeihgtSlider->setMaximum(10* weightStep);
+	gfWeihgtSlider->setMaximum(weightMax* weightStep);
 	gfWeihgtSlider->setTickPosition(QSlider::TicksAbove);
-	gfWeihgtSlider->setValue(2*weightStep);
+	gfWeihgtSlider->setValue(weightStep);
 	connect(gfWeihgtSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
 
 	flowSlider = new QSlider(Qt::Horizontal, this);
 	flowSlider->setMinimum(0);
-	flowSlider->setMaximum(50*srcFlowStep);
+	flowSlider->setMaximum(10*srcFlowStep);
 	flowSlider->setTickPosition(QSlider::TicksAbove);
 	flowSlider->setValue(srcFlowStep);
 	connect(flowSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
@@ -125,9 +126,11 @@ void vectorFieldControlWidget::solveVField()
 
 	float srcFlow = flowSlider->value();
 	srcFlow /= srcFlowStep;
+	srcFlow = pow(10, srcFlow-1);
 
 	float weight = gfWeihgtSlider->value();
 	weight = weight/weightStep;
+	weight = weightMax*pow(10, weight-weightMax);
 	weight = (weight > 0 ? weight: 0.f);
 
 	float constraintLength = pow(10, -1 + (0.f + gfLengthSlider->value())/lengthStep);
