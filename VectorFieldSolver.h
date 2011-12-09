@@ -22,8 +22,8 @@ public:
 	// weight is the weight the edge constraints shall get.
 	//////////////////////////////////////////////////////////////////////////
 	void solve(vector<int> & vertices, vector<float> & constraints, 
-		vector<int> & constr_fc,
-		vector<tuple3f> & constr_fc_dir, 
+		vector<int> & constr_edges,
+		vector<tuple3f> & constr_edg_dir, 
 		float weight,
 		float constrLength,
 		VectorField * target );
@@ -39,6 +39,19 @@ public:
 		float weight,
 		float constrLength,
 		VectorField * target );
+
+	//////////////////////////////////////////////////////////////////////////
+	// In a first step, before directional constraints are introduced the length
+	// of the vectors is estimated
+	//
+	//////////////////////////////////////////////////////////////////////////
+
+	void solveLengthEstimated(vector<int> & vertices, vector<float> & src_snk_constraints, 
+		vector<int> & constr_fc,
+		vector<tuple3f> & constr_fc_dir, 
+		float weight,
+		VectorField * target );
+
 	//////////////////////////////////////////////////////////////////////////
 	// calculate the constraints Vector b in (M+Z)x = b.
 	//////////////////////////////////////////////////////////////////////////
@@ -49,6 +62,16 @@ public:
 		float weight,
 		double * b );
 
+	//////////////////////////////////////////////////////////////////////////
+	// face based constraint calculation with precalculated lengths
+	//
+	//////////////////////////////////////////////////////////////////////////
+	void constraints(vector<int> & vertIds, 
+		vector<float> & src_sink_constr, 
+		vector<int> & faceIds, 
+		vector<tuple3f> & face_dir_constr,
+		vector<float> & lengths,
+		float weight, double * b );
 
 	void perturb( vector<int>&  verts, vector<float> & constr );
 
@@ -71,4 +94,8 @@ private:
 	void constraintsSrcSinkOnly(vector<int> & vertIds, 
 		vector<float> & src_sink_constr, 
 		double * b);
+	void findLengths( vector<int> & vertIDs, vector<float> & src_sink_constr, 
+		vector<int> & constr_fc, 
+		vector<float> & target_lengths );
+	void pushEdges( vector<int> & constr_fc, vector<tuple3i> & f2e , vector<int>  & target );
 };

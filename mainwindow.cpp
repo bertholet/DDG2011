@@ -69,7 +69,7 @@ void MainWindow::setupButtons()
 
 	linewidthSlider = new QSlider(Qt::Horizontal, this);
 	linewidthSlider->setMinimum(0);
-	linewidthSlider->setMaximum(3* SLIDER_STEPSPERUNIT);
+	linewidthSlider->setMaximum(4* SLIDER_STEPSPERUNIT);
 	linewidthSlider->setTickPosition(QSlider::TicksAbove);
 	linewidthSlider->setValue(SLIDER_STEPSPERUNIT);
 }
@@ -244,7 +244,7 @@ void MainWindow::lineWidthChanged()
 
 void MainWindow::fieldLengthChanged()
 {
-	Model::getModel()->getVField()->setDisplayLength( (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT);
+	Model::getModel()->getVField()->setDisplayLength( pow(100, (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT -1) - 0.01);
 	this->update();
 }
 

@@ -228,6 +228,26 @@ void oneFormLaplacian::addZToB( vector<int> & constr_edges,
 
 }
 
+void oneFormLaplacian::addZToB( vector<int> & faceIds, 
+		vector<tuple3f> & face_dir_constr , 
+		vector<float> & lengths, 
+		float weight , 
+		double * b, 
+		int sz )
+{
+	assert(sz == edges->size());
+	tuple3i edgeIDs;
+	tuple3f edgeVals;
+	for(int i = 0; i < faceIds.size(); i++){
+		vectorFieldTools::vectorToOneForm(face_dir_constr[i], faceIds[i],
+			*fc2he,*edges, myMesh, edgeIDs,edgeVals);
+
+		b[edgeIDs.a] = weight * edgeVals.x * lengths[i];
+		b[edgeIDs.b] = weight * edgeVals.y* lengths[i];
+		b[edgeIDs.c] = weight * edgeVals.z* lengths[i];
+	}
+}
+
 
 void oneFormLaplacian::addZToMat( vector<int> & constr_edges, 
 			vector<int> & diagonalMatInd, float weight,

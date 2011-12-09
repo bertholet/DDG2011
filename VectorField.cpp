@@ -131,7 +131,7 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 	vector<tuple3f> & vertices = *(this->vertices);
 
 	//vector orthogonal to halfedge ab, bc, ca
-	tuple3f  p_abT, p_bcT, p_caT, normal;
+/*	tuple3f  p_abT, p_bcT, p_caT, normal;
 	p_abT.set(vertices[faces[faceNr].b]);
 	p_abT -= vertices[faces[faceNr].a];
 
@@ -180,7 +180,11 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 	result *= 1.f/vol2Triangle;
 
 //	std::cout << result.x << ", " << result.y << ", " << result.z << "\n";
-//	std::cout << "Reconstruct lies in plane: " << result.dot(normal)<<"\n\n";
+//	std::cout << "Reconstruct lies in plane: " << result.dot(normal)<<"\n\n";*/
+
+	tuple3f result;
+	tuple3f oneFrm(oneForm[fc2he[faceNr].a],oneForm[fc2he[faceNr].b],oneForm[fc2he[faceNr].c]);
+	vectorFieldTools::oneFormToVector(faces[faceNr],fc2he[faceNr],*edges, vertices,oneFrm,tuple3f(bara, barb, barc), result);
 
 	return result;
 }

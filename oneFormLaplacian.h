@@ -60,6 +60,19 @@ public:
 	void addZToB( vector<int> & edgeIds, vector<tuple3f> & edge_dir_constr ,
 		float weight ,
 		double * target, int sz);
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Adds the additional constraint to target, based on constraints by faces
+	// with prespecified length per triangle
+	//////////////////////////////////////////////////////////////////////////
+	
+	void addZToB( vector<int> & faceIds, 
+		vector<tuple3f> & face_dir_constr , 
+		vector<float> & lengths, 
+		float weight , 
+		double * target, int sz);
+
 private:
 	std::vector<tuple3i> * fc2he;
 	std::vector<tuple2i> * edges;

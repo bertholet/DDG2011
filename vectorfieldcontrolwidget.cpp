@@ -18,8 +18,8 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
 
-	weightStep = 20;
-	weightMax = 10;
+	weightStep = 250;
+	weightMax = 500;
 	srcFlowStep = 20;
 	lengthStep = 100;
 
@@ -38,7 +38,7 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 
 	gfWeihgtSlider = new QSlider(Qt::Horizontal, this);
 	gfWeihgtSlider->setMinimum(0);
-	gfWeihgtSlider->setMaximum(weightMax* weightStep);
+	gfWeihgtSlider->setMaximum(weightMax);
 	gfWeihgtSlider->setTickPosition(QSlider::TicksAbove);
 	gfWeihgtSlider->setValue(weightStep);
 	connect(gfWeihgtSlider, SIGNAL(sliderReleased()), this, SLOT(solveVField()));
@@ -129,8 +129,8 @@ void vectorFieldControlWidget::solveVField()
 	srcFlow = pow(10, srcFlow-1);
 
 	float weight = gfWeihgtSlider->value();
-	weight = weight/weightStep;
-	weight = weightMax*pow(10, weight-weightMax);
+	weight = 8*weight/weightStep;
+	weight = pow(10, weight-8) - pow(10,-8.f);
 	weight = (weight > 0 ? weight: 0.f);
 
 	float constraintLength = pow(10, -1 + (0.f + gfLengthSlider->value())/lengthStep);
@@ -165,11 +165,16 @@ void vectorFieldControlWidget::solveVField()
 			Model::getModel()->getVField());
 	}
 	else{
-		solver->solveDirectional(verts, constr,
+	/*	solver->solveDirectional(verts, constr,
 			Model::getModel()->getInputCollector().getFaces(),
 			Model::getModel()->getInputCollector().getFaceDir(),
 			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
 			constraintLength,
+			Model::getModel()->getVField());*/
+		solver->solveLengthEstimated(verts, constr,
+			Model::getModel()->getInputCollector().getFaces(),
+			Model::getModel()->getInputCollector().getFaceDir(),
+			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
 			Model::getModel()->getVField());
 	}
 

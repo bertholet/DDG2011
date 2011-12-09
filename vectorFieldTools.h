@@ -9,7 +9,14 @@ public:
 	vectorFieldTools(void);
 	~vectorFieldTools(void);
 
-	static void oneFormToVector();
+	static void oneFormToVector(tuple3i & face,
+		tuple3i & f2e,
+		vector<tuple2i> & edges,
+		vector<tuple3f> & verts,
+		tuple3f & oneForm, 
+		tuple3f & bari_coord,
+		tuple3f & target_dir);
+
 	static void vectorToOneForm( tuple3f & dir, 
 		int faceNr, vector<tuple3i> & fc2e, 
 		vector<tuple2i> & edges, 
