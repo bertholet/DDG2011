@@ -76,6 +76,9 @@ void Model::setVField( VectorField * field )
 
 VectorField * Model::getVField()
 {
+	if(vField == NULL){
+		initVectorField();
+	}
 	return this->vField;
 }
 

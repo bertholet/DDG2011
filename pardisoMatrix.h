@@ -17,14 +17,30 @@ public:
 	std::vector<double> a;
 
 	pardisoMatrix(void);
+	//vals are copied. Do not forget ia must have size dim+1
+	pardisoMatrix(int * ia_, int * ja_,double * a_,
+		 int dim, int nr_vals);
 	~pardisoMatrix(void);
 
 	void initMatrix(pardisoMatCreator & creator, int dim, myStatusBar * bar = NULL);
 
+	//////////////////////////////////////////////////////////////////////////
+	// return dim of this square matrix.
+	//////////////////////////////////////////////////////////////////////////
 	int dim();
+	
+	//////////////////////////////////////////////////////////////////////////
+	// store Matrix in matlab executable format in a file.
+	// Handy for debugging and analysis.
+	//////////////////////////////////////////////////////////////////////////
 	void saveMatrix(std::string file);
 	void saveVector(std::vector<double> & vctor, std::string  name, 
 		std::string  file );
+
+	//////////////////////////////////////////////////////////////////////////
+	// Stores the indices i in target, such that a[i] is a value on the diagonal
+	// Usefull e.g if you want to add epsilon to the diagonal.
+	//////////////////////////////////////////////////////////////////////////
 	void getDiagonalIndices( std::vector<int> & target_ind );
 
 	//////////////////////////////////////////////////////////////////////////
@@ -33,4 +49,13 @@ public:
 	// ELSE an assertion will fail and an error be thrown
 	//////////////////////////////////////////////////////////////////////////
 	void add( int i, int j, float val );
+
+	//////////////////////////////////////////////////////////////////////////
+	// Matrix multiplication. Note that even it is handy to use a temporary
+	// sparse matrix is created and returned BY VALUE. 
+	// Note also: this works only for Matrices that are fully stored, i.e. symmetricity is not used 
+	// by storing only the upper half of the matrix
+	//////////////////////////////////////////////////////////////////////////
+	pardisoMatrix operator*(pardisoMatrix & other);
+
 };

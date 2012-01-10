@@ -6,6 +6,18 @@ pardisoMatrix::pardisoMatrix(void)
 {
 }
 
+pardisoMatrix::pardisoMatrix( int * ia_, int *ja_,
+							 double * a_, int dim, int nr_vals)
+{
+	for(int i = 0; i <= dim; i++){
+		this->ia.push_back(ia_[i]);
+	}
+	for(int j = 0; j< nr_vals; j++){
+		this->ja.push_back(ja_[j]);
+		this->a.push_back(a_[j]);
+	}
+}
+
 pardisoMatrix::~pardisoMatrix(void)
 {
 }
@@ -156,4 +168,69 @@ void pardisoMatrix::add( int i, int j, float val )
 		assert(false);
 		throw std::runtime_error("Error in pardisoMatrix::add : (i,j) not a Matrix Entry");
 	}
+}
+
+pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
+{
+	assert(B.dim() == this->dim());
+	pardisoMatrix AB;
+	AB.ia.push_back(1);
+
+	int Aia_start, Aia_stop, next_j, k;
+	double val;
+	std::vector<int> b_idx, b_stop;
+
+	for(int i = 0; i < dim(); i++){
+		//new this.ia[i]
+		Aia_start = this->ia[i]-1;
+		Aia_stop = this->ia[i+1]-1;
+
+		//reset b_idx and b_stop
+		b_idx.clear();
+		b_stop.clear();
+		for(int l = Aia_start; l < Aia_stop; l++){
+			k=this->ja[l]-1; //loop k s.t. A(i,k) != 0;
+			b_idx.push_back(B.ia[k]-1); //index of first val in row k for matrix B
+										//j = B.ja[b_idx] first j such that B(k,j)!=0;
+			b_stop.push_back(B.ia[k+1]-1); //at b_stop the next row starts.
+		}
+
+		//loop the j such that A*B(i,j)!=0
+		while(true){
+			//find next j value
+			next_j = dim()+1; //invalid index for break condition
+			for(int l = 0; l < Aia_stop-Aia_start; l++){
+				if( b_idx[l] < b_stop[l] && next_j >B.ja[b_idx[l]]){
+					next_j = B.ja[b_idx[l]];
+				}
+			}
+
+			//break condition
+			if(next_j > dim()) 
+				break;
+
+			//calculate A*B(i,next_j)
+			val = 0;
+			for(int l=Aia_start, l2 = 0; l < Aia_stop; l++, l2++){
+				//"B(k,next_j)!=0"
+				if(B.ja[b_idx[l2]] == next_j){
+					val+=this->a[l]*B.a[b_idx[l2]];
+					b_idx[l2]++;//this row is done. Advance to next non zero row
+				}
+			}
+
+			//store values
+			AB.ja.push_back(next_j);
+			AB.a.push_back(val);
+
+		}
+
+		//adapt AB.ia
+		AB.ia.push_back(AB.a.size()+1);
+
+		
+	}
+		
+
+	return AB;
 }
