@@ -32,6 +32,9 @@ public:
 	
 	//bool curvNormalsAcitvated();
 
+	mesh & getBasicMesh(){
+		return *myMesh;
+	}
 	vector<tuple3f> * getCurvNormals();
 	vector<tuple2i> * getHalfedges();
 	vector<tuple3i> * getFace2Halfedges();

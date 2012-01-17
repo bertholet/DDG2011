@@ -234,3 +234,12 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 
 	return AB;
 }
+
+void pardisoMatrix::elementWiseInv(double eps)
+{
+	for(int i = 0; i < a.size(); i++){
+		if(a[i]> eps || a[i]< -eps){
+			a[i] = 1/ a[i];
+		}
+	}
+}

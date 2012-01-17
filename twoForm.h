@@ -1,8 +1,8 @@
 #pragma once
 
-class 2Form
+class twoForm
 {
 public:
-	2Form(void);
-	~2Form(void);
+	twoForm(void);
+	~twoForm(void);
 };
