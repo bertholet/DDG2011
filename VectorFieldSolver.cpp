@@ -4,7 +4,6 @@
 #include <algorithm>
 //#define PRINTMAT
 
-
 VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
 									 myStatusBar * statusBar)
 {

@@ -230,6 +230,9 @@ float Operator::aVornoi( int vertNr, mesh & m)
 	return Avornoi / 8;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// dualEdge Edge ratio of the edge (i,j) where i,j are the vertex Indices
+//////////////////////////////////////////////////////////////////////////
 float Operator::dualEdge_edge_ratio( int i, int j, mesh & m )
 {
 	int prev = meshOperation::getPrevious(i, j, m);	

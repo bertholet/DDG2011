@@ -10,7 +10,7 @@ public:
 
 	static pardisoMatrix d0( meshMetaInfo & aMesh );
 	static pardisoMatrix d1( meshMetaInfo & aMesh );
-	static pardisoMatrix d2( meshMetaInfo & aMesh );
+	//static pardisoMatrix d2( meshMetaInfo & aMesh );
 
 	//vornoi Area / 1
 	static pardisoMatrix star0( meshMetaInfo & aMesh );
@@ -19,7 +19,7 @@ public:
 	//1 / volume
 	static pardisoMatrix star2( meshMetaInfo & aMesh );
 
-	static pardisoMatrix delta0( meshMetaInfo & aMesh );
+
 	static pardisoMatrix delta1( meshMetaInfo & aMesh );
 	static pardisoMatrix delta2( meshMetaInfo & aMesh );
 };

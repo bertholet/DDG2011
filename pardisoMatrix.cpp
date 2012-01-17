@@ -219,10 +219,13 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 				}
 			}
 
-			//store values
-			AB.ja.push_back(next_j);
-			AB.a.push_back(val);
+			if(val!= 0)
+			{
+				//store values
+				AB.ja.push_back(next_j);
+				AB.a.push_back(val);
 
+			}
 		}
 
 		//adapt AB.ia
@@ -233,6 +236,78 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 		
 
 	return AB;
+}
+
+
+pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
+{
+	assert(B.dim() == this->dim());
+	pardisoMatrix AB;
+	AB.ia.push_back(1);
+
+	int Aia_start, Aia_stop, next_j, k;
+	double val;
+//	std::vector<int> b_idx, b_stop;
+	int Bia_start, Bia_stop;
+
+	for(int i = 0; i < dim(); i++){
+		//new this.ia[i]
+		Aia_start = this->ia[i]-1;
+		Aia_stop = this->ia[i+1]-1;
+
+		//loop the j such that A*B(i,j)!=0
+		for(int j = 0; j < B.dim(); j++){
+			//find next j value
+			next_j = j+1; 
+			Bia_start = B.ia[j] -1;
+			Bia_stop = B.ia[j+1] -1; // first index of next row
+
+			if(this->ja[Aia_start] > B.ja[Bia_stop-1] || 
+				this->ja[Aia_stop-1] < B.ja[Bia_start]){
+					continue;
+			}
+
+			//calculate (A*B^T)(i,next_j)
+			val = 0;
+			for(int l=Aia_start, l2 = Bia_start; l < Aia_stop && l2 < Bia_stop; l++){
+				//"B(k,next_j)!=0"
+				while(B.ja[l2] < this->ja[l] && l2 < Bia_stop){
+					l2++;
+				}
+				while(this->ja[l] <B.ja[l2] && l < Aia_stop){
+					l++;
+				}
+
+				if(B.ja[l2] == this->ja[l] && l<Aia_stop && l2 < Bia_stop){
+					val+=this->a[l]*B.a[l2];
+					l2++;
+					l++;
+				}
+			}
+
+			if(val!=0){
+				//store values
+				AB.ja.push_back(next_j);
+				AB.a.push_back(val);
+			}
+		}
+
+		//adapt AB.ia
+		AB.ia.push_back(AB.a.size()+1);
+
+
+	}
+
+
+	return AB;
+}
+
+pardisoMatrix pardisoMatrix::operator+( pardisoMatrix & B )
+{
+	pardisoMatrix AnB;
+	assert(false);
+	// todo implement
+	return AnB;
 }
 
 void pardisoMatrix::elementWiseInv(double eps)

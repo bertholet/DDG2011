@@ -3,7 +3,7 @@
 #include "mesh.h"
 //#include "TutteWeights.h"
 //#include "TutteDemo.h"
-//#include "pardisoMatrix.h"
+#include "pardisoMatrix.h"
 
 #include "matrixf.h"
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	double a2[] = {3,1,1,4,3,2,1};
 	pardisoMatrix A2(ia2,ja2,a2,5,7);
 
-	pardisoMatrix C = A*A2;*/
+	pardisoMatrix C = A%A2;*/
 
 
 	return app.exec();
