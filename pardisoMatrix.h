@@ -7,6 +7,11 @@
 #include "pardisoMatCreator.h"
 #include "mystatusbar.h"
 
+//////////////////////////////////////////////////////////////////////////
+//Note: while indirect definition of matrices is 0 based, direct manipulation
+// of the intern variables (via getia , iapush_back etc) has to be 1 based.
+//
+//////////////////////////////////////////////////////////////////////////
 
 class pardisoMatrix
 {
@@ -66,7 +71,7 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// psuhback with adaptation of dimension variables
+	// psuhback with adaptation of dimension variables. pushback 1 based variables!
 	//////////////////////////////////////////////////////////////////////////
 	void iapush_back(int i){
 		ia.push_back(i);
@@ -74,8 +79,8 @@ public:
 	}
 	void japush_back(int j){
 		ja.push_back(j);
-		if(j > m+1){
-			m = j-1;
+		if(j > m){
+			m = j;
 		}
 	}
 	void apush_back(double val){

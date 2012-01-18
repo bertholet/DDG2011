@@ -22,16 +22,16 @@ int main(int argc, char *argv[])
 	delete bunny;
 	return 0;*/
 
-	/*int ia[] = {1,2,3,4,5,7};
-	int ja[] = {1,2,3,4,1,5};
+	int ia[] = {1,2,3,4,5,7};
+	int ja[] = {1,2,3,4,1,6};
 	double a[] = {2,3,1,4,1,3};
 	pardisoMatrix A(ia,ja,a,6,6);
-	int ia2[] = {1,3,4,5,7,8};
-	int ja2[] = {1,2,2,3,3,4,5};
-	double a2[] = {3,1,1,4,3,2,1};
-	pardisoMatrix A2(ia2,ja2,a2,6,7);
+	int ia2[] = {1,3,4,5,7,8,9};
+	int ja2[] = {1,2,2,3,3,4,5,6};
+	double a2[] = {3,1,1,4,3,2,1,2};
+	pardisoMatrix A2(ia2,ja2,a2,7,8);
 
-	pardisoMatrix C = A+A2;*/
+	pardisoMatrix C = A*A2;
 
 
 	return app.exec();
