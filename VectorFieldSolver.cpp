@@ -2,7 +2,9 @@
 #include "Model.h"
 #include "vectorFieldTools.h"
 #include <algorithm>
-//#define PRINTMAT
+#define PRINTMAT
+
+#include "DDGMatrices.h"
 
 VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
 									 myStatusBar * statusBar)
@@ -13,6 +15,21 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
+/////////////////////////// ID IE IB IU IG ///////////////////////////////
+	meshMetaInfo & m = * Model::getModel()->getMeshInfo();
+	pardisoMatrix d0 =  DDGMatrices::d0(m);
+	pardisoMatrix d1 =  DDGMatrices::d1(m);
+	pardisoMatrix delta1 =  DDGMatrices::delta1(m);
+	pardisoMatrix delta2 =  DDGMatrices::delta2(m);
+	pardisoMatrix mat2 = DDGMatrices::d0(m) * DDGMatrices::delta1(m) +
+		DDGMatrices::delta2(m) * DDGMatrices::d1(m);
+
+	d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_d0.m");
+	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_d1.m");
+	delta1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_delta1.m");
+	delta2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_delta2.m");
+	mat2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_ddglap.m");
+/////////////////////////////////////////////////////////////////////////
 	solver->setMatrix(*mat, 1);
 	mat->getDiagonalIndices(this->diagonalMatInd);
 

@@ -3,6 +3,7 @@
 #include "pardisoMatCreator.h"
 #include "tuple3.h"
 #include "Operator.h"
+#include <algorithm>
 
 class d_0Creator: public pardisoMatCreator
 {
@@ -24,8 +25,14 @@ public:
 	void indices(int row, std::vector<int> & target){
 		target.clear();
 		tuple2i & edge =(*mesh->getHalfedges())[row];
-		target.push_back(edge.a);
-		target.push_back(edge.b);
+		if( edge.a < edge.b){
+			target.push_back(edge.a);
+			target.push_back(edge.b);
+		}
+		else{
+			target.push_back(edge.b);
+			target.push_back(edge.a);
+		}
 	}
 };
 
@@ -41,9 +48,9 @@ public:
 
 	float val(int i , int j){
 		// i is the row
-		tuple3i & f2e =(*mesh->getFace2Halfedges())[i];
+		tuple3i & fc =(mesh->getBasicMesh().getFaces())[i];
 		
-		return f2e.orientation((*mesh->getHalfedges())[j]);
+		return fc.orientation((*mesh->getHalfedges())[j]);
 	}
 
 	// row: its the face number; 
@@ -53,6 +60,8 @@ public:
 		target.push_back(f2e.a);
 		target.push_back(f2e.b);
 		target.push_back(f2e.c);
+
+		sort(target.begin(), target.end());
 	}
 };
 
@@ -211,7 +220,7 @@ pardisoMatrix DDGMatrices::delta1( meshMetaInfo & aMesh )
 pardisoMatrix DDGMatrices::delta2( meshMetaInfo & aMesh )
 {
 	pardisoMatrix star_2= star2(aMesh);
-	pardisoMatrix d_2 = d0(aMesh);
+	pardisoMatrix d_2 = d1(aMesh);
 
 	pardisoMatrix star_1_inv = star1(aMesh);
 	star_1_inv.elementWiseInv(0.00000001);

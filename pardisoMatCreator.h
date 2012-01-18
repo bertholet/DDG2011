@@ -15,7 +15,7 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// stores a list of all indices j (0 based) in target, that contains all indices with
-	// val(row,j) != 0. val(row, j) = 0 is allowed.
+	// val(row,j) != 0. val(row, j) = 0 is allowed. Sorted indices.
 	//////////////////////////////////////////////////////////////////////////
 	virtual void indices(int row, std::vector<int> & target)=0;
 }; 

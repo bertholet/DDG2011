@@ -26,29 +26,27 @@ pardisoMatrix::~pardisoMatrix(void)
 {
 }
 
-void pardisoMatrix::initMatrix( pardisoMatCreator & creator, int dim , myStatusBar * bar )
+void pardisoMatrix::initMatrix( pardisoMatCreator & creator, int n , myStatusBar * bar )
 {
 	std::vector<int> js;
 	int j;
-	int stp = dim/100 +1;
-	int max = (dim - dim%stp)/stp;
+	int stp = n/100 +1;
+	int max = (n - n%stp)/stp;
 	int nrStp = 0;
 	if(bar != NULL){
 		bar->setBar(0,max);
 	}
 
-	ia.clear();
-	ja.clear();
-	a.clear();
+	this->clear();
 
-	for(int i = 0; i < dim ; i++){
+	for(int i = 0; i < n ; i++){
 		creator.indices(i,js);
-		ia.push_back(a.size() +1); //stupid one based notation...
+		iapush_back(a.size() +1); //stupid one based notation...
 
 		for(int k = 0; k < js.size(); k++){
 			j = js[k];
-			a.push_back(creator.val(i,j));
-			ja.push_back(j+1);
+			apush_back(creator.val(i,j));
+			japush_back(j+1);
 		}
 
 		if(bar != NULL && i % stp == 0){
@@ -57,7 +55,7 @@ void pardisoMatrix::initMatrix( pardisoMatCreator & creator, int dim , myStatusB
 
 
 	}
-	ia.push_back(a.size() +1);
+	iapush_back(a.size() +1);
 }
 
 void pardisoMatrix::saveMatrix( std::string file )
