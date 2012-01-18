@@ -200,25 +200,30 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 			b_stop.push_back(B.ia[k+1]-1); //at b_stop the next row starts.
 		}
 
+		//b_idx contains now the indices of the values in B.a of the rows k  with A(i,k) != 0
+		//has size Aia_stop-Aia_start.
+
 		//loop the j such that A*B(i,j)!=0
 		while(true){
-			//find next j value
-			next_j = B.getm()+1; //invalid index for break condition
+			//find next j value : the first column with unconsidered values
+			//i.e. will multiply row i of A with column next_j
+			next_j = B.getm()+2; //invalid index for break condition
 			for(int l = 0; l < Aia_stop-Aia_start; l++){
+				//value not considered and in a column earlier than next_j
 				if( b_idx[l] < b_stop[l] && next_j >B.ja[b_idx[l]]){
 					next_j = B.ja[b_idx[l]];
 				}
 			}
 
 			//break condition
-			if(next_j > B.getm()) 
+			if(next_j > B.getm()+1) 
 				break;
 
 			//calculate A*B(i,next_j)
 			val = 0;
-			for(int l=Aia_start, l2 = 0; l < Aia_stop; l++, l2++){
-				//"B(k,next_j)!=0"
-				if(B.ja[b_idx[l2]] == next_j){
+			for(int l=Aia_start,l2 = 0; l < Aia_stop; l++,l2++){
+				//"B(k,next_j)!=0" i.e. multiplicating row i with column j
+				if(B.ja[b_idx[l2]] == next_j && b_idx[l2] < b_stop[l2]){
 					val+=this->a[l]*B.a[b_idx[l2]];
 					b_idx[l2]++;//this row is done. Advance to next non zero row
 				}

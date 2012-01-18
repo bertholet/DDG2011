@@ -26,6 +26,7 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	pardisoMatrix star2 =  DDGMatrices::star2(m);
 	pardisoMatrix mat2 = DDGMatrices::d0(m) * DDGMatrices::delta1(m) +
 		DDGMatrices::delta2(m) * DDGMatrices::d1(m);
+	//pardisoMatrix test = DDGMatrices::delta2(m) * DDGMatrices::d1(m);
 	
 	d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_d0.m");
 	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_d1.m");
@@ -35,8 +36,8 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_star1.m");
 	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_star2.m");
 	mat2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_ddglap.m");
-	
-/////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
 	solver->setMatrix(*mat, 1);
 	mat->getDiagonalIndices(this->diagonalMatInd);
 
