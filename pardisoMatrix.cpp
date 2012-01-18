@@ -172,8 +172,11 @@ void pardisoMatrix::add( int i, int j, float val )
 
 pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 {
-	assert(B.dim() == this->dim());
+	//assert(B.dim() == this->dim());
 	pardisoMatrix AB;
+	AB.ia.reserve(this->dim());
+	AB.ja.reserve(3*this->dim());
+	AB.a.reserve(3*this->dim());
 	AB.ia.push_back(1);
 
 	int Aia_start, Aia_stop, next_j, k;
@@ -243,6 +246,10 @@ pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 {
 	assert(B.dim() == this->dim());
 	pardisoMatrix AB;
+
+	AB.ia.reserve(this->dim());
+	AB.ja.reserve(3*this->dim());
+	AB.a.reserve(3*this->dim());
 	AB.ia.push_back(1);
 
 	int Aia_start, Aia_stop, next_j, k;
@@ -304,9 +311,48 @@ pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 
 pardisoMatrix pardisoMatrix::operator+( pardisoMatrix & B )
 {
+	assert(dim() == B.dim());
 	pardisoMatrix AnB;
-	assert(false);
-	// todo implement
+	AnB.ia.reserve(this->dim());
+	AnB.ja.reserve(3*this->dim());
+	AnB.a.reserve(3*this->dim());
+	AnB.ia.push_back(1);
+	
+	int Aia_start, Aia_stop, Bia_start, Bia_stop;
+	int j1, j2;
+	float val;
+	
+	for(int i = 0; i < dim(); i++){
+		Aia_start = this->ia[i]-1;
+		Aia_stop = this->ia[i+1]-1;
+		Bia_start = B.ia[i]-1;
+		Bia_stop = B.ia[i+1]-1;
+		for(j1 = Aia_start, j2 = Bia_start; j1 <Aia_stop || j2 < Bia_stop;){
+			if(this->ja[j1]< B.ja[j2] && j1 < Aia_stop || j2 >= Bia_stop){
+				AnB.ja.push_back(this->ja[j1]);
+				val = this->a[j1];
+				j1++;
+			}
+			else if (this->ja[j1]> B.ja[j2] && j2 < Bia_stop || j1 >= Aia_stop){
+				AnB.ja.push_back(B.ja[j2]);
+				val = B.a[j2];
+				j2++;
+			}
+			else{
+				AnB.ja.push_back(B.ja[j2]);
+				val = B.a[j2] + this->a[j1];
+				j1++;
+				j2++;
+			}
+
+			if( val!= 0){
+				AnB.a.push_back(val);
+			}
+		} 	
+
+		//adapt AB.ia
+		AnB.ia.push_back(AnB.a.size()+1);
+	}
 	return AnB;
 }
 

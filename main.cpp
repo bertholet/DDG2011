@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	delete bunny;
 	return 0;*/
 
-/*	int ia[] = {1,2,3,4,5,7};
+	/*int ia[] = {1,2,3,4,5,7};
 	int ja[] = {1,2,3,4,1,5};
 	double a[] = {2,3,1,4,1,3};
 	pardisoMatrix A(ia,ja,a,5,6);
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	double a2[] = {3,1,1,4,3,2,1};
 	pardisoMatrix A2(ia2,ja2,a2,5,7);
 
-	pardisoMatrix C = A%A2;*/
+	pardisoMatrix C = A+A2;*/
 
 
 	return app.exec();
