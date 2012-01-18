@@ -254,8 +254,9 @@ void oneFormLaplacian::addZToMat( vector<int> & constr_edges,
 			pardisoMatrix * mat )
 {
 
+	std::vector<double> & a = mat->geta(); 
 	for(int i = 0; i < constr_edges.size(); i++){ //edgenrs unique
-		mat->a[diagonalMatInd[constr_edges[i]]] +=weight;
+		a[diagonalMatInd[constr_edges[i]]] +=weight;
 	}
 
 /*	set<int> indices;
@@ -284,8 +285,10 @@ void oneFormLaplacian::substractZFromMat( vector<int> & constr_edges,
 			pardisoMatrix * mat )
 {
 
+	std::vector<double> & a = mat->geta(); 
+
 	for(int i = 0; i < constr_edges.size(); i++){ //edgenrs unique?
-		mat->a[diagonalMatInd[constr_edges[i]]] -=weight;
+		a[diagonalMatInd[constr_edges[i]]] -=weight;
 	}
 	/*tuple3i edgs;
 	set<int> indices;

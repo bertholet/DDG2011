@@ -89,12 +89,12 @@ public:
 		int phase = -1;
 		int maxfct =1; /*max nr of factorizations*/
 		int mnum =1; /* Which factorization to use. */
-		int n = matrix->ia.size()-1;
+		int n = matrix->dim();
 
-		if(matrix->a.size() > 0){
+		if(matrix->geta().size() > 0){
 			int idumm;
 			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &matrix->a[0], &matrix->ia[0], &matrix->ja[0], &idumm, &nrhs,
+				&n, &matrix->geta()[0], &matrix->getia()[0], &matrix->getja()[0], &idumm, &nrhs,
 				int_params, &print_stats, NULL, NULL, &error, double_params);
 
 		}
@@ -102,7 +102,7 @@ public:
 			double ddumm;
 			int idumm;
 			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &ddumm, &matrix->ia[0], &idumm, &idumm, &nrhs,
+				&n, &ddumm, &matrix->getia()[0], &idumm, &idumm, &nrhs,
 				int_params, &print_stats, &ddumm, &ddumm, &error, double_params);
 		}
 		isInUse = false;
@@ -118,19 +118,20 @@ public:
 	/************************************************************************/
 	void setMatrix(pardisoMatrix & mat, int nr_righthandsides)
 	{
+		assert(mat.getn() == mat.getm());
 		matrix = &mat;
 		nrhs = nr_righthandsides;
-		if(mat.a.size() > 0){
+		if(mat.geta().size() > 0){
 			checkMatrix(matrix_type, mat);
 
 			//factorization: symbolic and numerical
 			int phase = 12;
 			int maxfct =1; /*max nr of factorizations*/
 			int mnum =1; /* Which factorization to use. */
-			int n = mat.ia.size()-1;
+			int n = mat.dim();
 
 			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &mat.a[0], &mat.ia[0], &mat.ja[0], NULL, &nr_righthandsides,
+				&n, &mat.geta()[0], &mat.getia()[0], &mat.getja()[0], NULL, &nr_righthandsides,
 				int_params, &print_stats, NULL, NULL, &error, double_params);
 		}
 		else{
@@ -138,11 +139,11 @@ public:
 			int phase = 12;
 			int maxfct =1; /*max nr of factorizations*/
 			int mnum =1; /* Which factorization to use. */
-			int n = mat.ia.size()-1;
+			int n = mat.dim();
 			double ddumm;
 			int idumm;
 			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &ddumm, &mat.ia[0], &idumm, NULL, &nr_righthandsides,
+				&n, &ddumm, &mat.getia()[0], &idumm, NULL, &nr_righthandsides,
 				int_params, &print_stats, NULL, NULL, &error, double_params);
 		}
 		if(error != 0){
@@ -161,14 +162,15 @@ public:
 	}
 
 	void solve(double *x, double * b){
+		assert(matrix->getn() == matrix->getm());
 		int phase = 33;
 		int maxfct =1; /*max nr of factorizations*/
 		int mnum =1; /* Which factorization to use. */
-		int n = matrix->ia.size()-1;
+		int n = matrix->dim();
 
 		error = 0;
 		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &matrix->a[0], &matrix->ia[0], &matrix->ja[0], NULL, &nrhs,
+			&n, &matrix->geta()[0], &matrix->getia()[0], &matrix->getja()[0], NULL, &nrhs,
 			int_params, &print_stats, b, x, &error, double_params);
 
 		if(error != 0){
@@ -178,10 +180,10 @@ public:
 
 	static void checkMatrix( int matrix_type, pardisoMatrix & mat ) 
 	{
-		int n = mat.ia.size() -1;
+		int n = mat.dim();
 		int err;
-		pardiso_chkmatrix  (&matrix_type, &n, & mat.a[0], & mat.ia[0], 
-			& mat.ja[0], &err);
+		pardiso_chkmatrix  (&matrix_type, &n, & mat.geta()[0], & mat.getia()[0], 
+			& mat.getja()[0], &err);
 
 		if (err != 0) {
 			printf("\nERROR in consistency of matrix: %d", err);

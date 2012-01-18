@@ -4,17 +4,19 @@
 
 pardisoMatrix::pardisoMatrix(void)
 {
+	n= 0;
+	m= 0;
 }
 
 pardisoMatrix::pardisoMatrix( int * ia_, int *ja_,
-							 double * a_, int dim, int nr_vals)
+							 double * a_, int sz_ia, int sz_ja)
 {
-	for(int i = 0; i <= dim; i++){
-		this->ia.push_back(ia_[i]);
+	for(int i = 0; i < sz_ia; i++){
+		this->iapush_back(ia_[i]);
 	}
-	for(int j = 0; j< nr_vals; j++){
-		this->ja.push_back(ja_[j]);
-		this->a.push_back(a_[j]);
+	for(int j = 0; j< sz_ja; j++){
+		this->japush_back(ja_[j]);
+		this->apush_back(a_[j]);
 	}
 }
 
@@ -172,12 +174,12 @@ void pardisoMatrix::add( int i, int j, float val )
 
 pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 {
-	//assert(B.dim() == this->dim());
+	assert(B.n == this->m);
 	pardisoMatrix AB;
 	AB.ia.reserve(this->dim());
 	AB.ja.reserve(3*this->dim());
 	AB.a.reserve(3*this->dim());
-	AB.ia.push_back(1);
+	AB.iapush_back(1);
 
 	int Aia_start, Aia_stop, next_j, k;
 	double val;
@@ -225,14 +227,14 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 			if(val!= 0)
 			{
 				//store values
-				AB.ja.push_back(next_j);
-				AB.a.push_back(val);
+				AB.japush_back(next_j);
+				AB.apush_back(val);
 
 			}
 		}
 
 		//adapt AB.ia
-		AB.ia.push_back(AB.a.size()+1);
+		AB.iapush_back(AB.a.size()+1);
 
 		
 	}
@@ -244,7 +246,7 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 
 pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 {
-	assert(B.dim() == this->dim());
+	assert(B.m == this->m && this->dim() == B.dim());
 	pardisoMatrix AB;
 
 	AB.ia.reserve(this->dim());
@@ -363,4 +365,13 @@ void pardisoMatrix::elementWiseInv(double eps)
 			a[i] = 1/ a[i];
 		}
 	}
+}
+
+void pardisoMatrix::clear()
+{
+	a.clear();
+	ia.clear();
+	ja.clear();
+	n = 0;
+	m= 0;
 }

@@ -468,22 +468,21 @@ void TutteWeights::setUp_angleMat( vector<float> &angles, vector<float> &lambdas
 {
 	int sz = angles.size();
 	int par_j,j;
-	target.ia.clear();
-	target.ja.clear();
-	target.a.clear();
+	target.clear();
 
+	//note this method should be refactored to use matrix creator
 	for(int i= 0; i< 2*sz; i++){
-		target.ia.push_back(target.a.size()+1);
+		target.iapush_back(target.geta().size()+1);
 		if(i%sz-2>=0 && i%sz+2 < sz){
 			for(par_j=i-2; par_j <=i+2; par_j++){
 				j= (par_j+sz)%sz; //% of negatives is ill defined
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 			for(par_j=i-2; par_j <=i+2; par_j++){
 				j= (par_j+sz)%sz + sz;
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 		}
 		//stupid indices have to be ordered ascendingly. just stupid.
@@ -491,52 +490,52 @@ void TutteWeights::setUp_angleMat( vector<float> &angles, vector<float> &lambdas
 
 			for(par_j=0; par_j <=i%sz+2; par_j++){
 				j= (par_j+sz)%sz; //% of negatives is ill defined
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 			for(par_j=i%sz-2; par_j <0; par_j++){
 				j= (par_j+sz)%sz; //% of negatives is ill defined
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 
 			for(par_j=0; par_j <=i%sz+2; par_j++){
 				j= (par_j+sz)%sz + sz;
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 			for(par_j=i%sz-2; par_j <0; par_j++){
 				j= (par_j+sz)%sz + sz;
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 
 		}
 		else if(i%sz+2>=sz){
 			for(par_j=sz; par_j <=i%sz+2; par_j++){
 				j= (par_j+sz)%sz; //% of negatives is ill defined
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 			for(par_j=i%sz-2; par_j <sz; par_j++){
 				j= (par_j+sz)%sz; //% of negatives is ill defined
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 
 			for(par_j=sz; par_j <=i%sz+2; par_j++){
 				j= (par_j+sz)%sz + sz;
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 			for(par_j=i%sz-2; par_j <sz; par_j++){
 				j= (par_j+sz)%sz + sz;
-				target.ja.push_back(j+1);
-				target.a.push_back(angleMat(i,j,angles,lambdas));
+				target.japush_back(j+1);
+				target.apush_back(angleMat(i,j,angles,lambdas));
 			}
 		}
 	}
-	target.ia.push_back(target.a.size()+1);
+	target.iapush_back(target.geta().size()+1);
 }
 
 void TutteWeights::setUp_fullAndAngleBased( vector<tuple3f> & outerPos ,

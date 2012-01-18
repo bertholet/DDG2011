@@ -210,10 +210,10 @@ void TutteEmbedding::setUp( pardisoMatrix &mat, vector<int> &border, mesh & m,
 	//set up indices some values might be zero. values are assumed to be only at (i,j) if i and j are neighbors
 	
 	count = 1;
-	mat.ia.push_back(1);
+	mat.iapush_back(1);
 	for(int i = 0; i < nrVertices; i++){
 		count+= neighbors[i].size()+1;
-		mat.ia.push_back(count); 
+		mat.iapush_back(count); 
 	}
 
 	for(int i = 0; i < nrVertices;i++){
@@ -230,22 +230,22 @@ void TutteEmbedding::setUp( pardisoMatrix &mat, vector<int> &border, mesh & m,
 
 		for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
 			if(i< *j &&! a_ii_added){
-				mat.ja.push_back(i+1);
+				mat.japush_back(i+1);
 				a_ii_added = true;
-				mat.a.push_back(weights(i,i,m,nbrs_i,nbr_fc_i,border));
+				mat.apush_back(weights(i,i,m,nbrs_i,nbr_fc_i,border));
 			}
-			mat.ja.push_back((*j) +1);
-			mat.a.push_back((factor <0.0001?0:weights(i,*j,m,nbrs_i,nbr_fc_i,border)/factor));
+			mat.japush_back((*j) +1);
+			mat.apush_back((factor <0.0001?0:weights(i,*j,m,nbrs_i,nbr_fc_i,border)/factor));
 
 		}
 		if(!a_ii_added){
-			mat.ja.push_back(i+1);
+			mat.japush_back(i+1);
 			a_ii_added = true;
-			mat.a.push_back(weights(i,i,m,nbrs_i,nbr_fc_i,border));
+			mat.apush_back(weights(i,i,m,nbrs_i,nbr_fc_i,border));
 		}
 	}
 	
-	if(mat.ja.size()+1 != mat.ia.back()){ //last index + 1 
+	if(mat.getja().size()+1 != mat.getia().back()){ //last index + 1 
 		throw std::runtime_error("Assertion failed, matrix malformed");
 	}
 	
@@ -406,7 +406,7 @@ void TutteEmbedding::setUp_multiBorder( pardisoMatrix &mat, vector<vector<int>> 
 	
 
 	count = 1;
-	mat.ia.push_back(1);
+	mat.iapush_back(1);
 
 	//////////////////////////////////////////////////////////////////////////
 	//x's
@@ -433,48 +433,48 @@ void TutteEmbedding::setUp_multiBorder( pardisoMatrix &mat, vector<vector<int>> 
 
 			for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
 				if(i< *j + offset &&! a_ii_added){
-					mat.ja.push_back(i+1);
+					mat.japush_back(i+1);
 					a_ii_added = true;
-					mat.a.push_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
+					mat.apush_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
 				}
-				mat.ja.push_back((*j)+offset +1);
+				mat.japush_back((*j)+offset +1);
 				//note the following makes sense because the sum of vals = 0 means there is only a diagonal element..
-				mat.a.push_back((factor <0.0001? 0: weights(i%nrVertices,*j,m,nbrs_i,nbr_fc_i,NULLBORDER)/factor));
+				mat.apush_back((factor <0.0001? 0: weights(i%nrVertices,*j,m,nbrs_i,nbr_fc_i,NULLBORDER)/factor));
 
 			}
 
 			if(!a_ii_added){
-				mat.ja.push_back(i+1);
+				mat.japush_back(i+1);
 				a_ii_added = true;
-				mat.a.push_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
+				mat.apush_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
 			}
 		}
 		else if (myBorder == outBorder){
-			mat.ja.push_back(i+1);
-			mat.a.push_back(1);
+			mat.japush_back(i+1);
+			mat.apush_back(1);
 		}
 		else{
 
 			calcOrdered(vertexIndices,border[myBorder],borderIndex);
 			for(int k = 0; k < 3; k++){
-				mat.ja.push_back(vertexIndices[k].first +1);
-				mat.a.push_back(TutteWeights::turningWeight(borderIndex +(i<nrVertices? 0:bordersz), 
+				mat.japush_back(vertexIndices[k].first +1);
+				mat.apush_back(TutteWeights::turningWeight(borderIndex +(i<nrVertices? 0:bordersz), 
 					(borderIndex + vertexIndices[k].second+bordersz)%bordersz , 
 					angles[myBorder], lambdas[myBorder]));
 			}
 			for(int k = 0; k < 3; k++){
-				mat.ja.push_back(vertexIndices[k].first +1 +nrVertices);
-				mat.a.push_back(TutteWeights::turningWeight(borderIndex+(i<nrVertices? 0:bordersz), 
+				mat.japush_back(vertexIndices[k].first +1 +nrVertices);
+				mat.apush_back(TutteWeights::turningWeight(borderIndex+(i<nrVertices? 0:bordersz), 
 					(borderIndex + vertexIndices[k].second+bordersz)%bordersz +bordersz, 
 					angles[myBorder], lambdas[myBorder]));
 			}
 
 		}
-		mat.ia.push_back(mat.ja.size() +1);
+		mat.iapush_back(mat.getja().size() +1);
 	}
 
 
-	if(mat.ja.size()+1 != mat.ia.back()){ //last index + 1 
+	if(mat.getja().size()+1 != mat.getia().back()){ //last index + 1 
 		throw std::runtime_error("Assertion failed, matrix malformed");
 	}
 
@@ -506,7 +506,7 @@ void TutteEmbedding::setUp_multiBorder( pardisoMatrix &mat, vector<vector<int>> 
 		//set up indices some values might be zero. values are assumed to be only at (i,j) if i and j are neighbors
 
 	count = 1;
-	mat.ia.push_back(1);
+	mat.iapush_back(1);
 
 	//////////////////////////////////////////////////////////////////////////
 	//x's
@@ -530,31 +530,31 @@ void TutteEmbedding::setUp_multiBorder( pardisoMatrix &mat, vector<vector<int>> 
 
 			for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
 				if(i< *j + offset &&! a_ii_added){
-					mat.ja.push_back(i+1);
+					mat.japush_back(i+1);
 					a_ii_added = true;
-					mat.a.push_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
+					mat.apush_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
 				}
-				mat.ja.push_back((*j)+offset +1);
+				mat.japush_back((*j)+offset +1);
 				//note the following makes sense because the sum of vals = 0 means there is only a diagonal element..
-				mat.a.push_back((factor <0.0001? 0: weights(i%nrVertices,*j,m,nbrs_i,nbr_fc_i,NULLBORDER)/factor));
+				mat.apush_back((factor <0.0001? 0: weights(i%nrVertices,*j,m,nbrs_i,nbr_fc_i,NULLBORDER)/factor));
 
 			}
 
 			if(!a_ii_added){
-				mat.ja.push_back(i+1);
+				mat.japush_back(i+1);
 				a_ii_added = true;
-				mat.a.push_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
+				mat.apush_back(weights(i%nrVertices,i%nrVertices,m,nbrs_i,nbr_fc_i,NULLBORDER));
 			}
 		}
 		else {
-			mat.ja.push_back(i+1);
-			mat.a.push_back(1);
+			mat.japush_back(i+1);
+			mat.apush_back(1);
 		}
-		mat.ia.push_back(mat.ja.size() +1);
+		mat.iapush_back(mat.getja().size() +1);
 	}
 
 
-	if(mat.ja.size()+1 != mat.ia.back()){ //last index + 1 
+	if(mat.getja().size()+1 != mat.getia().back()){ //last index + 1 
 		throw std::runtime_error("Assertion failed, matrix malformed");
 	}
 

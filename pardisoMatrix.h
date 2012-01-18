@@ -10,16 +10,23 @@
 
 class pardisoMatrix
 {
-public:
+private:
 	//indices of the values in the sparse matrix
 	std::vector<int> ia, ja;
 	//values of the elements of the sparse matrix
 	std::vector<double> a;
 
+	int n, m;
+
+public:
 	pardisoMatrix(void);
-	//vals are copied. Do not forget ia must have size dim+1
+	//////////////////////////////////////////////////////////////////////////
+	// vals are copied. a is assumed to have the same size as ja. Do not forget
+	// that the last element of i_a has to be #values +1 and thus has #rows + 1
+	// values.
+	//////////////////////////////////////////////////////////////////////////
 	pardisoMatrix(int * ia_, int * ja_,double * a_,
-		 int dim, int nr_vals);
+		 int sz_ia, int sz_ja);
 	~pardisoMatrix(void);
 
 
@@ -28,11 +35,54 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void initMatrix(pardisoMatCreator & creator, int dim, myStatusBar * bar = NULL);
 
+
 	//////////////////////////////////////////////////////////////////////////
-	// return dim of this square matrix.
+	// clear all data stored
+	//////////////////////////////////////////////////////////////////////////
+	void clear();
+
+	//////////////////////////////////////////////////////////////////////////
+	// return first dim of this matrix.
 	//////////////////////////////////////////////////////////////////////////
 	int dim();
+
+	//////////////////////////////////////////////////////////////////////////
+	// getter
+	//////////////////////////////////////////////////////////////////////////
+	std::vector<int> & getia(void){
+		return ia;
+	}
+	std::vector<int> & getja(void){
+		return ja;
+	}
+	std::vector<double> & geta(void){
+		return a;
+	}
+	int getn(){
+		return n;
+	}
+	int getm(){
+		return m;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// psuhback with adaptation of dimension variables
+	//////////////////////////////////////////////////////////////////////////
+	void iapush_back(int i){
+		ia.push_back(i);
+		n = ia.size()-1;
+	}
+	void japush_back(int j){
+		ja.push_back(j);
+		if(j > m+1){
+			m = j-1;
+		}
+	}
+	void apush_back(double val){
+		a.push_back(val);
+	}
 	
+
 	//////////////////////////////////////////////////////////////////////////
 	// store Matrix in matlab executable format in a file.
 	// Handy for debugging and analysis.
