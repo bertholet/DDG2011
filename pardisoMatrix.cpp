@@ -278,7 +278,7 @@ pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 
 			//calculate (A*B^T)(i,next_j)
 			val = 0;
-			for(int l=Aia_start, l2 = Bia_start; l < Aia_stop && l2 < Bia_stop; l++){
+			for(int l=Aia_start, l2 = Bia_start; l < Aia_stop && l2 < Bia_stop;){
 				//"B(k,next_j)!=0"
 				while(B.ja[l2] < this->ja[l] && l2 < Bia_stop){
 					l2++;
