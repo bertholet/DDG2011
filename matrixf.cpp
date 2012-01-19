@@ -277,3 +277,16 @@ float matrix3f::val( int i, int j )
 	return mat[(i+1)%3][(j+1)%3]*mat[(i+2)%3][(j+2)%3] - 
 		mat[(i+2)%3][(j+1)%3]*mat[(i+1)%3][(j+2)%3];
 }
+
+matrix3f::set( float a11, float a12, float a13, float a21, float a22, float a23, float a31, float a32, float a33 )
+{
+	mat[0][0] = a11;
+	mat[0][1] = a12;
+	mat[0][2] = a13;
+	mat[1][0] = a21;
+	mat[1][1] = a22;
+	mat[1][2] = a23;
+	mat[2][0] = a31;
+	mat[2][1] = a32;
+	mat[2][2] = a33;
+}
