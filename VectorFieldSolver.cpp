@@ -2,9 +2,10 @@
 #include "Model.h"
 #include "vectorFieldTools.h"
 #include <algorithm>
-#define PRINTMAT
-
+//#define PRINTMAT
+#ifdef PRINTMAT
 #include "DDGMatrices.h"
+#endif
 
 VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
 									 myStatusBar * statusBar)
@@ -15,6 +16,7 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
+#ifdef PRINTMAT
 /////////////////////////// ID IE IB IU IG ///////////////////////////////
 	meshMetaInfo & m = * Model::getModel()->getMeshInfo();
 	pardisoMatrix d0 =  DDGMatrices::d0(m);
@@ -37,7 +39,11 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_star2.m");
 	mat2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_ddglap.m");
 
+	mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_before.m");
+
 ////////////////////////////////////////////////////////////////////////
+#endif
+
 	solver->setMatrix(*mat, 1);
 	mat->getDiagonalIndices(this->diagonalMatInd);
 

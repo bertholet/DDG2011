@@ -207,12 +207,12 @@ pardisoMatrix DDGMatrices::star2( meshMetaInfo & aMesh )
 pardisoMatrix DDGMatrices::delta1( meshMetaInfo & aMesh )
 {
 	pardisoMatrix star_1= star1(aMesh);
-	pardisoMatrix d_2 = d0(aMesh);
+	pardisoMatrix d_0 = d0(aMesh);
 
 	pardisoMatrix star_0_inv = star0(aMesh);
 	star_0_inv.elementWiseInv(0.00000001);
 
-	return (star_0_inv % d_2)* star_1;
+	return (star_0_inv % d_0)* star_1;
 
 
 }
@@ -220,12 +220,12 @@ pardisoMatrix DDGMatrices::delta1( meshMetaInfo & aMesh )
 pardisoMatrix DDGMatrices::delta2( meshMetaInfo & aMesh )
 {
 	pardisoMatrix star_2= star2(aMesh);
-	pardisoMatrix d_2 = d1(aMesh);
+	pardisoMatrix d_1 = d1(aMesh);
 
 	pardisoMatrix star_1_inv = star1(aMesh);
 	star_1_inv.elementWiseInv(0.00000001);
 
-	return (star_1_inv % d_2)* star_2;
+	return (star_1_inv % d_1)* star_2;
 }
 
 

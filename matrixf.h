@@ -33,3 +33,20 @@ public:
 private:
 		float inv_helper( int i, int j );
 };
+
+class matrix3f
+{
+
+public:
+	float mat[3][3];
+	matrix3f(float a11, float a12, float a13,
+		 float a21, float a22, float a23,
+		  float a31, float a32, float a33);
+	matrix3f(float  arr[3][3]);
+	tuple3f operator * (tuple3f &other);
+	matrix3f operator * (matrix3f &other);
+	matrix3f inv(void);
+	float det();
+private:
+	float val( int i, int j );
+};

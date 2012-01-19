@@ -21,11 +21,13 @@ public:
 
 	void setOneForm(int faceNr, tuple3f & dir);
 
+	//////////////////////////////////////////////////////////////////////////
 	//will set the oneForm value associated to the oriented halfedge.
 	//if orientation is negative the value will be stored appropriately on
 	//the differently oriented halfedge (-1)
 	//By defining the method like this it forces the user to think about the 
 	//orientation
+	//////////////////////////////////////////////////////////////////////////
 	void setOneForm(int halfedge, int orientation, float val);
 	void setDisplayLength( double param1 );
 

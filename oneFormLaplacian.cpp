@@ -25,7 +25,7 @@ oneFormLaplacian::~oneFormLaplacian(void)
 
 float oneFormLaplacian::val( int i , int j )
 {
-	return valdd(i,j) + val_deltadelta(i,j);
+	return valdd(i,j) - val_deltadelta(i,j);
 }
 
 //weight of edgej for laplacian at edgei

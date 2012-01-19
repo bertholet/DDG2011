@@ -3,7 +3,7 @@
 #include "mesh.h"
 //#include "TutteWeights.h"
 //#include "TutteDemo.h"
-#include "pardisoMatrix.h"
+//#include "pardisoMatrix.h"
 
 #include "matrixf.h"
 

@@ -204,6 +204,7 @@ float Operator::area( int faceNr, mesh & m )
 
 float Operator::aVornoi( int vertNr, mesh & m)
 {
+
 	float Avornoi = 0;
 	int prev, next, nbr;
 	float cot_alpha1, cot_alpha2, tempcot1, tempcot2;
@@ -235,6 +236,7 @@ float Operator::aVornoi( int vertNr, mesh & m)
 //////////////////////////////////////////////////////////////////////////
 float Operator::dualEdge_edge_ratio( int i, int j, mesh & m )
 {
+
 	int prev = meshOperation::getPrevious(i, j, m);	
 	int next = meshOperation::getNext(i, j, m);
 	vector<tuple3f> & verts = m.getVertices();

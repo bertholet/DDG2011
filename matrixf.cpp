@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "matrixf.h"
+#include <math.h>
 
 matrixf::matrixf(void)
 {
@@ -206,3 +207,73 @@ float matrixf::inv_helper( int i, int j )
 }
 
 
+
+matrix3f::matrix3f( float a11, float a12, float a13, float a21, float a22, float a23, float a31, float a32, float a33 )
+{
+	mat[0][0] = a11;
+	mat[0][1] = a12;
+	mat[0][2] = a13;
+	mat[1][0] = a21;
+	mat[1][1] = a22;
+	mat[1][2] = a23;
+	mat[2][0] = a31;
+	mat[2][1] = a32;
+	mat[2][2] = a33;
+}
+
+matrix3f::matrix3f( float arr[3][3] )
+{
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			mat[i][j] = arr[i][j];
+		}
+	}
+}
+
+tuple3f matrix3f::operator*( tuple3f &other )
+{
+	return tuple3f(
+		mat[0][0]* other.x + mat[1][0]* other.y+ mat[2][0]* other.z ,
+		mat[0][1]* other.x + mat[1][1]* other.y+ mat[2][1]* other.z,
+		mat[0][2]* other.x + mat[1][2]* other.y+ mat[2][2]* other.z );
+}
+
+matrix3f matrix3f::operator*( matrix3f &other )
+{
+	float temp[3][3];
+	for (int i = 0; i < 3; i++)
+	{
+		for(int j = 0; j < 3; j++){
+			temp[i][j] = mat[i][0]*other.mat[0][j] +
+				mat[i][1]*other.mat[1][j] +
+				mat[i][2]*other.mat[2][j];
+		}
+	}
+	return matrix3f(temp);
+}
+
+matrix3f matrix3f::inv( void )
+{
+	float det_ = det();
+	float temp[3][3];
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			temp[i][j] = val(j,i) / det_;
+		}
+	}
+
+	return matrix3f(temp);
+}
+
+float matrix3f::det()
+{
+	return mat[0][0]*mat[1][1]*mat[2][2]+mat[0][1]*mat[1][2]*mat[2][1] +
+		mat[0][2]*mat[1][0]*mat[2][1] - mat[0][0]*mat[1][2]*mat[2][1] -
+		mat[0][1]*mat[1][0]*mat[2][2] -mat[0][2]*mat[1][1]*mat[2][0];
+}
+
+float matrix3f::val( int i, int j )
+{
+	return mat[(i+1)%3][(j+1)%3]*mat[(i+2)%3][(j+2)%3] - 
+		mat[(i+2)%3][(j+1)%3]*mat[(i+1)%3][(j+2)%3];
+}
