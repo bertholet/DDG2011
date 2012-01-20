@@ -277,7 +277,7 @@ matrix3f matrix3f::inv( void )
 
 float matrix3f::det()
 {
-	return mat[0][0]*mat[1][1]*mat[2][2]+mat[0][1]*mat[1][2]*mat[2][1] +
+	return mat[0][0]*mat[1][1]*mat[2][2]+mat[0][1]*mat[1][2]*mat[2][0] +
 		mat[0][2]*mat[1][0]*mat[2][1] - mat[0][0]*mat[1][2]*mat[2][1] -
 		mat[0][1]*mat[1][0]*mat[2][2] -mat[0][2]*mat[1][1]*mat[2][0];
 }
