@@ -23,6 +23,7 @@ public:
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap * map);
 	void setNormedFieldDisplay(bool);
+	void setPointCloudDisplay(bool);
 	void resetStrokes();
 	void setLineWidth( float param1 );
 
@@ -42,6 +43,7 @@ private:
 
 	bool normedVField;
 	bool displayVField;
+	bool displayPointCloud;
 	trackBallListener * tBallListener;
 	mouseStrokeListener * strokeListener;
 	//for the trackball

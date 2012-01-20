@@ -206,7 +206,15 @@ float matrixf::inv_helper( int i, int j )
 	return res;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Matrix3f
+//////////////////////////////////////////////////////////////////////////
 
+
+matrix3f::matrix3f( void )
+{
+
+}
 
 matrix3f::matrix3f( float a11, float a12, float a13, float a21, float a22, float a23, float a31, float a32, float a33 )
 {
@@ -229,6 +237,8 @@ matrix3f::matrix3f( float arr[3][3] )
 		}
 	}
 }
+
+
 
 tuple3f matrix3f::operator*( tuple3f &other )
 {
@@ -278,7 +288,7 @@ float matrix3f::val( int i, int j )
 		mat[(i+2)%3][(j+1)%3]*mat[(i+1)%3][(j+2)%3];
 }
 
-matrix3f::set( float a11, float a12, float a13, float a21, float a22, float a23, float a31, float a32, float a33 )
+void matrix3f::set( float a11, float a12, float a13, float a21, float a22, float a23, float a31, float a32, float a33 )
 {
 	mat[0][0] = a11;
 	mat[0][1] = a12;
@@ -289,4 +299,9 @@ matrix3f::set( float a11, float a12, float a13, float a21, float a22, float a23,
 	mat[2][0] = a31;
 	mat[2][1] = a32;
 	mat[2][2] = a33;
+}
+
+matrix3f::~matrix3f()
+{
+
 }

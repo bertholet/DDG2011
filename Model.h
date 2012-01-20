@@ -28,17 +28,24 @@ public:
 	void setVField( VectorField * field );
 	void initVectorField();
 
+	std::vector<tuple3f>  * getPointCloud();
+	void setPointCloud(std::vector<tuple3f> * points);
+
 	fieldConstraintCollector & getInputCollector();
 
 	void attach(Observer<modelMsg> * obs);
 	void detatch(Observer<modelMsg> * obs);
 	void updateObserver(modelMsg msg);
-	
+
 private:
 	static Model* instance;
 	mesh * myMesh;
 	meshMetaInfo * metaInfo;
 	VectorField * vField;
+	// just any list of points you want to be displayed.
+	// good for debugging
+	std::vector<tuple3f> * points;
+
 	vector<Observer<modelMsg> *> observer;
 
 	fieldConstraintCollector collector;

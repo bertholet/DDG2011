@@ -2,6 +2,7 @@
 #include <vector>
 #include "tuple3.h"
 #include "oneForm.h"
+#include "meshMetaInfo.h"
 
 class fluidTools
 {
@@ -15,7 +16,7 @@ public:
 	// flow passing the edge i.e. the flux. This now translates flux
 	// back to a velocity vector.
 	//////////////////////////////////////////////////////////////////////////
-	static void flux2Velocity(oneForm flux, std::vector<tuple3f> & bariCoords, std::vector<tuple3f> & target);
+	static void flux2Velocity(oneForm flux, std::vector<tuple3f> & target, meshMetaInfo & mesh);
 
 	//////////////////////////////////////////////////////////////////////////
 	// walk the path for at most a timestep t in the given triangle. t is updated

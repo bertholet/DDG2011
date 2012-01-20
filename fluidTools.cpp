@@ -9,20 +9,26 @@ fluidTools::~fluidTools(void)
 {
 }
 
-void fluidTools::flux2Velocity( oneForm flux, std::vector<tuple3f> & bariCoords, std::vector<tuple3f> & target )
+void fluidTools::flux2Velocity( oneForm flux, std::vector<tuple3f> & target, meshMetaInfo & mesh)
 {
-	assert(target.size() == flux.size());
+	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
+	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
+	assert(target.size() == fcs.size());
 
 	matrix3f flux2vel;
 	matrix3f n_cross_T;
-	//vertices of face
-	tuple3f a,b,c;
 	//triangle normal
 	tuple3f n;
 	//flux of actual face
 	tuple3f flx;
 
-	for(int i = 0; i < target.size(); i++){
+	for(int i = 0; i < fcs.size(); i++){
+		tuple3f & a = verts[fcs[i].a];
+		tuple3f & b = verts[fcs[i].b];
+		tuple3f & c = verts[fcs[i].c];
+		n = (b-a).cross(c-a);
+		n.normalize();
+
 		flux2vel.set(b.x-a.x,b.y-a.y,b.z-a.z,
 			c.x-b.x,c.y-b.y,c.z-b.z,
 			a.x-c.x,a.y-c.y,a.z-c.z);	
@@ -34,7 +40,6 @@ void fluidTools::flux2Velocity( oneForm flux, std::vector<tuple3f> & bariCoords,
 		target[i].set(flux2vel * flx);
 	}
 
-	finish implement this!!!!!
 }
 
 

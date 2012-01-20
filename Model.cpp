@@ -10,6 +10,7 @@ Model::Model(void)
 	metaInfo = new meshMetaInfo(myMesh);
 	vField = NULL;
 	vFieldValid = true;
+	points = NULL;
 }
 
 Model::~Model(void)
@@ -61,6 +62,8 @@ void Model::setMesh( mesh * aMesh )
 	myMesh = aMesh;
 	metaInfo = new meshMetaInfo(myMesh);
 	vField = NULL;
+
+	points = NULL;
 	collector.clear();
 
 	this->updateObserver(NEW_MESH_CREATED);
@@ -115,4 +118,14 @@ void Model::updateObserver( modelMsg msg )
 	for(int i = 0; i < observer.size(); i++){
 		observer[i]->update(this, msg);
 	}
+}
+
+std::vector<tuple3f>  * Model::getPointCloud()
+{
+	return this->points;
+}
+
+void Model::setPointCloud( std::vector<tuple3f> * points_ )
+{
+	this->points = points_;
 }

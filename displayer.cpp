@@ -18,6 +18,7 @@ Displayer::Displayer(QWidget *parent)
 
 	displayVField = true;
 	normedVField = true;
+	displayPointCloud = true;
 	tBallListener = new trackBallListener(this);
 	strokeListener = new mouseStrokeListener(tmmap, this);
 }
@@ -74,6 +75,15 @@ void Displayer::paintGL()
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
 			Model::getModel()->getVField()->glOutputField(normedVField);
+		}
+
+		if(displayPointCloud && Model::getModel()->getPointCloud() != NULL){
+			std::vector<tuple3f> & points = * Model::getModel()->getPointCloud();
+			glBegin(GL_POINTS);
+			for(int i =0; i< points.size(); i++){
+				glVertex3f(points[i].x,points[i].y,points[i].z);
+			}
+			glEnd();
 		}
 		glFlush();
 	}
@@ -150,4 +160,9 @@ void Displayer::wheelEvent( QWheelEvent* ev )
 {
 	Model::getModel()->getMesh()->move((0.f + ev->delta())/800);
 	updateGL();
+}
+
+void Displayer::setPointCloudDisplay( bool what)
+{
+	this->displayPointCloud = what;
 }

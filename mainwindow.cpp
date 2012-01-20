@@ -6,6 +6,7 @@
 #include "curvVisualizingMesh.h"
 #include "generatemeshgui.h"
 #include "vectorfieldcontrolwidget.h"
+#include "fluidcontrolwidget.h"
 
 #define SLIDER_STEPSPERUNIT 20
 
@@ -85,6 +86,9 @@ void MainWindow::setupQTabs()
 	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
 	tab2Widget->setMainWindow(this);
 	tabs->addTab(tab2Widget, "Vector Fields");
+
+	fluidControlWidget * tab3Widget = new fluidControlWidget();
+	tabs->addTab(tab3Widget, "Fluid Simulation");
 }
 
 /************************************************************************/
