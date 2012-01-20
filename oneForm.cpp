@@ -22,5 +22,15 @@ int oneForm::size()
 	return form.size();
 }
 
+std::vector<double> & oneForm::getVals()
+{
+	return form;
+}
+
+double oneForm::get( int i )
+{
+	return form[i];
+}
+
 
 

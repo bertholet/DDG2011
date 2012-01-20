@@ -266,6 +266,7 @@ matrix3f matrix3f::inv( void )
 {
 	float det_ = det();
 	float temp[3][3];
+	assert(det_ > 0.00001);
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
 			temp[i][j] = val(j,i) / det_;
@@ -304,4 +305,11 @@ void matrix3f::set( float a11, float a12, float a13, float a21, float a22, float
 matrix3f::~matrix3f()
 {
 
+}
+
+void matrix3f::setRow( int row, tuple3f & vals )
+{
+	mat[row][0] = vals.x;
+	mat[row][1] = vals.y;
+	mat[row][2] = vals.z;
 }

@@ -13,4 +13,6 @@ public:
 	oneForm(meshMetaInfo & mesh);
 	~oneForm(void);
 	int size();
+	std::vector<double> & getVals();
+	double get( int i );
 };

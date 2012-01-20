@@ -51,7 +51,8 @@ public:
 	void set(float a11, float a12, float a13,
 		float a21, float a22, float a23,
 		float a31, float a32, float a33);
-	
+	void setRow( int row, tuple3f & vals );
+
 	matrix3f inv(void);
 	float det();
 
