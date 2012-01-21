@@ -14,6 +14,7 @@ void fluidTools::flux2Velocity( oneForm flux, std::vector<tuple3f> & target, mes
 	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
 	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
 	std::vector<tuple3i> & f2e = * mesh.getFace2Halfedges();
+	std::vector<tuple2i> & edgs = * mesh.getHalfedges();
 
 	if(target.size() != fcs.size()){
 		target.clear();
@@ -52,25 +53,14 @@ void fluidTools::flux2Velocity( oneForm flux, std::vector<tuple3f> & target, mes
 		flux2vel.setRow(0, (b-a).cross(n));
 		flux2vel.setRow(1, (c-b).cross(n));
 		flux2vel.setRow(2,n);
+
 		flux2vel = flux2vel.inv();
 
 		//flux should sum to 0. 
-		flx.x = flux.get(f2e[i].a);
-		flx.y = flux.get(f2e[i].b);
+		flx.x = flux.get(f2e[i].a,fcs[i].orientation(edgs[f2e[i].a]));
+		flx.y = flux.get(f2e[i].b, fcs[i].orientation(edgs[f2e[i].b]));
 		flx.z = 0;
 
-		//////////////////////////////////////////////////////////////////////////
-		// dbg
-		tuple3f vel= flux2vel * flx;
-		float temp =  vel.dot(n.cross(b-a));
-		float temp2 = flux.get(f2e[i].a);
-
-		temp =  vel.dot(n.cross(c-b));
-		temp2 = flux.get(f2e[i].b);;
-
-		temp =  vel.dot(n.cross(a-c));
-		temp2 = flux.get(f2e[i].c);;
-		//////////////////////////////////////////////////////////////////////////
 
 		target[i].set(flux2vel * flx);
 	}

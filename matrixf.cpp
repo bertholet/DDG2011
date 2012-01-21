@@ -243,9 +243,9 @@ matrix3f::matrix3f( float arr[3][3] )
 tuple3f matrix3f::operator*( tuple3f &other )
 {
 	return tuple3f(
-		mat[0][0]* other.x + mat[1][0]* other.y+ mat[2][0]* other.z ,
-		mat[0][1]* other.x + mat[1][1]* other.y+ mat[2][1]* other.z,
-		mat[0][2]* other.x + mat[1][2]* other.y+ mat[2][2]* other.z );
+		mat[0][0]* other.x + mat[0][1]* other.y+ mat[0][2]* other.z ,
+		mat[1][0]* other.x + mat[1][1]* other.y+ mat[1][2]* other.z,
+		mat[2][0]* other.x + mat[2][1]* other.y+ mat[2][2]* other.z );
 }
 
 matrix3f matrix3f::operator*( matrix3f &other )

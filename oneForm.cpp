@@ -1,4 +1,5 @@
 #include "oneForm.h"
+#include <assert.h>
 
 
 oneForm::oneForm( meshMetaInfo & mesh )
@@ -27,9 +28,10 @@ std::vector<double> & oneForm::getVals()
 	return form;
 }
 
-double oneForm::get( int i )
+double oneForm::get( int i , int orientation)
 {
-	return form[i];
+	assert(orientation == -1 || orientation == 1);
+	return form[i]* orientation;
 }
 
 

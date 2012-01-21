@@ -76,11 +76,11 @@ void fluidControlWidget::flux2Vel()
 
 		test = n.dot(velocities[i]);
 		test = n_ab.dot(velocities[i]);
-		test = test - sth[f2e[i].a];
+		test = test - f.get(f2e[i].a,fcs[i].orientation(edges[f2e[i].a]));
 		test = n_bc.dot(velocities[i]);
-		test = test - sth[f2e[i].b];
+		test = test - f.get(f2e[i].b,fcs[i].orientation(edges[f2e[i].b]));
 		test = n_ca.dot(velocities[i]);
-		test = test - sth[f2e[i].c];
+		test = test - f.get(f2e[i].c,fcs[i].orientation(edges[f2e[i].c]));
 		test = test;
 	}
 }

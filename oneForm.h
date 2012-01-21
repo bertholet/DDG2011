@@ -14,5 +14,7 @@ public:
 	~oneForm(void);
 	int size();
 	std::vector<double> & getVals();
-	double get( int i );
+	// returns value times orientation (+-1) forces
+	//user to think about the orientation at call.
+	double get( int i, int orientation );
 };
