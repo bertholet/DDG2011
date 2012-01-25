@@ -45,20 +45,40 @@ void fluidControlWidget::flux2Vel()
 	std::vector<tuple2i> & edges = * mesh.getHalfedges();
 	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
 	std::vector<tuple3i> & f2e = * mesh.getFace2Halfedges();	
+	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
 	
 	std::vector<double> & sth = f.getVals();
-	for(int i = 0; i < sth.size(); i++){
-		sth[i] = (verts[edges[i].b]-verts[edges[i].a]).dot(tuple3f(1,1,1));
+	tuple3f n;
+	for(int i = 0; i < fcs.size(); i++){
+		tuple3f & a = verts[fcs[i].a];
+		tuple3f & b = verts[fcs[i].b];
+		tuple3f & c = verts[fcs[i].c];
+		tuple3i & f_edgs = f2e[i];
+
+		n = (b-a).cross(c-a);
+		n.normalize();
+
+
+		sth[f_edgs.a] = ((verts[edges[f_edgs.a].b]-verts[edges[f_edgs.a].a])).cross(n).dot(tuple3f(0,0,1));
+		sth[f_edgs.b] = (verts[edges[f_edgs.b].b]-verts[edges[f_edgs.b].a]).cross(n).dot(tuple3f(0,0,1));
+		sth[f_edgs.c] = (verts[edges[f_edgs.c].b]-verts[edges[f_edgs.c].a]).cross(n).dot(tuple3f(0,0,1));
 	}
 	
 	
 	std::vector<tuple3f> velocities;
 	fluidTools::flux2Velocity(f,velocities, mesh);
-	int a = velocities.size();
+	
+	//display hack
+	VectorField * fld = new VectorField(&mesh.getBasicMesh());
+	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
+
+		fld->setOneForm(i,velocities[i]);
+	}
+	Model::getModel()->setVField(fld);
 
 
-	// the test.
-	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
+/*	// the test.
+
 	tuple3f n;
 	tuple3f n_ab, n_bc, n_ca;
 	float test;
@@ -82,7 +102,7 @@ void fluidControlWidget::flux2Vel()
 		test = n_ca.dot(velocities[i]);
 		test = test - f.get(f2e[i].c,fcs[i].orientation(edges[f2e[i].c]));
 		test = test;
-	}
+	}*/
 }
 
 void fluidControlWidget::update( void * src, Model::modelMsg msg )

@@ -286,6 +286,34 @@ void meshOperation::getNeighborEdges( int vertex, vector<vector<int>> & nbr_fc,
 	}
 }
 
+void meshOperation::switchElTo( int nextFace, int j, vector<int> & nbr )
+{
+	for(int i = 0; i <nbr.size(); i++){
+		if(nbr[i] == nextFace){
+			nbr[i] = nbr[j];
+			nbr[j]= nextFace;
+			break;
+		}
+		//should never be reached.
+		assert(i!= nbr.size()-1);
+	}
+}
+
+int meshOperation::getPosFace( tuple2i anEdge, vector<vector<int>> & neighbor_faces , mesh & m )
+{
+	int fc1, fc2;
+	getNbrFaces(anEdge,&fc1,&fc2,neighbor_faces);
+	int orientation = m.getFaces()[fc1].orientation(anEdge);
+	if(orientation == 1){
+		return fc1;
+	}
+	else{
+		assert(orientation == -1);
+		assert(fc2 == -1 || m.getFaces()[fc2].orientation(anEdge)==1);
+		return fc2;
+	}
+}
+
 /*int meshOperation::orientation( tuple2i & edge, tuple3i & face )
 {
 	assert(edge.a == face.a || edge.a == face.b || edge.a == face.c);

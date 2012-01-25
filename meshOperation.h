@@ -321,6 +321,47 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+	// Sorts the inner vectors of the vector you get by calling getNeighborFaces
+	// such that for each vertex the faces are sorted by orientation, i.e the
+	// face n+1 is the face on the left of the face n
+	// if a vertex is on a border the first and the last face will be well
+	// defined and be the border faces. Else no guaranty on what the
+	// first face will be is given.
+
+to be tested
+
+	//////////////////////////////////////////////////////////////////////////
+	static void sortV2F(vector<vector<int>> & neighbor_faces, mesh & m){
+		tuple2i anEdge;
+		int first, actual, nr_nbr_fcs, nextFace;
+		for(int i = 0; i < neighbor_faces.size(); i++){
+			//i is the vertex number
+			vector<int> & nbrFcs = neighbor_faces[i];
+			
+			//first îs the index of the first vertex of the one ring
+			// the first is well defined if i is a border vertex. Else
+			// it is an arbitrary vertex.
+			first = nbrFcs[0].a;
+			if(first == i){
+				first = nbrFcs[0].b;
+			}
+			if(isOnBorder(i,m)){
+				first = getFirst(i,first, m);
+			}
+
+			nr_nbr_fcs = nbrFcs.size();
+			//traverse one Ring.
+			for(int j = 0, actual = first; j <nbrFcs; j++, actual = getNext(i,actual, m)){
+				anEdge.set(i,actual);
+				nextFace = getPosFace(anEdge,neighbor_faces);
+				assert(nextFace != -1);
+				switchElTo(nextFace,j, nbrFcs);
+			}
+
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	//This Method will store the edge indices of all the neighbor edges of
 	// vertex in target
 	//////////////////////////////////////////////////////////////////////////
@@ -411,6 +452,13 @@ public:
 		}
 		return -1;
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// This returns the face index for which anEdge is positively oriented.
+	// If there is no such face -1 is returned.
+	//////////////////////////////////////////////////////////////////////////
+	static int getPosFace( tuple2i anEdge, vector<vector<int>> & neighbor_faces , mesh & m);
 
 private:
 	static void ifNotContainedInsert( vector<int> &v, int a )
@@ -622,5 +670,10 @@ private:
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// convenience method that switches the element at j with nextFace
+	// i.e. [.,x,.,next] with j = 2 and nextFace = next leeds to [.,next,.,x]S
+	//////////////////////////////////////////////////////////////////////////
+	static void switchElTo( int nextFace, int j, vector<int> & nbrFcs );
 
 };
