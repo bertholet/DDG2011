@@ -328,10 +328,11 @@ public:
 	// defined and be the border faces. Else no guaranty on what the
 	// first face will be is given.
 
-to be tested
-
 	//////////////////////////////////////////////////////////////////////////
 	static void sortV2F(vector<vector<int>> & neighbor_faces, mesh & m){
+
+		bool methodWasTested = false;
+		assert(methodWasTested);
 		tuple2i anEdge;
 		int first, actual, nr_nbr_fcs, nextFace;
 		for(int i = 0; i < neighbor_faces.size(); i++){
