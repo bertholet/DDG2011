@@ -6,12 +6,13 @@
 #include "curvVisualizingMesh.h"
 #include "trackBallListener.h"
 #include "mouseStrokeListener.h"
-
+#include "Observer.h"
+#include "Model.h"
 
 enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE};
 
-class Displayer : public QGLWidget
+class Displayer : public QGLWidget,public Observer<Model::modelMsg>
 {
 	Q_OBJECT
 
@@ -26,6 +27,7 @@ public:
 	void setPointCloudDisplay(bool);
 	void resetStrokes();
 	void setLineWidth( float param1 );
+	void update(void * src, Model::modelMsg msg);
 
 protected:
 	void initializeGL();

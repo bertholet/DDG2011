@@ -16,6 +16,8 @@ Displayer::Displayer(QWidget *parent)
 	this->tmmap = new triangleMarkupMap();
 	this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
+	Model::getModel()->attach(this);
+
 	displayVField = true;
 	normedVField = true;
 	displayPointCloud = true;
@@ -165,4 +167,11 @@ void Displayer::wheelEvent( QWheelEvent* ev )
 void Displayer::setPointCloudDisplay( bool what)
 {
 	this->displayPointCloud = what;
+}
+
+void Displayer::update( void * src, Model::modelMsg msg )
+{
+	if(msg == Model::DISPLAY_CHANGED){
+		updateGL();
+	}
 }

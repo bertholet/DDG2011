@@ -9,15 +9,21 @@
 fluidControlWidget::fluidControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
+
+	mySimulation = NULL;
+
 	QPushButton * butt = new QPushButton("Circumcenters!");
 	connect(butt, SIGNAL(released()), this, SLOT(circumcenters()));
 	QPushButton * butt2 = new QPushButton("Flux2VectorExample!");
 	connect(butt2, SIGNAL(released()), this, SLOT(flux2Vel()));
+	QPushButton * butt3 = new QPushButton("New Fluid Sim");
+	connect(butt3, SIGNAL(released()), this, SLOT(newFluidSim()));
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
+	layout->addWidget(butt3);
 
 	this->setLayout(layout);
 
@@ -26,20 +32,27 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 fluidControlWidget::~fluidControlWidget()
 {
-
+	if(mySimulation != NULL){
+		delete mySimulation;
+	}
 }
 
 void fluidControlWidget::circumcenters()
 {
 
-	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
-	dualMeshTools::getDualVertices(mesh, dualVertices);
-	Model::getModel()->setPointCloud(&dualVertices);
+	if(mySimulation == NULL){
+		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+	}
+	mySimulation->showDualPositions();
 
 }
 
 void fluidControlWidget::flux2Vel()
 {
+
+	if(mySimulation == NULL){
+		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+	}
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
 	oneForm f(mesh);
 	std::vector<tuple2i> & edges = * mesh.getHalfedges();
@@ -65,17 +78,12 @@ void fluidControlWidget::flux2Vel()
 	}
 	
 	
-	std::vector<tuple3f> velocities;
-	fluidTools::flux2Velocity(f,velocities, mesh);
+	//std::vector<tuple3f> velocities;
+	//fluidTools::flux2Velocity(f,velocities, mesh);
+	mySimulation->setFlux(f);
+	mySimulation->showFlux2Vel();
+
 	
-	//display hack
-	VectorField * fld = new VectorField(&mesh.getBasicMesh());
-	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
-
-		fld->setOneForm(i,velocities[i]);
-	}
-	Model::getModel()->setVField(fld);
-
 
 /*	// the test.
 
@@ -107,5 +115,16 @@ void fluidControlWidget::flux2Vel()
 
 void fluidControlWidget::update( void * src, Model::modelMsg msg )
 {
+	if(msg == Model::NEW_MESH_CREATED && mySimulation != NULL){
+		delete mySimulation;
+		mySimulation = NULL;
+	}
+}
 
+void fluidControlWidget::newFluidSim()
+{
+	if(mySimulation == NULL){
+		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+	}
+	this->mySimulation->pathTraceAndShow();
 }

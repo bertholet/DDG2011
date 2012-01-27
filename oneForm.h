@@ -17,4 +17,6 @@ public:
 	// returns value times orientation (+-1) forces
 	//user to think about the orientation at call.
 	double get( int i, int orientation );
+
+	meshMetaInfo * getMesh(){return m;}
 };

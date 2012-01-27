@@ -335,6 +335,8 @@ public:
 		assert(methodWasTested);
 		tuple2i anEdge;
 		int first, actual, nr_nbr_fcs, nextFace;
+		std::vector<tuple3i> & faces = m.getFaces();
+
 		for(int i = 0; i < neighbor_faces.size(); i++){
 			//i is the vertex number
 			vector<int> & nbrFcs = neighbor_faces[i];
@@ -342,9 +344,9 @@ public:
 			//first îs the index of the first vertex of the one ring
 			// the first is well defined if i is a border vertex. Else
 			// it is an arbitrary vertex.
-			first = nbrFcs[0].a;
+			first = faces[nbrFcs[0]].a;
 			if(first == i){
-				first = nbrFcs[0].b;
+				first = faces[nbrFcs[0]].b;
 			}
 			if(isOnBorder(i,m)){
 				first = getFirst(i,first, m);
@@ -352,9 +354,9 @@ public:
 
 			nr_nbr_fcs = nbrFcs.size();
 			//traverse one Ring.
-			for(int j = 0, actual = first; j <nbrFcs; j++, actual = getNext(i,actual, m)){
+			for(int j = 0, actual = first; j <nr_nbr_fcs; j++, actual = getNext(i,actual, m)){
 				anEdge.set(i,actual);
-				nextFace = getPosFace(anEdge,neighbor_faces);
+				nextFace = getPosFace(anEdge,neighbor_faces,m);
 				assert(nextFace != -1);
 				switchElTo(nextFace,j, nbrFcs);
 			}
@@ -460,6 +462,8 @@ public:
 	// If there is no such face -1 is returned.
 	//////////////////////////////////////////////////////////////////////////
 	static int getPosFace( tuple2i anEdge, vector<vector<int>> & neighbor_faces , mesh & m);
+	static int getPosFace( tuple2i anEdge, mesh & m);
+	static int getNegFace( tuple2i anEdge, mesh & m);
 
 private:
 	static void ifNotContainedInsert( vector<int> &v, int a )
@@ -676,5 +680,4 @@ private:
 	// i.e. [.,x,.,next] with j = 2 and nextFace = next leeds to [.,next,.,x]S
 	//////////////////////////////////////////////////////////////////////////
 	static void switchElTo( int nextFace, int j, vector<int> & nbrFcs );
-
 };

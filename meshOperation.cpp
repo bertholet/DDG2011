@@ -314,6 +314,36 @@ int meshOperation::getPosFace( tuple2i anEdge, vector<vector<int>> & neighbor_fa
 	}
 }
 
+int meshOperation::getPosFace( tuple2i anEdge, mesh & m )
+{
+	int fc1, fc2;
+	getNbrFaces(anEdge,&fc1,&fc2,m.getNeighborFaces());
+	int orientation = m.getFaces()[fc1].orientation(anEdge);
+	if(orientation == 1){
+		return fc1;
+	}
+	else{
+		assert(orientation == -1);
+		assert(fc2 == -1 || m.getFaces()[fc2].orientation(anEdge)==1);
+		return fc2;
+	}
+}
+
+int meshOperation::getNegFace( tuple2i anEdge, mesh & m )
+{
+	int fc1, fc2;
+	getNbrFaces(anEdge,&fc1,&fc2,m.getNeighborFaces());
+	int orientation = m.getFaces()[fc1].orientation(anEdge);
+	if(orientation == -1){
+		return fc1;
+	}
+	else{
+		assert(orientation == 1);
+		assert(fc2 == -1 || m.getFaces()[fc2].orientation(anEdge)==-1);
+		return fc2;
+	}
+}
+
 /*int meshOperation::orientation( tuple2i & edge, tuple3i & face )
 {
 	assert(edge.a == face.a || edge.a == face.b || edge.a == face.c);

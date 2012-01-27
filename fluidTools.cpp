@@ -67,22 +67,23 @@ void fluidTools::flux2Velocity( oneForm & flux, std::vector<tuple3f> & target, m
 }
 
 
-float fluidTools::bariWeight( int nr, int dualFace_id, std::vector<int> & dualVert_ids, std::vector<tuple3f> & dualVert_pos, meshMetaInfo & mesh )
+float fluidTools::bariWeight( tuple3f & point ,int nr, int dualFace_id, std::vector<int> & dualVert_ids, std::vector<tuple3f> & dualVert_pos, meshMetaInfo & mesh )
 {
 	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
 	tuple3i & face = mesh.getBasicMesh().getFaces()[dualVert_ids[nr]];
-	tuple3f & pos = dualVert_pos[dualVert_ids[nr]];
+	tuple3f & pos = point; // shit: dualVert_pos[dualVert_ids[nr]];
 	int other1 = face.a;
 	int other2 = face.b;
-	if (other1 ==dualFace_id){
-		other1 == face.b;
+	if (other1 == dualFace_id){
+		other1 = face.b;
 		other2 = face.c;
 	}
 	else if(other2 == dualFace_id){
-		other2 == face.c;
+		other2 = face.c;
 	}
 
-	tuple3f n1 = verts[other1] - verts[dualFace_id]:
+	//false!!!!!!!!!! only true in plane. a+b/...
+	tuple3f n1 = verts[other1] - verts[dualFace_id];
 	n1.normalize();
 	tuple3f n2 = verts[other2] -verts[dualFace_id];
 	n2.normalize();
@@ -101,7 +102,7 @@ float fluidTools::nonzeroDot( tuple3f & n, tuple3f & pos )
 	return dot;
 }
 
-void fluidTools::bariCoords( int dualFace_id, std::vector<tuple3f> & dualVert_pos, 
+void fluidTools::bariCoords( tuple3f & point, int dualFace_id, std::vector<tuple3f> & dualVert_pos, 
 							std::vector<float> & target, meshMetaInfo & mesh )
 {
 	std::vector<int> & v2f = mesh.getBasicMesh().getNeighborFaces()[dualFace_id];
@@ -111,7 +112,7 @@ void fluidTools::bariCoords( int dualFace_id, std::vector<tuple3f> & dualVert_po
 	float sum = 0;
 	float tmp;
 	for(int i = 0; i<nrFcs; i++){
-		tmp = bariWeight(i,dualFace_id,v2f,dualVert_pos,mesh);
+		tmp = bariWeight(point, i,dualFace_id,v2f,dualVert_pos,mesh);
 		target.push_back(tmp);
 		sum += tmp;
 	}
@@ -122,13 +123,14 @@ void fluidTools::bariCoords( int dualFace_id, std::vector<tuple3f> & dualVert_po
 
 }
 
-void fluidTools::walkPath( tuple3f * pos, int * triangle, float * t )
-{
-	
-}
 
-void fluidTools::getVelocity( tuple3f & pos, tuple3i & tr, std::vector<tuple3f> & velocities, std::vector<tuple3f> & dualVert_pos, meshMetaInfo & mesh )
+void fluidTools::vorticity2flux( twoForm & vorticity, oneForm & flux )
 {
 
 }
+
+
+
+
+
 

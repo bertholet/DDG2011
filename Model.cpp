@@ -75,6 +75,8 @@ void Model::setVField( VectorField * field )
 		delete vField;
 	}
 	vField = field;
+
+	updateObserver(DISPLAY_CHANGED);
 }
 
 VectorField * Model::getVField()
@@ -128,4 +130,5 @@ std::vector<tuple3f>  * Model::getPointCloud()
 void Model::setPointCloud( std::vector<tuple3f> * points_ )
 {
 	this->points = points_;
+	this->updateObserver(DISPLAY_CHANGED);
 }

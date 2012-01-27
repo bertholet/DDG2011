@@ -20,13 +20,17 @@ void trackBallListener::onMouseMove( QMouseEvent* event )
 	z = 1-x*x -y*y;
 	z = (z < 0? 0: z);
 	z = sqrtf(z);
-	float nrm = sqrtf(x*x+y*y+z*z);
+	float nrm = x*x+y*y+z*z;
+	nrm = (nrm < 0? 0: nrm);
+	nrm = sqrtf(nrm);
 	x= x/nrm;
 	y= y/nrm;
 	z= z/nrm;
 
 	float axisx=y*lastz-lasty*z,axisy=z*lastx-lastz*x,axisz=x*lasty-y*lastx;
-	float axisnrm = sqrtf(axisx*axisx+axisy*axisy+axisz*axisz);
+	float axisnrm = axisx*axisx+axisy*axisy+axisz*axisz;
+	axisnrm = (axisnrm< 0 ? 0: axisnrm);
+	axisnrm = sqrtf(axisnrm);
 	float cos = x*lastx+y*lasty+z*lastz;
 	cos = (cos<-1.f?-1.f :(cos>1?1.f:cos));
 	float angle = acos(cos);
