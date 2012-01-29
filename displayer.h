@@ -25,6 +25,7 @@ public:
 	void setColormap(colorMap * map);
 	void setNormedFieldDisplay(bool);
 	void setPointCloudDisplay(bool);
+	void setVectorDisplay(bool);
 	void resetStrokes();
 	void setLineWidth( float param1 );
 	void update(void * src, Model::modelMsg msg);
@@ -48,6 +49,7 @@ private:
 	bool displayPointCloud;
 	trackBallListener * tBallListener;
 	mouseStrokeListener * strokeListener;
+	bool displayVectors;
 	//for the trackball
 //	float lastx, lasty, lastz;
 };

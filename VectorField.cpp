@@ -14,7 +14,7 @@ VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 {
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
-	displayLength = 0.3f;
+//	displayLength = 0.3f;
 	edges = info->getHalfedges();
 	fc2he = info->getFace2Halfedges();
 	faces = &(aMesh->getFaces());
@@ -36,7 +36,7 @@ VectorField::VectorField( mesh * aMesh )
 {
 	meshMetaInfo * info = Model::getModel()->getMeshInfo();
 	//info->
-		displayLength = 0.3f;
+//		displayLength = 0.3f;
 	edges = info->getHalfedges();
 	fc2he = info->getFace2Halfedges();
 	faces = &(aMesh->getFaces());
@@ -189,7 +189,7 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 	return result;
 }
 
-void VectorField::glOutputField(bool normed){
+void VectorField::glOutputField(bool normed, float displayLength){
 	vector<tuple3i> & faces = *(this->faces);
 	vector<tuple3f> & vertices = *(this->vertices);
 
@@ -222,8 +222,8 @@ void VectorField::glOutputField(bool normed){
 
 	}
 }
-
+/*
 void VectorField::setDisplayLength( double param1 )
 {
 	this->displayLength = (float) param1;
-}
+}*/

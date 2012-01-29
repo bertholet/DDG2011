@@ -213,7 +213,7 @@ ball::ball( float r, int nrPhi, int nrPsi )
 
 		for(int j = 0; j < N; j++)
 		{
-			phi = 2.f / N * j * PI;
+			phi = 2.f / N * j * PI + (i)*PI/N;
 			x = r*sin(psi)*cos(phi);
 			y = r*sin(psi)*sin(phi);
 			vertices.push_back(tuple3f(x,y,z));
@@ -240,7 +240,7 @@ ball::ball( float r, int nrPhi, int nrPsi )
 			}
 		}
 		else{
-			throw std::exception("bad programming in ball.cpp, unexpected case happened.");
+			throw std::runtime_error("bad programming in ball.cpp, unexpected case happened.");
 		}
 
 

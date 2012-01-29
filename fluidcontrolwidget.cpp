@@ -19,11 +19,20 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	QPushButton * butt3 = new QPushButton("New Fluid Sim");
 	connect(butt3, SIGNAL(released()), this, SLOT(newFluidSim()));
 
+
+	stepSlider = new QSlider(Qt::Horizontal, this);
+	stepSlider->setMinimum(0);
+	stepSlider->setMaximum(200);
+	stepSlider->setTickPosition(QSlider::TicksAbove);
+	stepSlider->setValue(10);
+	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(stepSizeChanged()));
+
 	QVBoxLayout * layout = new QVBoxLayout();
 
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
 	layout->addWidget(butt3);
+	layout->addWidget(stepSlider);
 
 	this->setLayout(layout);
 
@@ -59,6 +68,7 @@ void fluidControlWidget::flux2Vel()
 	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
 	std::vector<tuple3i> & f2e = * mesh.getFace2Halfedges();	
 	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
+	tuple3f dir(1,1,1);
 	
 	std::vector<double> & sth = f.getVals();
 	tuple3f n;
@@ -72,9 +82,9 @@ void fluidControlWidget::flux2Vel()
 		n.normalize();
 
 
-		sth[f_edgs.a] = ((verts[edges[f_edgs.a].b]-verts[edges[f_edgs.a].a])).cross(n).dot(tuple3f(0,0,1));
-		sth[f_edgs.b] = (verts[edges[f_edgs.b].b]-verts[edges[f_edgs.b].a]).cross(n).dot(tuple3f(0,0,1));
-		sth[f_edgs.c] = (verts[edges[f_edgs.c].b]-verts[edges[f_edgs.c].a]).cross(n).dot(tuple3f(0,0,1));
+		sth[f_edgs.a] = ((verts[edges[f_edgs.a].b]-verts[edges[f_edgs.a].a])).cross(n).dot(dir);
+		sth[f_edgs.b] = (verts[edges[f_edgs.b].b]-verts[edges[f_edgs.b].a]).cross(n).dot(dir);
+		sth[f_edgs.c] = (verts[edges[f_edgs.c].b]-verts[edges[f_edgs.c].a]).cross(n).dot(dir);
 	}
 	
 	
@@ -126,5 +136,11 @@ void fluidControlWidget::newFluidSim()
 	if(mySimulation == NULL){
 		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
 	}
-	this->mySimulation->pathTraceAndShow();
+	this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
+}
+
+void fluidControlWidget::stepSizeChanged()
+{
+	stepSize = (0.f +this->stepSlider->value())/100;
+	newFluidSim();
 }

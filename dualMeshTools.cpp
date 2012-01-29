@@ -39,11 +39,11 @@ void dualMeshTools::getDualVertices( meshMetaInfo & mesh, std::vector<tuple3f> &
 			+ verts[fc->c] * (bari_c /tot);
 		target.push_back(circumcenter);
 
-		float tmp = (verts[fc->a]-verts[fc->b]).dot((verts[fc->a] + verts[fc->b])*0.5f -target.back());
+/*		float tmp = (verts[fc->a]-verts[fc->b]).dot((verts[fc->a] + verts[fc->b])*0.5f -target.back());
 		assert(tmp < 0.000001 && tmp > -0.000001);
 		tmp = (verts[fc->c]-verts[fc->b]).dot((verts[fc->c] + verts[fc->b])*0.5f -target.back());
 		assert(tmp < 0.000001 && tmp > -0.000001);
 		tmp = (verts[fc->a]-verts[fc->c]).dot((verts[fc->a] + verts[fc->c])*0.5f -target.back());
-		assert(tmp < 0.000001 && tmp > -0.000001);
+		assert(tmp < 0.000001 && tmp > -0.000001);*/
 	}
 }

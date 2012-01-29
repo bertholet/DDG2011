@@ -33,6 +33,14 @@ public:
 	static void bariCoords(tuple3f & point, int dualFace_id, std::vector<tuple3f> & dualVert_pos, 
 		std::vector<float> & target, meshMetaInfo & mesh);
 
+	//////////////////////////////////////////////////////////////////////////
+	// Everything is flattened along the curvature Normal
+	//////////////////////////////////////////////////////////////////////////
+//	static void flattenedBariCoords(tuple3f & point, int dualFace, std::vector<tuple3f> & dualVert_pos,
+//		std::vector<float> & target, meshMetaInfo & mesh);
+
+
+	
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// Help Function to calculate the baricentric coordinates.

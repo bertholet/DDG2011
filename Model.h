@@ -38,14 +38,24 @@ public:
 	void setVField( VectorField * field );
 	void initVectorField();
 
-	std::vector<tuple3f>  * getPointCloud();
-
 	//////////////////////////////////////////////////////////////////////////
 	// Will make the displayer display these points.
 	// Note: the Memory of points needs to be released elsewhere
 	// at the time given-..
 	//////////////////////////////////////////////////////////////////////////
 	void setPointCloud(std::vector<tuple3f> * points);
+	std::vector<tuple3f>  * getPointCloud();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Will make the displayer display these Vectors.
+	// Note: the Memory of points needs to be released elsewhere
+	// at the time given-..
+	//////////////////////////////////////////////////////////////////////////
+	void setVectors( std::vector<tuple3f>* pos, std::vector<tuple3f>* dir );
+	std::vector<tuple3f> * getPos();
+	std::vector<tuple3f> * getDirs();
+	void setDisplayLength( float param1 );
+	float getDisplayLength(){return displayLength;}
 
 	fieldConstraintCollector & getInputCollector();
 
@@ -58,6 +68,11 @@ private:
 	mesh * myMesh;
 	meshMetaInfo * metaInfo;
 	VectorField * vField;
+
+	//a list of vectors to display
+	std::vector<tuple3f> * positions;
+	std::vector<tuple3f> * dirs;
+
 	// just any list of points you want to be displayed.
 	// good for debugging
 	std::vector<tuple3f> * points;
@@ -67,4 +82,5 @@ private:
 	fieldConstraintCollector collector;
 
 	bool vFieldValid;
+	float displayLength;
 };

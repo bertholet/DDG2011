@@ -20,9 +20,11 @@ void trackBallListener::onMouseMove( QMouseEvent* event )
 	z = 1-x*x -y*y;
 	z = (z < 0? 0: z);
 	z = sqrtf(z);
+	assert(z==z);
 	float nrm = x*x+y*y+z*z;
 	nrm = (nrm < 0? 0: nrm);
 	nrm = sqrtf(nrm);
+	assert(nrm == nrm);
 	x= x/nrm;
 	y= y/nrm;
 	z= z/nrm;
@@ -31,9 +33,13 @@ void trackBallListener::onMouseMove( QMouseEvent* event )
 	float axisnrm = axisx*axisx+axisy*axisy+axisz*axisz;
 	axisnrm = (axisnrm< 0 ? 0: axisnrm);
 	axisnrm = sqrtf(axisnrm);
+	assert(axisnrm == axisnrm);
 	float cos = x*lastx+y*lasty+z*lastz;
 	cos = (cos<-1.f?-1.f :(cos>1?1.f:cos));
+
 	float angle = acos(cos);
+	assert(angle == angle);
+	assert(axisnrm > 0);
 	Model::getModel()->getMesh()->rot(angle,axisx/axisnrm,
 		axisy/axisnrm,
 		axisz/axisnrm);

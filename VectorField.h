@@ -17,7 +17,7 @@ public:
 	~VectorField(void);
 
 //	void update(void * src, int msg);
-	void glOutputField(bool normalizd);
+	void glOutputField(bool normalizd, float displayLength);
 
 	void setOneForm(int faceNr, tuple3f & dir);
 
@@ -29,7 +29,7 @@ public:
 	//orientation
 	//////////////////////////////////////////////////////////////////////////
 	void setOneForm(int halfedge, int orientation, float val);
-	void setDisplayLength( double param1 );
+//	void setDisplayLength( double param1 );
 
 private:
 	//oneForm[i] is the value on the edge i
@@ -39,7 +39,8 @@ private:
 	vector<tuple3f> *vertices;
 	vector<tuple2i> *edges;
 	mesh * myMesh;
-	float displayLength;
+//	float displayLength;
+
 	//will get the oneForm value associated to the halfedge.
 	//note: if halfedge is negative the convention is that this
 	//means that the oposingly oriented halfedge is meant.

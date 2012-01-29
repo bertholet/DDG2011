@@ -6,6 +6,7 @@
 #include "Observer.h"
 #include "Model.h"
 #include "fluidSimulation.h"
+#include <QSlider>
 
 class fluidControlWidget : public QWidget, public Observer<Model::modelMsg>
 {
@@ -21,10 +22,13 @@ public slots:
 	void circumcenters();
 	void flux2Vel();
 	void newFluidSim();
+	void stepSizeChanged();
 
 private:
 	std::vector<tuple3f> dualVertices;
 	fluidSimulation * mySimulation;
+	QSlider * stepSlider;
+	float stepSize;
 };
 
 #endif // FLUIDCONTROLWIDGET_H

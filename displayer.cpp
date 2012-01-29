@@ -20,6 +20,7 @@ Displayer::Displayer(QWidget *parent)
 
 	displayVField = true;
 	normedVField = true;
+	displayVectors = true;
 	displayPointCloud = true;
 	tBallListener = new trackBallListener(this);
 	strokeListener = new mouseStrokeListener(tmmap, this);
@@ -46,11 +47,13 @@ void Displayer::initializeGL()
 
 	glEnable(GL_DEPTH_TEST);
 
+	glEnable(GL_POINT_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glLineWidth(3.0);
+	glPointSize(3.f);
 }
 
 void Displayer::paintGL()
@@ -76,7 +79,7 @@ void Displayer::paintGL()
 		}
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
-			Model::getModel()->getVField()->glOutputField(normedVField);
+			Model::getModel()->getVField()->glOutputField(normedVField,Model::getModel()->getDisplayLength());
 		}
 
 		if(displayPointCloud && Model::getModel()->getPointCloud() != NULL){
@@ -86,6 +89,24 @@ void Displayer::paintGL()
 				glVertex3f(points[i].x,points[i].y,points[i].z);
 			}
 			glEnd();
+		}
+		if(displayVectors && Model::getModel()->getPos() != NULL){
+			std::vector<tuple3f> & pos= * Model::getModel()->getPos();
+			std::vector<tuple3f> & dirs= * Model::getModel()->getDirs();
+			tuple3f normeddir;
+			for(int i =0; i< pos.size(); i++){
+				glBegin(GL_LINE_LOOP);		
+				glColor3f(0,0,0);
+				glVertex3f(pos[i].x,pos[i].y,pos[i].z);
+				normeddir = dirs[i];
+				if(normedVField){
+					normeddir.normalize();
+				}
+				normeddir*= Model::getModel()->getDisplayLength();
+				glColor3f(1,0,0);
+				glVertex3f(pos[i].x+ normeddir.x,pos[i].y+ normeddir.y,pos[i].z+ normeddir.z);
+				glEnd();
+			}
 		}
 		glFlush();
 	}
@@ -174,4 +195,10 @@ void Displayer::update( void * src, Model::modelMsg msg )
 	if(msg == Model::DISPLAY_CHANGED){
 		updateGL();
 	}
+}
+
+void Displayer::setVectorDisplay( bool )
+{
+	this->displayVectors = true;
+	updateGL();
 }

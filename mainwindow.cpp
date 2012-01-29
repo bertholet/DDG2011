@@ -248,7 +248,7 @@ void MainWindow::lineWidthChanged()
 
 void MainWindow::fieldLengthChanged()
 {
-	Model::getModel()->getVField()->setDisplayLength( pow(100, (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT -1) - 0.01);
+	Model::getModel()->setDisplayLength( pow(100, (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT -1) - 0.01);
 	this->update();
 }
 

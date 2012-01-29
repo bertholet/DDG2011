@@ -11,6 +11,9 @@ Model::Model(void)
 	vField = NULL;
 	vFieldValid = true;
 	points = NULL;
+	positions = NULL;
+	dirs = NULL;
+	displayLength = 0.3f;
 }
 
 Model::~Model(void)
@@ -64,6 +67,8 @@ void Model::setMesh( mesh * aMesh )
 	vField = NULL;
 
 	points = NULL;
+	dirs = NULL;
+	positions = NULL;
 	collector.clear();
 
 	this->updateObserver(NEW_MESH_CREATED);
@@ -131,4 +136,26 @@ void Model::setPointCloud( std::vector<tuple3f> * points_ )
 {
 	this->points = points_;
 	this->updateObserver(DISPLAY_CHANGED);
+}
+
+void Model::setVectors( std::vector<tuple3f>* dualVertices, std::vector<tuple3f>* velocities )
+{
+	this->positions = dualVertices;
+	this->dirs = velocities;
+	this->updateObserver(DISPLAY_CHANGED);
+}
+
+void Model::setDisplayLength( float param1 )
+{
+	displayLength = param1;
+}
+
+std::vector<tuple3f> * Model::getPos()
+{
+	return positions;
+}
+
+std::vector<tuple3f> * Model::getDirs()
+{
+	return dirs;
 }
