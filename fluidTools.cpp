@@ -39,16 +39,7 @@ void fluidTools::flux2Velocity( oneForm & flux, std::vector<tuple3f> & target, m
 		n = (b-a).cross(c-a);
 		n.normalize();
 
-// 		//not full rank.
-// 		flux2vel.set(b.x-a.x,b.y-a.y,b.z-a.z,
-// 			c.x-b.x,c.y-b.y,c.z-b.z,
-// 			a.x-c.x,a.y-c.y,a.z-c.z);	
-// 		//not full rank
-// 		n_cross_T.set(0,n.z,-n.y,
-// 					-n.z,0,n.x,
-// 					n.y,-n.x,0);
-// 
-// 		flux2vel = (flux2vel*n_cross_T);
+
 
 		flux2vel.setRow(0, (b-a).cross(n));
 		flux2vel.setRow(1, (c-b).cross(n));
@@ -57,7 +48,7 @@ void fluidTools::flux2Velocity( oneForm & flux, std::vector<tuple3f> & target, m
 		flux2vel = flux2vel.inv();
 
 		//flux should sum to 0. 
-		flx.x = flux.get(f2e[i].a,fcs[i].orientation(edgs[f2e[i].a]));
+		flx.x = flux.get(f2e[i].a, fcs[i].orientation(edgs[f2e[i].a]));
 		flx.y = flux.get(f2e[i].b, fcs[i].orientation(edgs[f2e[i].b]));
 		flx.z = 0;
 
@@ -123,11 +114,69 @@ void fluidTools::bariCoords( tuple3f & point, int dualFace_id, std::vector<tuple
 
 }
 
-
-void fluidTools::vorticity2flux( nullForm & vorticity, oneForm & flux )
+//////////////////////////////////////////////////////////////////////////
+// dualVertPos, the circumcenters as can be calculated with dualMeshTools
+//////////////////////////////////////////////////////////////////////////
+void fluidTools::dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, meshMetaInfo & mesh , vector<tuple3f> & dualVert)
 {
-	
+	assert(target.getMesh() == &mesh);
+	vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
+	vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
+	vector<tuple3i> & f2e = * mesh.getFace2Halfedges();
+	vector<tuple2i> & edges = * mesh.getHalfedges();
+
+	tuple3i fc,he;
+	tuple3f n_edge;
+	tuple2i edge;
+
+	//for dbg
+	tuple3f n;
+	tuple3f n_ab, n_bc, n_ca;
+	double temp;
+
+	for(int i = 0; i < fcs.size();i++){
+
+		//for dbg
+		tuple3f & a = verts[fcs[i].a];
+		tuple3f & b = verts[fcs[i].b];
+		tuple3f & c = verts[fcs[i].c];
+		n = (b-a).cross(c-a);
+		n.normalize();
+		//normals
+		n_ab = (b-a).cross(n);
+		n_bc = (c-b).cross(n);
+		n_ca = (a-c).cross(n);
+		//gbd rof
+
+		fc = fcs[i];
+		he = f2e[i];
+		n_edge = ((verts[fc.a]+verts[fc.b])*0.5f - dualVert[i]);
+		n_edge.normalize();
+		n_edge *= ((verts[fc.b]-verts[fc.a]).norm());
+		target.set(he.a, n_edge.dot(dirs[i]) /** ((verts[fc.b]-verts[fc.a]).norm())*/, fc.orientation(edges[he.a]));
+
+		//test
+		temp = target.get(he.a,fc.orientation(edges[he.a])) - n_ab.dot(dirs[i]);
+		assert(temp < 0.0001 && temp > -0.0001);
+
+		n_edge = ((verts[fc.b]+verts[fc.c])*0.5f - dualVert[i]);
+		n_edge.normalize();
+		target.set(he.b, n_edge.dot(dirs[i]) * ((verts[fc.c]-verts[fc.b]).norm()), fc.orientation(edges[he.b]));
+		
+		//test
+		temp = target.get(he.b,fc.orientation(edges[he.b])) - n_bc.dot(dirs[i]);
+		assert(temp < 0.0001 && temp > -0.0001);
+
+		n_edge = ((verts[fc.a]+verts[fc.c])*0.5f - dualVert[i]);
+		n_edge.normalize();
+		target.set(he.c, n_edge.dot(dirs[i]) * ((verts[fc.c]-verts[fc.a]).norm()), fc.orientation(edges[he.c]));
+
+		//test
+		temp = target.get(he.c,fc.orientation(edges[he.c])) - n_ca.dot(dirs[i]);
+		assert(temp < 0.0001 && temp > -0.0001);
+	}
 }
+
 
 
 

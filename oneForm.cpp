@@ -34,5 +34,11 @@ double oneForm::get( int i , int orientation)
 	return form[i]* orientation;
 }
 
+void oneForm::set( int edge, double val, int orientation )
+{
+	assert(orientation == 1 || orientation == -1);
+	form[edge] = val*orientation;
+}
+
 
 

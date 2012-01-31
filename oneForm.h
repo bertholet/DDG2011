@@ -19,4 +19,6 @@ public:
 	double get( int i, int orientation );
 
 	meshMetaInfo * getMesh(){return m;}
+	//sets form[edge] = val*orientation
+	void set( int edge, double val, int orientation );
 };

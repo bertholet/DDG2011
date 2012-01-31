@@ -24,8 +24,12 @@ public:
 	static void flux2Velocity(oneForm & flux, std::vector<tuple3f> & target, meshMetaInfo & mesh);
 
 
-	static void vorticity2flux(nullForm & vorticity, oneForm & flux);	
-	
+	//////////////////////////////////////////////////////////////////////////
+	//
+	//convert vectors perface to fluxes per edge
+	//////////////////////////////////////////////////////////////////////////
+	static void dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, 
+		meshMetaInfo & mesh , vector<tuple3f> & dualVert);
 
 	//////////////////////////////////////////////////////////////////////////
 	// generalized baricentric coordinates for convex polytopes. Will be store

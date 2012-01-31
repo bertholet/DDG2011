@@ -163,10 +163,26 @@ void fluidSimulation::pathTraceDualVertices( float t )
 
 
 
+void fluidSimulation::vorticity2Flux()
+{
+	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_ITERATIVE,3);
+	solver.setMatrix(L,1);
+	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vorticity.getVals()[0]));
+	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
+}
+
+
 void fluidSimulation::setFlux( oneForm & f )
 {
 	assert(f.getMesh() == myMesh);
 	flux = f;
+
+	updateVelocities();
+}
+
+void fluidSimulation::setFlux( vector<tuple3f> & dirs )
+{
+	fluidTools::dirs2Flux(dirs,flux,*myMesh, dualVertices);
 }
 
 
@@ -295,10 +311,27 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 	Model::getModel()->setPointCloud(&backtracedDualVertices);
 }
 
-void fluidSimulation::vorticity2Flux()
+void fluidSimulation::oneStep( float howmuuch )
 {
-	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_ITERATIVE,3);
-	solver.setMatrix(L,1);
-	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vorticity.getVals()[0]));
-	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
+	pathTraceDualVertices(howmuuch);
+
+	Model::getModel()->setPointCloud(&backtracedDualVertices);
+	
+	updateBacktracedVelocities();
+	backtracedVorticity();
+	vorticity2Flux();
+	updateVelocities();
+
+	Model::getModel()->setVectors(&dualVertices,&velocities);
 }
+
+void fluidSimulation::updateVelocities()
+{
+	fluidTools::flux2Velocity(flux,velocities, *myMesh);
+}
+
+oneForm & fluidSimulation::getFlux()
+{
+	return flux;
+}
+
