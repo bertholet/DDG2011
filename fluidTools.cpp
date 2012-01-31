@@ -124,9 +124,9 @@ void fluidTools::bariCoords( tuple3f & point, int dualFace_id, std::vector<tuple
 }
 
 
-void fluidTools::vorticity2flux( twoForm & vorticity, oneForm & flux )
+void fluidTools::vorticity2flux( nullForm & vorticity, oneForm & flux )
 {
-
+	
 }
 
 

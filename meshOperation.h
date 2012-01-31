@@ -331,8 +331,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	static void sortV2F(vector<vector<int>> & neighbor_faces, mesh & m){
 
-		bool methodWasTested = false;
-		assert(methodWasTested);
+		//bool methodWasTested = false;
+		//assert(methodWasTested);
 		tuple2i anEdge;
 		int first, actual, nr_nbr_fcs, nextFace;
 		std::vector<tuple3i> & faces = m.getFaces();

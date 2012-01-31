@@ -8,13 +8,25 @@
 #include "matrixf.h"
 #include "matrixFactory.h"
 #include "stdafx.h"
+#include "pardiso.h"
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
-flux(*mesh), vorticity(*mesh)
+flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh)
 {
 	myMesh = mesh;
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
 	backtracedDualVertices = dualVertices; //hope this copies everything.
+	backtracedVelocity = dualVertices; // just for right dimension
+
+	triangle_btVel.reserve(dualVertices.size());
+	for(int i = 0; i < dualVertices.size(); i++){
+		triangle_btVel.push_back(-1);
+	}
+
+	//the one in the comments would be if vorticity was defined on the edges in 3d.
+	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
+	d0 =DDGMatrices::d0(*myMesh);
+	L = DDGMatrices::delta1(*myMesh) * d0;
 }
 
 fluidSimulation::~fluidSimulation(void)
@@ -23,7 +35,7 @@ fluidSimulation::~fluidSimulation(void)
 
 void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t )
 {
-	tuple3f dir = getVelocityFlattened(*pos,*triangle,myMesh->getBasicMesh().getFaces()[*triangle]);
+	tuple3f dir = getVelocityFlattened(*pos,*triangle);
 	dir*=-1;
 	tuple3f cut_pos;
 	tuple2i cut_edge;
@@ -44,7 +56,7 @@ void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t )
 	}
 }
 
-tuple3f fluidSimulation::getVelocity( tuple3f & pos, int actualTriangle, tuple3i & tr )
+/*tuple3f fluidSimulation::getVelocity( tuple3f & pos, int actualTriangle, tuple3i & tr )
 {
 	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
 	vector<float> weights;
@@ -80,7 +92,7 @@ tuple3f fluidSimulation::getVelocity( tuple3f & pos, int actualTriangle, tuple3i
 
 	result = project(result, actualTriangle);
 	return result;
-}
+}*/
 
 float fluidSimulation::maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge )
 {
@@ -101,18 +113,7 @@ float fluidSimulation::maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f
 	float t3 = n3.dot(c-pos)/n3.dot(dir);
 	float max_t = numeric_limits<float>::infinity();
 
-//////////////////////////////////////////////////////////////////////////
-//dbg vals
-//////////////////////////////////////////////////////////////////////////
 
-/*	float n1_dot_ab = n1.dot(b-a);
-	float n2_dot_bc = n2.dot(c-b);
-	float n3_dot_ca = n3.dot(a-c);
-
-	float d_dot_n1 = dir.dot(n1);
-	float d_dot_n2 = dir.dot(n2);
-	float d_dot_n3 = dir.dot(n3);*/
-//////////////////////////////////////////////////////////////////////////
 	if(t==t && t>=-0.00001 && dir.dot(n1)<0){
 		max_t = t;
 	}
@@ -139,10 +140,6 @@ float fluidSimulation::maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f
 	return max_t;
 }
 
-void fluidSimulation::showDualPositions()
-{
-	Model::getModel()->setPointCloud(&dualVertices);
-}
 
 void fluidSimulation::pathTraceDualVertices( float t )
 {
@@ -160,15 +157,11 @@ void fluidSimulation::pathTraceDualVertices( float t )
 				walkPath(&(backtracedDualVertices[i]), &triangle,&changed_t);
 			}
 		}
+		triangle_btVel[i]=triangle;
 	}
 }
 
-void fluidSimulation::pathTraceAndShow(float howmuch)
-{
-	fluidTools::flux2Velocity(flux,velocities, *myMesh);
-	pathTraceDualVertices(howmuch);
-	Model::getModel()->setPointCloud(&backtracedDualVertices);
-}
+
 
 void fluidSimulation::setFlux( oneForm & f )
 {
@@ -176,13 +169,6 @@ void fluidSimulation::setFlux( oneForm & f )
 	flux = f;
 }
 
-void fluidSimulation::showFlux2Vel()
-{
-
-	fluidTools::flux2Velocity(flux,velocities, *myMesh);
-	//display hack
-	Model::getModel()->setVectors(&dualVertices,&velocities);
-}
 
 tuple3f fluidSimulation::project( tuple3f& velocity,int actualFc)
 {
@@ -209,11 +195,14 @@ tuple3f fluidSimulation::project( tuple3f& velocity,int actualFc)
 }
 
 
-tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, tuple3i & tr )
+tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle)
 {
+
+	assert(actualTriangle >=0);
 	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
 	vector<float> weights;
 	tuple3f result;
+	tuple3i & tr = myMesh->getBasicMesh().getFaces()[actualTriangle];
 	//determine actual dual Face
 	int dualFace;
 	float d1 = (verts[tr.a]-pos).norm();
@@ -250,4 +239,66 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 	result = result - curvNormal * (result.dot(triangleNormal) / curvNormal.dot(triangleNormal));
 
 	return result;
+}
+
+void fluidSimulation::backtracedVorticity()
+{
+	std::vector<std::vector<int>> & dualf2v = myMesh->getBasicMesh().getNeighborFaces();
+	std::vector<double> & vort = vorticity.getVals();
+
+	updateBacktracedVelocities();
+	double temp;
+	int sz;
+	for(int i = 0; i < vorticity.size();i++){
+		temp = 0;
+		//the dual vertices surrounding the face.
+		std::vector<int> & dualV = dualf2v[i];
+		sz = dualV.size();
+		for(int j = 0; j < sz; j++){
+			temp += 0.5* ((backtracedVelocity[dualV[j]]+backtracedVelocity[dualV[(j+1)%sz]]).dot(
+				backtracedDualVertices[dualV[j]]-backtracedDualVertices[dualV[(j+1)%sz]]));
+		}
+		vort[i] =temp;
+	}
+}
+
+void fluidSimulation::updateBacktracedVelocities()
+{
+	for(int i = 0; i < backtracedVelocity.size(); i++){
+		backtracedVelocity[i] = getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i]);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// dbg & visualisation
+//////////////////////////////////////////////////////////////////////////
+
+void fluidSimulation::showDualPositions()
+{
+	Model::getModel()->setPointCloud(&dualVertices);
+}
+
+
+void fluidSimulation::showFlux2Vel()
+{
+
+	fluidTools::flux2Velocity(flux,velocities, *myMesh);
+	//display hack
+	Model::getModel()->setVectors(&dualVertices,&velocities);
+}
+
+void fluidSimulation::pathTraceAndShow(float howmuch)
+{
+	fluidTools::flux2Velocity(flux,velocities, *myMesh);
+	pathTraceDualVertices(howmuch);
+	Model::getModel()->setPointCloud(&backtracedDualVertices);
+}
+
+void fluidSimulation::vorticity2Flux()
+{
+	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_ITERATIVE,3);
+	solver.setMatrix(L,1);
+	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vorticity.getVals()[0]));
+	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
 }

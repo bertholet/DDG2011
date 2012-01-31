@@ -97,6 +97,7 @@ void mesh::reset( vector<tuple3f> & _vertices, vector<tuple3i> &_faces )
 
 	meshOperation::getNeighbors(faces, nbrs);
 	meshOperation::getNeighborFaces(faces, nbr_fcs);
+	meshOperation::sortV2F(nbr_fcs, *this);
 
 }
 void mesh::initNormalsFromVertices()
@@ -580,6 +581,7 @@ void mesh::initNbrNbrfc()
 	}
 	meshOperation::getNeighbors(faces, nbrs);
 	meshOperation::getNeighborFaces(faces, nbr_fcs);
+	meshOperation::sortV2F(nbr_fcs, *this);
 }
 
 void mesh::move( float dz )

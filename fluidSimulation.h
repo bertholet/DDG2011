@@ -3,7 +3,9 @@
 #include "tuple3.h"
 #include "meshMetaInfo.h"
 #include "oneForm.h"
-#include "twoForm.h"
+#include "nullForm.h"
+#include "pardisoMatrix.h"
+#include "DDGMatrices.h"
 
 class fluidSimulation
 {
@@ -11,9 +13,20 @@ private:
 	meshMetaInfo * myMesh;
 	std::vector<tuple3f> velocities;
 	std::vector<tuple3f> dualVertices;
+	
 	std::vector<tuple3f> backtracedDualVertices;
+	//the triangle the backtraced dual vertex lies in.
+	std::vector<int> triangle_btVel;
+
+	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
-	twoForm vorticity;
+	nullForm vorticity;
+	//L^-1 * Vorticity is stored here.
+	nullForm L_m1Vorticity;
+
+	//oneForm2oneForm Laplacian
+	pardisoMatrix L;
+	pardisoMatrix d0;
 
 public:
 
@@ -35,6 +48,20 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void pathTraceDualVertices(float t);
 
+
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// to calculate backtraced vorticity
+	//////////////////////////////////////////////////////////////////////////
+	void updateBacktracedVelocities();
+	void backtracedVorticity();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Vorticity 2 Flux
+	//////////////////////////////////////////////////////////////////////////
+	void vorticity2Flux();
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// walk the path for at most a timestep t in the given triangle. t is updated
 	// to the remaining t to go, pos is updated and the new actual triangle
@@ -47,6 +74,15 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Method for curved manifolds. The Velocities are rectified along the
+	// curvature normal and then projected back
+	//////////////////////////////////////////////////////////////////////////
+	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex );
+
+
+//////////////////////////////////////////////////////////////////////////
+	// ID IE IB IU IG   IS IT IU IF IF 
+	//////////////////////////////////////////////////////////////////////////
 	// Debug-Display Dual vertices
 	//////////////////////////////////////////////////////////////////////////
 	void showDualPositions();
@@ -58,23 +94,17 @@ public:
 	void pathTraceAndShow(float howmuch);
 	void showFlux2Vel();
 
-
-	//////////////////////////////////////////////////////////////////////////
-	// Method for curved manifolds. The Velocities are rectified along the
-	// curvature normal and then projected back
-	//////////////////////////////////////////////////////////////////////////
-	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex, tuple3i & tr );
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// helpmethod that interpolates the velocityfield defined on the dualvertex
 	// positions. triangleIndex is the index of the triangle containing pos.
 	//////////////////////////////////////////////////////////////////////////
-	tuple3f getVelocity( tuple3f & pos, int triangleIndex, tuple3i & tr );
+//	tuple3f getVelocity( tuple3f & pos, int triangleIndex, tuple3i & tr );
+
 	//////////////////////////////////////////////////////////////////////////
 	//project velocity on the triangle and scale it such that the length
 	// stays. This is used for interpolation of velocities ofver triangle
 	// borders, between neiighboring triangles.
 	//////////////////////////////////////////////////////////////////////////
 	tuple3f project( tuple3f& velocity, int actualTriangle );
+	
 };

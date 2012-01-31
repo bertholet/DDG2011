@@ -5,6 +5,7 @@
 #include "meshMetaInfo.h"
 #include "oneForm.h"
 #include "twoForm.h"
+#include "nullForm.h"
 
 class fluidTools
 {
@@ -23,7 +24,7 @@ public:
 	static void flux2Velocity(oneForm & flux, std::vector<tuple3f> & target, meshMetaInfo & mesh);
 
 
-	static void vorticity2flux(twoForm & vorticity, oneForm & flux);	
+	static void vorticity2flux(nullForm & vorticity, oneForm & flux);	
 	
 
 	//////////////////////////////////////////////////////////////////////////

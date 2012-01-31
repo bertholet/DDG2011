@@ -1,6 +1,7 @@
 /*
 * Pardiso Header for Visual C++
 *
+* By Peter Bertholet (2011)
 */
 
 /* PARDISO prototype. */

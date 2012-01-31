@@ -380,3 +380,15 @@ void pardisoMatrix::clear()
 	n = 0;
 	m= 0;
 }
+
+void pardisoMatrix::mult( std::vector<double> & x, std::vector<double> & target )
+{
+	assert(x.size() == getm() && target.size() == getn());
+
+	for(int i = 0; i < getn(); i++){
+		target[i] = 0;
+		for(int j = ia[i]-1; j < ia[i+1]-1; j++){
+			target[i] += x[ja[j]-1]*a[j];
+		}
+	}
+}
