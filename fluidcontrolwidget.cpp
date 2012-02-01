@@ -73,15 +73,27 @@ void fluidControlWidget::flux2Vel()
 	tuple3f dir(0.f,0.f,1.f);
 	tuple3f n;
 
+	std::vector<tuple3f> & constrDir = Model::getModel()->getInputCollector().getFaceDir();
+	std::vector<int> & constrFcs = Model::getModel()->getInputCollector().getFaces();
+
 	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
-		tuple3f & a = verts[fcs[i].a];
-		tuple3f & b = verts[fcs[i].b];
-		tuple3f & c = verts[fcs[i].c];
+
+		dirs.push_back(tuple3f());
+	}
+
+	float tmp;
+	for(int i = 0; i < constrFcs.size(); i++){
+		tuple3f & a = verts[fcs[constrFcs[i]].a];
+		tuple3f & b = verts[fcs[constrFcs[i]].b];
+		tuple3f & c = verts[fcs[constrFcs[i]].c];
 
 		n = (b-a).cross(c-a);
 		n.normalize();
+		
+		tmp = n.dot(dirs[i]);
+		assert(tmp < 0.0001 && tmp > -0.0001);
 
-		dirs.push_back(dir - (n * n.dot(dir)));
+		dirs[constrFcs[i]] = constrDir[i];
 	}
 
 
@@ -114,7 +126,7 @@ void fluidControlWidget::flux2Vel()
 	
 
 	// the test.
-	oneForm & f = mySimulation->getFlux();
+/*	oneForm & f = mySimulation->getFlux();
 	tuple3f n_ab, n_bc, n_ca;
 	float test, test2;
 	for(int i = 0; i < dirs.size(); i++){
@@ -147,7 +159,7 @@ void fluidControlWidget::flux2Vel()
 		test = test - f.get(f2e[i].c,fcs[i].orientation(edges[f2e[i].c]));
 		assert(test < 0.00001 && test > -0.00001);
 		test = test;
-	}
+	}*/
 }
 
 void fluidControlWidget::update( void * src, Model::modelMsg msg )
