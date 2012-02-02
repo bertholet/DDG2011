@@ -22,4 +22,11 @@ public:
 
 	static pardisoMatrix delta1( meshMetaInfo & aMesh );
 	static pardisoMatrix delta2( meshMetaInfo & aMesh );
+
+	//////////////////////////////////////////////////////////////////////////
+	// creates an identity Matrix.
+	//////////////////////////////////////////////////////////////////////////
+	static pardisoMatrix id0(meshMetaInfo & aMesh);
+	static pardisoMatrix id1(meshMetaInfo & aMesh);
+	static pardisoMatrix id2(meshMetaInfo & aMesh);
 };

@@ -39,6 +39,10 @@ void trackBallListener::onMouseMove( QMouseEvent* event )
 
 	float angle = acos(cos);
 	assert(angle == angle);
+
+	if(axisnrm < 0.001){
+		return;
+	}
 	assert(axisnrm > 0);
 	Model::getModel()->getMesh()->rot(angle,axisx/axisnrm,
 		axisy/axisnrm,

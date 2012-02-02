@@ -177,6 +177,13 @@ void fluidTools::dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, meshM
 	}
 }
 
+void fluidTools::flux2Vorticity( oneForm & flux, nullForm & vorticity, meshMetaInfo & myMesh , pardisoMatrix & dt_star1)
+{
+	dt_star1.mult(flux.getVals(), vorticity.getVals());
+}
+
+
+
 
 
 

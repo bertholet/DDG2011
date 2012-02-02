@@ -27,6 +27,7 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh)
 	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
 	d0 =DDGMatrices::d0(*myMesh);
 	L = DDGMatrices::delta1(*myMesh) * d0;
+	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
 }
 
 fluidSimulation::~fluidSimulation(void)
@@ -172,6 +173,12 @@ void fluidSimulation::vorticity2Flux()
 }
 
 
+void fluidSimulation::flux2Vorticity()
+{
+	fluidTools::flux2Vorticity(flux,vorticity, *myMesh, dt_star1);
+}
+
+
 void fluidSimulation::setFlux( oneForm & f )
 {
 	assert(f.getMesh() == myMesh);
@@ -185,7 +192,7 @@ void fluidSimulation::setFlux( vector<tuple3f> & dirs )
 	fluidTools::dirs2Flux(dirs,flux,*myMesh, dualVertices);
 }
 
-
+/*
 tuple3f fluidSimulation::project( tuple3f& velocity,int actualFc)
 {
 	tuple3i & actualFace =myMesh->getBasicMesh().getFaces()[actualFc];
@@ -208,7 +215,7 @@ tuple3f fluidSimulation::project( tuple3f& velocity,int actualFc)
 
 	return result;
 
-}
+}*/
 
 
 tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle)
@@ -303,6 +310,10 @@ void fluidSimulation::showFlux2Vel()
 	//display hack
 	Model::getModel()->setVectors(&dualVertices,&velocities);
 }
+
+
+
+
 
 void fluidSimulation::pathTraceAndShow(float howmuch)
 {

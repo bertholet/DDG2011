@@ -27,6 +27,7 @@ private:
 	//oneForm2oneForm Laplacian
 	pardisoMatrix L;
 	pardisoMatrix d0;
+	pardisoMatrix dt_star1;
 
 public:
 
@@ -60,6 +61,8 @@ public:
 	// Vorticity 2 Flux
 	//////////////////////////////////////////////////////////////////////////
 	void vorticity2Flux();
+
+	void flux2Vorticity();
 
 	//////////////////////////////////////////////////////////////////////////
 	// velocity2Flux
