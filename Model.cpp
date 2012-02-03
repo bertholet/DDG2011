@@ -13,7 +13,7 @@ Model::Model(void)
 	points = NULL;
 	positions = NULL;
 	dirs = NULL;
-	displayLength = 0.3f;
+	displayLength = 1.f;
 }
 
 Model::~Model(void)

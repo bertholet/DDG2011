@@ -220,7 +220,7 @@ torus::torus(float r1, float r2,int nrVertices_smallRing,int nrVertices_BigRing)
 
 		//vertices and normals
 		for(int j = 0; j < m; j++){
-			phi = 2.f/m * j * PI;
+			phi = 2.f/m * (j+(0.f +i)/2) * PI;
 			y = temp_r * cos(phi);
 			x = temp_r * sin(phi);
 			vertices.push_back(tuple3f(x,y,z));
@@ -314,14 +314,14 @@ torus::torus(float r1, float r2,int nrVertices_smallRing,int nrVertices_BigRing)
 	else if(lastRing_size == firstRing_size){
 		for(int k = 0; k < lastRing_size; k++){
 			faces.push_back(tuple3i(
-				0+ k,
-				lastRing_startIndex + k,
-				lastRing_startIndex + (k+1)%lastRing_size
+				0+ (k+n/2)%firstRing_size,
+				lastRing_startIndex + (k)%lastRing_size,
+				lastRing_startIndex + (k + 1)%lastRing_size
 				));
 			faces.push_back(tuple3i(
-				0 + k,
-				lastRing_startIndex + (k+1)%lastRing_size,
-				0 + (k+1)%firstRing_size
+				0 + (k +n/2)%firstRing_size,
+				lastRing_startIndex + (k +1)%lastRing_size,
+				0 + (k+n/2 + 1)%firstRing_size
 				));
 		}
 	}

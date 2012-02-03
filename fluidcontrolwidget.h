@@ -19,8 +19,8 @@ public:
 	virtual void update( void * src, Model::modelMsg msg );
 
 public slots:
-	void circumcenters();
-	void flux2Vel();
+	void flux2vort2flux();
+	void getCollectedFlux();
 	void newFluidSim();
 	void stepSizeChanged();
 

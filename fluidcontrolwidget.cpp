@@ -12,10 +12,10 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	mySimulation = NULL;
 
-	QPushButton * butt = new QPushButton("Circumcenters!");
-	connect(butt, SIGNAL(released()), this, SLOT(circumcenters()));
-	QPushButton * butt2 = new QPushButton("Flux2VectorExample!");
-	connect(butt2, SIGNAL(released()), this, SLOT(flux2Vel()));
+	QPushButton * butt = new QPushButton("Flux 2 Vorticity 2 Flux!");
+	connect(butt, SIGNAL(released()), this, SLOT(flux2vort2flux()));
+	QPushButton * butt2 = new QPushButton("Define Flux!");
+	connect(butt2, SIGNAL(released()), this, SLOT(getCollectedFlux()));
 	QPushButton * butt3 = new QPushButton("New Fluid Sim");
 	connect(butt3, SIGNAL(released()), this, SLOT(newFluidSim()));
 
@@ -29,8 +29,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
-	layout->addWidget(butt);
 	layout->addWidget(butt2);
+	layout->addWidget(butt);
 	layout->addWidget(butt3);
 	layout->addWidget(stepSlider);
 
@@ -46,17 +46,20 @@ fluidControlWidget::~fluidControlWidget()
 	}
 }
 
-void fluidControlWidget::circumcenters()
+void fluidControlWidget::flux2vort2flux()
 {
 
 	if(mySimulation == NULL){
 		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
 	}
-	mySimulation->showDualPositions();
+	mySimulation->flux2Vorticity();
+	mySimulation->vorticity2Flux();
+	//mySimulation->updateVelocities();
+	mySimulation->showFlux2Vel();
 
 }
 
-void fluidControlWidget::flux2Vel()
+void fluidControlWidget::getCollectedFlux()
 {
 
 	if(mySimulation == NULL){
@@ -93,7 +96,7 @@ void fluidControlWidget::flux2Vel()
 
 	mySimulation->setFlux(dirs);
 	mySimulation->flux2Vorticity();
-	mySimulation->vorticity2Flux();
+//	mySimulation->vorticity2Flux();
 	
 	mySimulation->showFlux2Vel();
 
@@ -158,5 +161,10 @@ void fluidControlWidget::newFluidSim()
 void fluidControlWidget::stepSizeChanged()
 {
 	stepSize = (0.f +this->stepSlider->value())/100;
-	newFluidSim();
+
+	if(mySimulation == NULL){
+		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+	}
+
+	this->mySimulation->pathTraceAndShow(stepSize);
 }

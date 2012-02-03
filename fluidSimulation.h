@@ -21,6 +21,7 @@ private:
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
 	nullForm vorticity;
+	nullForm star0_inv_vort;
 	//L^-1 * Vorticity is stored here.
 	nullForm L_m1Vorticity;
 
@@ -28,6 +29,7 @@ private:
 	pardisoMatrix L;
 	pardisoMatrix d0;
 	pardisoMatrix dt_star1;
+	pardisoMatrix star0_inv;
 
 public:
 

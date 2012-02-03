@@ -384,6 +384,7 @@ void pardisoMatrix::clear()
 void pardisoMatrix::mult( std::vector<double> & x, std::vector<double> & target )
 {
 	assert(x.size() == getm() && target.size() == getn());
+	assert(&target != &x);
 
 	for(int i = 0; i < getn(); i++){
 		target[i] = 0;

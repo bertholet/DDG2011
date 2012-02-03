@@ -11,7 +11,7 @@
 #include "pardiso.h"
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
-flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh)
+flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), star0_inv_vort(*mesh)
 {
 	myMesh = mesh;
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
@@ -28,6 +28,8 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh)
 	d0 =DDGMatrices::d0(*myMesh);
 	L = DDGMatrices::delta1(*myMesh) * d0;
 	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
+	star0_inv = DDGMatrices::star0(*myMesh);
+	star0_inv.elementWiseInv(0.00001f);
 }
 
 fluidSimulation::~fluidSimulation(void)
@@ -166,9 +168,11 @@ void fluidSimulation::pathTraceDualVertices( float t )
 
 void fluidSimulation::vorticity2Flux()
 {
-	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_ITERATIVE,3);
+	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(L,1);
-	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vorticity.getVals()[0]));
+	star0_inv.mult((vorticity.getVals()),(star0_inv_vort.getVals()));
+
+	solver.solve(&(L_m1Vorticity.getVals()[0]), & (star0_inv_vort.getVals()[0]));
 	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
 }
 
@@ -264,6 +268,12 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 	return result;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//Bugs:
+//- sign bug
+//maybe overly imprecise, maybe ecause of orientation errors or sth
+//////////////////////////////////////////////////////////////////////////
 void fluidSimulation::backtracedVorticity()
 {
 	std::vector<std::vector<int>> & dualf2v = myMesh->getBasicMesh().getNeighborFaces();
@@ -278,8 +288,8 @@ void fluidSimulation::backtracedVorticity()
 		std::vector<int> & dualV = dualf2v[i];
 		sz = dualV.size();
 		for(int j = 0; j < sz; j++){
-			temp += 0.5* ((backtracedVelocity[dualV[j]]+backtracedVelocity[dualV[(j+1)%sz]]).dot(
-				backtracedDualVertices[dualV[j]]-backtracedDualVertices[dualV[(j+1)%sz]]));
+			temp += 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
+				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]]));
 		}
 		vort[i] =temp;
 	}
@@ -320,6 +330,9 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 	fluidTools::flux2Velocity(flux,velocities, *myMesh);
 	pathTraceDualVertices(howmuch);
 	Model::getModel()->setPointCloud(&backtracedDualVertices);
+
+	updateBacktracedVelocities();
+	Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
 }
 
 void fluidSimulation::oneStep( float howmuuch )
@@ -329,7 +342,17 @@ void fluidSimulation::oneStep( float howmuuch )
 	Model::getModel()->setPointCloud(&backtracedDualVertices);
 	
 	updateBacktracedVelocities();
+
+	//Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
+
+	//dbg only
+//	flux2Vorticity();
+//	std::vector<double> old_vorts_for_debug = vorticity.getVals();
+	//gbd
+
 	backtracedVorticity();
+
+	
 	vorticity2Flux();
 	updateVelocities();
 
