@@ -20,8 +20,9 @@ private:
 
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
+	oneForm forceFlux;
 	nullForm vorticity;
-	nullForm star0_inv_vort;
+	nullForm tempNullForm;
 	//L^-1 * Vorticity is stored here.
 	nullForm L_m1Vorticity;
 
@@ -29,7 +30,13 @@ private:
 	pardisoMatrix L;
 	pardisoMatrix d0;
 	pardisoMatrix dt_star1;
-	pardisoMatrix star0_inv;
+	pardisoMatrix star0_,star0_inv;
+	pardisoMatrix star0_min_vhl;
+
+	//the viscosity. surprise surprise...
+	float viscosity;
+	//timeStep
+	float timeStep;
 
 public:
 
@@ -45,6 +52,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void setFlux( oneForm & f );
 	void setFlux( vector<tuple3f> & dirs );
+
+	void setForce(vector<tuple3f> & dirs);
+
+	void setViscosity(float visc);
 	//////////////////////////////////////////////////////////////////////////
 	// Pathtrace all dualvertices
 	//
@@ -84,8 +95,10 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Method for curved manifolds. The Velocities are rectified along the
-	// curvature normal and then projected back
+	// Method to iterpolate the velocity field on curved manifolds. 
+	// The Velocities are projected locally along the
+	// curvature normal onto a plane, interpolated there and then projected 
+	// back
 	//////////////////////////////////////////////////////////////////////////
 	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex );
 
@@ -120,4 +133,7 @@ public:
 	tuple3f project( tuple3f& velocity, int actualTriangle );
 	void updateVelocities();
 	oneForm & getFlux();
+	void addForces2Vorticity(float timestep);
+	void setStepSize( float stepSize );
+	void addDiffusion2Vorticity();
 };

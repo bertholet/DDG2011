@@ -11,7 +11,7 @@
 #include "pardiso.h"
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
-flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), star0_inv_vort(*mesh)
+flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
 {
 	myMesh = mesh;
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
@@ -19,21 +19,129 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), star0_inv_vort(*mesh)
 	backtracedVelocity = dualVertices; // just for right dimension
 
 	triangle_btVel.reserve(dualVertices.size());
+	velocities.reserve(dualVertices.size());
 	for(int i = 0; i < dualVertices.size(); i++){
 		triangle_btVel.push_back(-1);
+		velocities.push_back(tuple3f());
 	}
+
 
 	//the one in the comments would be if vorticity was defined on the edges in 3d.
 	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
 	d0 =DDGMatrices::d0(*myMesh);
 	L = DDGMatrices::delta1(*myMesh) * d0;
 	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
-	star0_inv = DDGMatrices::star0(*myMesh);
+	star0_ = DDGMatrices::star0(*myMesh);
+	star0_inv = star0_;
 	star0_inv.elementWiseInv(0.00001f);
+
+	this->setStepSize(0.05);
+	this->setViscosity(0);
 }
 
 fluidSimulation::~fluidSimulation(void)
 {
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Getters and Setters
+//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+// sets the viscosity and adapts the star_minus_vhL matrix.
+//////////////////////////////////////////////////////////////////////////
+void fluidSimulation::setViscosity( float visc )
+{
+	viscosity = visc;
+	//calc vhL;
+	star0_min_vhl = L;
+	star0_min_vhl *= viscosity*timeStep;
+
+	//the final matrix
+	star0_min_vhl = DDGMatrices::star0(*myMesh) - star0_min_vhl;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Set the size of the timestep
+//////////////////////////////////////////////////////////////////////////
+void fluidSimulation::setStepSize( float stepSize )
+{
+	this->timeStep = stepSize;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// sets the flux exactly to the provided oneform
+//////////////////////////////////////////////////////////////////////////
+void fluidSimulation::setFlux( oneForm & f )
+{
+	assert(f.getMesh() == myMesh);
+	flux = f;
+
+	updateVelocities();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// converts the directions provided to a flux and sets this flux. Note
+// that the directions will change, manly due to the fact that only
+// incompressible fluxes can be treated. The directions provided
+// will usually contradict the incompressibility.
+//////////////////////////////////////////////////////////////////////////
+void fluidSimulation::setFlux( vector<tuple3f> & dirs )
+{
+	fluidTools::dirs2Flux(dirs,flux,*myMesh, dualVertices);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// converts the directions tu flux and uses this flux as force (e.g. stirring)
+// the same restriction as for setFlux hold.
+//////////////////////////////////////////////////////////////////////////
+void fluidSimulation::setForce(vector<tuple3f> & dirs)
+{
+	fluidTools::dirs2Flux(dirs,forceFlux,*myMesh, dualVertices);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// get the Flux oneForm
+//////////////////////////////////////////////////////////////////////////
+oneForm & fluidSimulation::getFlux()
+{
+	return flux;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// (((The Actual Algorithm)))
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Do one Timestep. Does everything
+//////////////////////////////////////////////////////////////////////////
+void fluidSimulation::oneStep( float howmuuch )
+{
+	pathTraceDualVertices(howmuuch); //note: the second u is critical for success.
+
+	Model::getModel()->setPointCloud(&backtracedDualVertices);
+
+	updateBacktracedVelocities();
+
+	//Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
+
+	//dbg only
+	//	flux2Vorticity();
+	//	std::vector<double> old_vorts_for_debug = vorticity.getVals();
+	//gbd
+
+	backtracedVorticity();
+
+	addForces2Vorticity(howmuuch);
+
+	addDiffusion2Vorticity();
+
+	vorticity2Flux();
+	updateVelocities();
+
+	Model::getModel()->setVectors(&dualVertices,&velocities);
 }
 
 void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t )
@@ -59,43 +167,6 @@ void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t )
 	}
 }
 
-/*tuple3f fluidSimulation::getVelocity( tuple3f & pos, int actualTriangle, tuple3i & tr )
-{
-	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
-	vector<float> weights;
-	tuple3f result;
-	//determine actual dual Face
-	int dualFace;
-	float d1 = (verts[tr.a]-pos).norm();
-	float d2 = (verts[tr.b]-pos).norm();
-	float d3 = (verts[tr.c]-pos).norm();
-	float mn = min(min(d1,d2),d3);
-	if(mn == d1){
-		dualFace = tr.a;
-	}
-	else if(mn == d2){
-		dualFace = tr.b;
-	}
-	else if ( mn == d3){
-		dualFace = tr.c;
-	}
-	else{
-		assert(false);
-	}
-
-	//determine weights;
-	fluidTools::bariCoords(pos,dualFace,dualVertices, weights, *myMesh);
-	// dualVertices of dualFace;
-	std::vector<int> & dualVertIDs = myMesh->getBasicMesh().getNeighborFaces()[dualFace];
-
-	for(int i = 0; i < weights.size(); i++){
-		//result += turnVelocityInRightPlane(velocities[dualVertIDs[i]], dualVertIDs[i], actualTriangle)*weights[i];
-		result += velocities[dualVertIDs[i]] *weights[i];
-	}
-
-	result = project(result, actualTriangle);
-	return result;
-}*/
 
 float fluidSimulation::maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge )
 {
@@ -170,9 +241,9 @@ void fluidSimulation::vorticity2Flux()
 {
 	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(L,1);
-	star0_inv.mult((vorticity.getVals()),(star0_inv_vort.getVals()));
+	star0_inv.mult((vorticity.getVals()),(tempNullForm.getVals()));
 
-	solver.solve(&(L_m1Vorticity.getVals()[0]), & (star0_inv_vort.getVals()[0]));
+	solver.solve(&(L_m1Vorticity.getVals()[0]), & (tempNullForm.getVals()[0]));
 	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
 }
 
@@ -183,18 +254,7 @@ void fluidSimulation::flux2Vorticity()
 }
 
 
-void fluidSimulation::setFlux( oneForm & f )
-{
-	assert(f.getMesh() == myMesh);
-	flux = f;
 
-	updateVelocities();
-}
-
-void fluidSimulation::setFlux( vector<tuple3f> & dirs )
-{
-	fluidTools::dirs2Flux(dirs,flux,*myMesh, dualVertices);
-}
 
 /*
 tuple3f fluidSimulation::project( tuple3f& velocity,int actualFc)
@@ -271,8 +331,7 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 
 //////////////////////////////////////////////////////////////////////////
 //Bugs:
-//- sign bug
-//maybe overly imprecise, maybe ecause of orientation errors or sth
+//maybe overly imprecise, maybe because of orientation errors or sth?
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::backtracedVorticity()
 {
@@ -301,6 +360,36 @@ void fluidSimulation::updateBacktracedVelocities()
 		backtracedVelocity[i] = getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i]);
 	}
 }
+
+
+
+
+
+
+void fluidSimulation::updateVelocities()
+{
+	fluidTools::flux2Velocity(flux,velocities, *myMesh);
+}
+
+
+void fluidSimulation::addForces2Vorticity(float timeStep)
+{
+	dt_star1.mult(forceFlux.getVals(),tempNullForm.getVals());
+	vorticity.add(tempNullForm, timeStep);
+}
+
+
+void fluidSimulation::addDiffusion2Vorticity()
+{
+	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
+	solver.setMatrix(star0_min_vhl,1);
+	
+	solver.solve(&(tempNullForm.getVals()[0]), & (vorticity.getVals()[0]));
+
+	star0_.mult(tempNullForm.getVals(),vorticity.getVals());
+}
+
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -334,38 +423,3 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 	updateBacktracedVelocities();
 	Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
 }
-
-void fluidSimulation::oneStep( float howmuuch )
-{
-	pathTraceDualVertices(howmuuch);
-
-	Model::getModel()->setPointCloud(&backtracedDualVertices);
-	
-	updateBacktracedVelocities();
-
-	//Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
-
-	//dbg only
-//	flux2Vorticity();
-//	std::vector<double> old_vorts_for_debug = vorticity.getVals();
-	//gbd
-
-	backtracedVorticity();
-
-	
-	vorticity2Flux();
-	updateVelocities();
-
-	Model::getModel()->setVectors(&dualVertices,&velocities);
-}
-
-void fluidSimulation::updateVelocities()
-{
-	fluidTools::flux2Velocity(flux,velocities, *myMesh);
-}
-
-oneForm & fluidSimulation::getFlux()
-{
-	return flux;
-}
-

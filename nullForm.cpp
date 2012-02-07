@@ -30,3 +30,11 @@ double nullForm::get( int i, int orientation )
 {
 	return form[i]*orientation;
 }
+
+void nullForm::add( nullForm tempNullForm , float scale)
+{
+	assert(tempNullForm.size() == this->size());
+	for(int i = 0; i < tempNullForm.size(); i++){
+		form[i] += tempNullForm.form[i] * scale;
+	}
+}

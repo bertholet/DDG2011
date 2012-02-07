@@ -156,6 +156,7 @@ public:
 		if(i==j){
 			return 1;
 		}
+		return 0;
 	}
 
 	// row: its the edge number; 

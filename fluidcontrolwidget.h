@@ -23,11 +23,13 @@ public slots:
 	void getCollectedFlux();
 	void newFluidSim();
 	void stepSizeChanged();
-
+	void setForceFlux();
+	void viscosityChanged();
 private:
 	std::vector<tuple3f> dualVertices;
 	fluidSimulation * mySimulation;
 	QSlider * stepSlider;
+	QSlider * viscositySlider;
 	float stepSize;
 };
 

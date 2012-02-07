@@ -18,4 +18,5 @@ public:
 	double get( int i, int orientation );
 
 	meshMetaInfo * getMesh(){return m;}
+	void add( nullForm tempNullForm ,float scale);
 };
