@@ -19,19 +19,26 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
 	backtracedDualVertices = dualVertices; //hope this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
-	line_stripe_starts = dualVertices; // for visualisation
+
+
+	line_strip_triangle.reserve(dualVertices.size());
+	line_stripe_starts.reserve(dualVertices.size()); // for visualisation
+	age.reserve(dualVertices.size());
+	maxAge = 200;
+
+	int noFaces = myMesh->getBasicMesh().getFaces().size();
+	for(int i = 0; i < noFaces; i++){
+
+		line_strip_triangle.push_back(i);//(rand()%noFaces);
+		line_stripe_starts.push_back(dualVertices[line_strip_triangle[i]]);
+		age.push_back(rand()%maxAge);
+	}
 
 	triangle_btVel.reserve(dualVertices.size());
-	line_strip_triangle.reserve(dualVertices.size());
-	age.reserve(dualVertices.size());
-	maxAge = 50;
-
 	velocities.reserve(dualVertices.size());
 	for(int i = 0; i < dualVertices.size(); i++){
 		triangle_btVel.push_back(-1);
-		line_strip_triangle.push_back(i);
 		velocities.push_back(tuple3f());
-		age.push_back(rand()%maxAge);
 	}
 
 
@@ -453,34 +460,35 @@ void fluidSimulation::glDisplayField()
 	int tempTriangle;
 	float t;
 	float col;
+	int sz = myMesh->getBasicMesh().getFaces().size();
 	for(int i = 0; i < line_stripe_starts.size(); i++){
 		temp = line_stripe_starts[i];
 		tempTriangle = line_strip_triangle[i];
 		col = (age[i]<maxAge/2? age[i] : maxAge - age[i]);
 		col *= 2.f/maxAge;
 
-		glColor3f(col,col,col);
+	//	glColor3f(col,col,col);
 		glBegin(GL_LINE_STRIP);
 		for(int j = 0; j < 5; j++){
 			glVertex3fv( (GLfloat *) &temp);
-			t=0.3;
+			t=1;
 			while(t>0.0001 && tempTriangle >=0){
 				walkPath(&temp,&tempTriangle,&t,1);
 			}
 
 			if(j==0){
-				line_stripe_starts[i]= temp;
 				line_strip_triangle[i] = tempTriangle;
+				line_stripe_starts[i]= temp;
 			}
 		}
 		glEnd();
 
-		age[i]++;
+		/*age[i]++;
 		if(age[i]>maxAge){
 			age[i] = 0;
-			line_stripe_starts[i]=dualVertices[i];
-			line_strip_triangle[i] = i;
-		}
+			line_strip_triangle[i] = i;//rand()%sz;
+			line_stripe_starts[i]=dualVertices[line_strip_triangle[i]];
+		}*/
 	}
 
 	glDisable(GL_LINE_STIPPLE);
