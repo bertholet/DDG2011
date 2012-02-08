@@ -22,6 +22,8 @@ private:
 	//around
 	vector<tuple3f> line_stripe_starts;
 	vector<int> line_strip_triangle;
+	vector<int> age;
+	int maxAge;
 
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;

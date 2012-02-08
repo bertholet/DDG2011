@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "pardiso.h"
 #include <GL/glew.h>
+#include <stdlib.h>
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
@@ -22,11 +23,15 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 
 	triangle_btVel.reserve(dualVertices.size());
 	line_strip_triangle.reserve(dualVertices.size());
+	age.reserve(dualVertices.size());
+	maxAge = 50;
+
 	velocities.reserve(dualVertices.size());
 	for(int i = 0; i < dualVertices.size(); i++){
 		triangle_btVel.push_back(-1);
 		line_strip_triangle.push_back(i);
 		velocities.push_back(tuple3f());
+		age.push_back(rand()%maxAge);
 	}
 
 
@@ -447,9 +452,14 @@ void fluidSimulation::glDisplayField()
 	tuple3f temp;
 	int tempTriangle;
 	float t;
+	float col;
 	for(int i = 0; i < line_stripe_starts.size(); i++){
 		temp = line_stripe_starts[i];
 		tempTriangle = line_strip_triangle[i];
+		col = (age[i]<maxAge/2? age[i] : maxAge - age[i]);
+		col *= 2.f/maxAge;
+
+		glColor3f(col,col,col);
 		glBegin(GL_LINE_STRIP);
 		for(int j = 0; j < 5; j++){
 			glVertex3fv( (GLfloat *) &temp);
@@ -464,6 +474,13 @@ void fluidSimulation::glDisplayField()
 			}
 		}
 		glEnd();
+
+		age[i]++;
+		if(age[i]>maxAge){
+			age[i] = 0;
+			line_stripe_starts[i]=dualVertices[i];
+			line_strip_triangle[i] = i;
+		}
 	}
 
 	glDisable(GL_LINE_STIPPLE);
