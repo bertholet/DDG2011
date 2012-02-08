@@ -9,6 +9,7 @@
 #include "matrixFactory.h"
 #include "stdafx.h"
 #include "pardiso.h"
+#include <GL/glew.h>
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
@@ -16,12 +17,15 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	myMesh = mesh;
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
 	backtracedDualVertices = dualVertices; //hope this copies everything.
-	backtracedVelocity = dualVertices; // just for right dimension
+	backtracedVelocity = dualVertices; // just to have the right dimension
+	line_stripe_starts = dualVertices; // for visualisation
 
 	triangle_btVel.reserve(dualVertices.size());
+	line_strip_triangle.reserve(dualVertices.size());
 	velocities.reserve(dualVertices.size());
 	for(int i = 0; i < dualVertices.size(); i++){
 		triangle_btVel.push_back(-1);
+		line_strip_triangle.push_back(i);
 		velocities.push_back(tuple3f());
 	}
 
@@ -59,7 +63,7 @@ void fluidSimulation::setViscosity( float visc )
 	star0_min_vhl *= viscosity*timeStep;
 
 	//the final matrix
-	star0_min_vhl = DDGMatrices::star0(*myMesh) - star0_min_vhl;
+	star0_min_vhl = DDGMatrices::id0(*myMesh) - star0_min_vhl; //was star0 not id0
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,10 +148,10 @@ void fluidSimulation::oneStep( float howmuuch )
 	Model::getModel()->setVectors(&dualVertices,&velocities);
 }
 
-void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t )
+void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t, int direction )
 {
 	tuple3f dir = getVelocityFlattened(*pos,*triangle);
-	dir*=-1;
+	dir*=direction;
 	tuple3f cut_pos;
 	tuple2i cut_edge;
 	float max_t = maxt(*pos, *triangle, dir, cut_pos, cut_edge);
@@ -386,7 +390,7 @@ void fluidSimulation::addDiffusion2Vorticity()
 	
 	solver.solve(&(tempNullForm.getVals()[0]), & (vorticity.getVals()[0]));
 
-	star0_.mult(tempNullForm.getVals(),vorticity.getVals());
+//	star0_.mult(tempNullForm.getVals(),vorticity.getVals());
 }
 
 
@@ -422,4 +426,45 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 
 	updateBacktracedVelocities();
 	Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
+}
+
+void fluidSimulation::glDisplayField()
+{
+
+	static GLushort forward_pattern = 0x3F3F;
+	static GLushort backward_pattern = 0xFCFC;
+
+	glEnable(GL_LINE_STIPPLE);
+	glLineStipple(8, forward_pattern);
+	glColor3f(0.f,0.f,0.f);
+
+
+	//forward_pattern = (forward_pattern << 1) | (forward_pattern >> 15);
+	//backward_pattern = (backward_pattern << 15) | (backward_pattern >> 1);
+
+
+	tuple3f newStart;
+	tuple3f temp;
+	int tempTriangle;
+	float t;
+	for(int i = 0; i < line_stripe_starts.size(); i++){
+		temp = line_stripe_starts[i];
+		tempTriangle = line_strip_triangle[i];
+		glBegin(GL_LINE_STRIP);
+		for(int j = 0; j < 5; j++){
+			glVertex3fv( (GLfloat *) &temp);
+			t=0.3;
+			while(t>0.0001 && tempTriangle >=0){
+				walkPath(&temp,&tempTriangle,&t,1);
+			}
+
+			if(j==0){
+				line_stripe_starts[i]= temp;
+				line_strip_triangle[i] = tempTriangle;
+			}
+		}
+		glEnd();
+	}
+
+	glDisable(GL_LINE_STIPPLE);
 }

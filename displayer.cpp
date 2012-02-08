@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include <math.h>
 #include <QtGui/QMouseEvent>
+#include "fluidSimulation.h"
 
 Displayer::Displayer(QWidget *parent)
 	: QGLWidget(parent)
@@ -74,9 +75,19 @@ void Displayer::paintGL()
 			theMesh->glDisplay((colorMap &) *tmmap);
 			Model::getModel()->getInputCollector().glOutputConstraints(theMesh);
 		}
+		else if(mode == FLUIDSIMMODE){
+			theMesh->glDisplay();
+			fluidSimulation * sim = Model::getModel()->getFluidSimulation();
+			if(sim != NULL){
+				sim->glDisplayField();
+			}
+			glFlush();
+			return;
+		}
 		else{
 			theMesh->glDisplay();
 		}
+
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
 			Model::getModel()->getVField()->glOutputField(normedVField,Model::getModel()->getDisplayLength());

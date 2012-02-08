@@ -67,6 +67,7 @@ void fluidControlWidget::flux2vort2flux()
 
 	if(mySimulation == NULL){
 		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 	mySimulation->flux2Vorticity();
 	mySimulation->vorticity2Flux();
@@ -80,6 +81,7 @@ void fluidControlWidget::getCollectedFlux()
 
 	if(mySimulation == NULL){
 		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
 
@@ -169,6 +171,7 @@ void fluidControlWidget::newFluidSim()
 {
 	if(mySimulation == NULL){
 		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 	//this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
 	this->mySimulation->oneStep((0.f +this->stepSlider->value())/100);
@@ -181,6 +184,7 @@ void fluidControlWidget::stepSizeChanged()
 
 	if(mySimulation == NULL){
 		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 
 	this->mySimulation->setStepSize(stepSize);
@@ -191,6 +195,7 @@ void fluidControlWidget::setForceFlux()
 {
 	if(mySimulation == NULL){
 		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 
 	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
@@ -214,6 +219,7 @@ void fluidControlWidget::viscosityChanged()
 {
 	if(mySimulation == NULL){
 		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 	float viscy = (0.f +this->viscositySlider->value())/20;
 	mySimulation->setViscosity(viscy);

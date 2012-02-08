@@ -9,7 +9,7 @@
 #include "Observer.h"
 #include "Model.h"
 
-enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE};
+enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE};
 
 class Displayer : public QGLWidget,public Observer<Model::modelMsg>

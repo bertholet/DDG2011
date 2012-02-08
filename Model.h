@@ -5,6 +5,7 @@
 #include "constraintCollector.h"
 #include "Observer.h"
 #include <vector>
+#include "fluidSimulation.h"
 
 /************************************************************************/
 /* Singleton where the actual mesh is stored and the actual state of the Program is encoded*/
@@ -57,6 +58,13 @@ public:
 	void setDisplayLength( float param1 );
 	float getDisplayLength(){return displayLength;}
 
+	//////////////////////////////////////////////////////////////////////////
+	// Will let the fluid simulation display. The memory management is not
+	// taken care of, i.e. the fluid sim has to be deleted elsewhere
+	//////////////////////////////////////////////////////////////////////////
+	void setFluidSim(fluidSimulation * sim);
+	fluidSimulation * getFluidSimulation();
+
 	fieldConstraintCollector & getInputCollector();
 
 	void attach(Observer<modelMsg> * obs);
@@ -83,4 +91,5 @@ private:
 
 	bool vFieldValid;
 	float displayLength;
+	fluidSimulation * fluidSim;
 };

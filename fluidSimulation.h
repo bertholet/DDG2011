@@ -18,6 +18,11 @@ private:
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
 
+	//for visualisation: line stripes start at some position and wander
+	//around
+	vector<tuple3f> line_stripe_starts;
+	vector<int> line_strip_triangle;
+
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
 	oneForm forceFlux;
@@ -89,7 +94,7 @@ public:
 	// if the border of the triangle is reached.
 	// If the border of the mesh is reached -1 is returned.
 	//////////////////////////////////////////////////////////////////////////
-	void walkPath(tuple3f * pos, int * triangle, float *  t);
+	void walkPath(tuple3f * pos, int * triangle, float *  t, int dir =-1);
 
 	float maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge );
 
@@ -136,4 +141,9 @@ public:
 	void addForces2Vorticity(float timestep);
 	void setStepSize( float stepSize );
 	void addDiffusion2Vorticity();
+
+/////////////////////////////////////////////////////////////////////////
+// display the field
+//////////////////////////////////////////////////////////////////////////
+	void glDisplayField();
 };
