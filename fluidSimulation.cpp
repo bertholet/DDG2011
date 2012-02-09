@@ -446,15 +446,11 @@ void fluidSimulation::glDisplayField()
 	static GLushort forward_pattern = 0x3F3F;
 	static GLushort backward_pattern = 0xFCFC;
 
-	glEnable(GL_LINE_STIPPLE);
-	glLineStipple(8, forward_pattern);
-	glColor3f(0.f,0.f,0.f);
+	glEnable(GL_TEXTURE_1D);
 
-
-	//forward_pattern = (forward_pattern << 1) | (forward_pattern >> 15);
-	//backward_pattern = (backward_pattern << 15) | (backward_pattern >> 1);
-
-
+	int nrPoints_2 = 10;
+	int nrPoints = 2*nrPoints_2;
+	
 	tuple3f newStart;
 	tuple3f temp;
 	int tempTriangle;
@@ -464,32 +460,80 @@ void fluidSimulation::glDisplayField()
 	for(int i = 0; i < line_stripe_starts.size(); i++){
 		temp = line_stripe_starts[i];
 		tempTriangle = line_strip_triangle[i];
-		col = (age[i]<maxAge/2? age[i] : maxAge - age[i]);
-		col *= 2.f/maxAge;
+//		col = (age[i]<maxAge/2? age[i] : maxAge - age[i]);
+//		col *= 2.f/maxAge;
 
-	//	glColor3f(col,col,col);
+//		glColor3f(col,col,col);
+//		glLineStipple(8, forward_pattern);
+
 		glBegin(GL_LINE_STRIP);
-		for(int j = 0; j < 5; j++){
-			glVertex3fv( (GLfloat *) &temp);
-			t=1;
+		glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//(0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
+		glVertex3fv( (GLfloat *) &temp);
+
+		for(int j = nrPoints_2+1; j < nrPoints; j++){
+			t=0.1;
 			while(t>0.0001 && tempTriangle >=0){
 				walkPath(&temp,&tempTriangle,&t,1);
+				glTexCoord1f(texPos(age[i]+ j, nrPoints));//(0.f + (j+age[i])%nrPoints) /(nrPoints+1));
+				glVertex3fv( (GLfloat *) &temp);
 			}
 
-			if(j==0){
-				line_strip_triangle[i] = tempTriangle;
-				line_stripe_starts[i]= temp;
-			}
 		}
 		glEnd();
 
-		/*age[i]++;
-		if(age[i]>maxAge){
-			age[i] = 0;
-			line_strip_triangle[i] = i;//rand()%sz;
-			line_stripe_starts[i]=dualVertices[line_strip_triangle[i]];
-		}*/
+//		glLineStipple(8, backward_pattern);
+		temp = line_stripe_starts[i];
+		tempTriangle = line_strip_triangle[i];
+
+		glBegin(GL_LINE_STRIP);
+		glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//((0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
+		glVertex3fv( (GLfloat *) &temp);
+		for(int j = nrPoints_2 -1; j > 0; j--){
+			t=0.1;
+			while(t>0.0001 && tempTriangle >=0){
+				walkPath(&temp,&tempTriangle,&t,-1);
+				glTexCoord1f(texPos(age[i]+ j, nrPoints));//((0.f+(age[i] + j)%nrPoints)/(nrPoints+1));
+				glVertex3fv( (GLfloat *) &temp);
+			}
+
+			/*if(j==0){
+				line_strip_triangle[i] = tempTriangle;
+				line_stripe_starts[i]= temp;
+			}*/
+		}
+		glEnd();
+
+		age[i]--;
+		if(age[i]<0){
+			age[i] = maxAge;
+			//line_strip_triangle[i] = i;//rand()%sz;
+			//line_stripe_starts[i]=dualVertices[line_strip_triangle[i]];
+		}
 	}
 
-	glDisable(GL_LINE_STIPPLE);
+	//glDisable(GL_LINE_STIPPLE);
+	glDisable(GL_TEXTURE_1D);
+}
+
+float fluidSimulation::texPos( int j, int nrPoints )
+{
+	float temp = (j%nrPoints > nrPoints/2? 
+		(nrPoints-j%nrPoints)*2.f/nrPoints : 
+		(j%nrPoints)*2.f/nrPoints);
+	temp = (temp <0 ? 0 :(temp>1?1: temp));
+	return temp;
+}
+
+tuple3f fluidSimulation::color( int vertexNr )
+{
+	assert(vertexNr < vorticity.size());
+	float sth = vorticity.get(vertexNr,1);
+	sth = (sth>0? sth: -sth);
+	sth = (sth<0.2?0.2:(sth>0.8?0.8:sth));
+	return tuple3f(sth,sth,sth);
+}
+
+std::string fluidSimulation::additionalInfo( void )
+{
+	throw std::runtime_error("The method or operation is not implemented.");
 }

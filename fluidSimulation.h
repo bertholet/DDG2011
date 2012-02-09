@@ -6,8 +6,9 @@
 #include "nullForm.h"
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
+#include "colorMap.h"
 
-class fluidSimulation
+class fluidSimulation:public colorMap
 {
 private:
 	meshMetaInfo * myMesh;
@@ -148,4 +149,14 @@ public:
 // display the field
 //////////////////////////////////////////////////////////////////////////
 	void glDisplayField();
+	float texPos( int j, int nrPoints );
+
+
+//////////////////////////////////////////////////////////////////////////
+//colormap Methods
+//////////////////////////////////////////////////////////////////////////
+	virtual tuple3f color( int vertexNr );
+
+	virtual std::string additionalInfo( void );
+
 };
