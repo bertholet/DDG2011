@@ -145,6 +145,27 @@ public:
 	}
 };
 
+
+class idCreator: public pardisoMatCreator
+{
+
+public:
+
+	float val(int i , int j){
+		// i is the row
+		if(i==j){
+			return 1;
+		}
+		return 0;
+	}
+
+	// row: its the edge number; 
+	void indices(int row, std::vector<int> & target){
+		target.clear();
+		target.push_back(row);
+	}
+};
+
 DDGMatrices::DDGMatrices(void)
 {
 }
@@ -226,6 +247,28 @@ pardisoMatrix DDGMatrices::delta2( meshMetaInfo & aMesh )
 	star_1_inv.elementWiseInv(0.00000001);
 
 	return (star_1_inv % d_1)* star_2;
+}
+
+
+pardisoMatrix DDGMatrices::id0( meshMetaInfo & aMesh )
+{
+	pardisoMatrix id;
+	id.initMatrix(idCreator(), aMesh.getBasicMesh().getVertices().size());
+	return id;
+}
+
+pardisoMatrix DDGMatrices::id1( meshMetaInfo & aMesh )
+{
+	pardisoMatrix id;
+	id.initMatrix(idCreator(), aMesh.getHalfedges()->size());
+	return id;
+}
+
+pardisoMatrix DDGMatrices::id2( meshMetaInfo & aMesh )
+{
+	pardisoMatrix id;
+	id.initMatrix(idCreator(), aMesh.getBasicMesh().getFaces().size());
+	return id;
 }
 
 

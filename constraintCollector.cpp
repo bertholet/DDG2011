@@ -1,5 +1,6 @@
 #include "constraintCollector.h"
 #include <algorithm>
+#include "Model.h"
 
 fieldConstraintCollector::fieldConstraintCollector(void)
 {
@@ -151,6 +152,7 @@ void fieldConstraintCollector::glOutputConstraints( mesh * theMesh )
 
 	glBegin(GL_LINES);
 	tuple3f pos, dir;
+	float length = Model::getModel()->getDisplayLength();
 	for(int i = 0; i < faces.size(); i++){
 		if(i < fcs.size()){
 			fc = faces[i];
@@ -159,7 +161,7 @@ void fieldConstraintCollector::glOutputConstraints( mesh * theMesh )
 			/*dir = face_dir[i];
 			dir.normalize();
 			dir = dir * (0.3f);*/
-			pos += face_dir[i] *(0.25f);
+			pos += face_dir[i] *length;
 			glVertex3fv( (GLfloat *) & pos);
 		}
 	}

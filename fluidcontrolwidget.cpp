@@ -5,6 +5,7 @@
 #include "dualMeshTools.h"
 #include "fluidTools.h"
 #include "oneForm.h"
+#include <QLabel>
 
 fluidControlWidget::fluidControlWidget(QWidget *parent)
 	: QWidget(parent)
@@ -12,13 +13,17 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	mySimulation = NULL;
 
-	QPushButton * butt = new QPushButton("Circumcenters!");
-	connect(butt, SIGNAL(released()), this, SLOT(circumcenters()));
-	QPushButton * butt2 = new QPushButton("Flux2VectorExample!");
-	connect(butt2, SIGNAL(released()), this, SLOT(flux2Vel()));
+	QPushButton * butt = new QPushButton("Flux 2 Vorticity 2 Flux!");
+	connect(butt, SIGNAL(released()), this, SLOT(flux2vort2flux()));
+	QPushButton * butt2 = new QPushButton("Define Flux!");
+	connect(butt2, SIGNAL(released()), this, SLOT(getCollectedFlux()));
+	QPushButton * butt_defForce = new QPushButton("Define Force!");
+	connect(butt_defForce, SIGNAL(released()), this, SLOT(setForceFlux()));
 	QPushButton * butt3 = new QPushButton("New Fluid Sim");
 	connect(butt3, SIGNAL(released()), this, SLOT(newFluidSim()));
 
+	QLabel * stepSliderLabel = new QLabel("Timestep Size [0,2]");
+	QLabel * viscosityLabel = new QLabel("Viscosity [0,10]");
 
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
@@ -27,12 +32,23 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	stepSlider->setValue(10);
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(stepSizeChanged()));
 
+	viscositySlider = new QSlider(Qt::Horizontal, this);
+	viscositySlider->setMinimum(0);
+	viscositySlider->setMaximum(200);
+	viscositySlider->setTickPosition(QSlider::TicksAbove);
+	viscositySlider->setValue(0);
+	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
+
 	QVBoxLayout * layout = new QVBoxLayout();
 
-	layout->addWidget(butt);
 	layout->addWidget(butt2);
+	layout->addWidget(butt);
+	layout->addWidget(butt_defForce);
 	layout->addWidget(butt3);
+	layout->addWidget(stepSliderLabel);
 	layout->addWidget(stepSlider);
+	layout->addWidget(viscosityLabel);
+	layout->addWidget(viscositySlider);
 
 	this->setLayout(layout);
 
@@ -46,38 +62,43 @@ fluidControlWidget::~fluidControlWidget()
 	}
 }
 
-void fluidControlWidget::circumcenters()
+void fluidControlWidget::flux2vort2flux()
 {
 
 	if(mySimulation == NULL){
 		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
-	mySimulation->showDualPositions();
+	mySimulation->flux2Vorticity();
+	mySimulation->vorticity2Flux();
+	//mySimulation->updateVelocities();
+	mySimulation->showFlux2Vel();
 
 }
 
-void fluidControlWidget::flux2Vel()
+void fluidControlWidget::getCollectedFlux()
 {
 
 	if(mySimulation == NULL){
 		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
 
-	std::vector<tuple2i> & edges = * mesh.getHalfedges();
+/*	std::vector<tuple2i> & edges = * mesh.getHalfedges();
 	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
 	std::vector<tuple3i> & f2e = * mesh.getFace2Halfedges();	
-	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();
+	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();*/
 
 	std::vector<tuple3f> dirs;
 	tuple3f dir(0.f,0.f,1.f);
 	tuple3f n;
 
-	std::vector<tuple3f> & constrDir = Model::getModel()->getInputCollector().getFaceDir();
-	std::vector<int> & constrFcs = Model::getModel()->getInputCollector().getFaces();
+	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
+	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
 
 	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
-
+/*		tuple3f & a = verts[fcs[i].a];
 		dirs.push_back(tuple3f());
 	}
 
@@ -88,48 +109,33 @@ void fluidControlWidget::flux2Vel()
 		tuple3f & c = verts[fcs[constrFcs[i]].c];
 
 		n = (b-a).cross(c-a);
-		n.normalize();
+		n.normalize();*/
 		
-		tmp = n.dot(dirs[i]);
+		dirs.push_back(tuple3f());
 		assert(tmp < 0.0001 && tmp > -0.0001);
 
 		dirs[constrFcs[i]] = constrDir[i];
 	}
 
+	for(int i = 0; i < constr_dirs.size(); i++){
+		dirs[constr_fcs[i]] = constr_dirs[i];
+	}
 
 	mySimulation->setFlux(dirs);
-
+	mySimulation->flux2Vorticity();
+//	mySimulation->vorticity2Flux();
 	
-/*	std::vector<double> & sth = f.getVals();
-	tuple3f n;
-	for(int i = 0; i < fcs.size(); i++){
-		tuple3f & a = verts[fcs[i].a];
-		tuple3f & b = verts[fcs[i].b];
-		tuple3f & c = verts[fcs[i].c];
-		tuple3i & f_edgs = f2e[i];
-
-		n = (b-a).cross(c-a);
-		n.normalize();
-
-
-		sth[f_edgs.a] = ((verts[edges[f_edgs.a].b]-verts[edges[f_edgs.a].a])).cross(n).dot(dir);
-		sth[f_edgs.b] = (verts[edges[f_edgs.b].b]-verts[edges[f_edgs.b].a]).cross(n).dot(dir);
-		sth[f_edgs.c] = (verts[edges[f_edgs.c].b]-verts[edges[f_edgs.c].a]).cross(n).dot(dir);
-	}*/
-	
-	
-	//std::vector<tuple3f> velocities;
-	//fluidTools::flux2Velocity(f,velocities, mesh);
-	//mySimulation->setFlux(f);
 	mySimulation->showFlux2Vel();
 
 	
 
 	// the test.
-/*	oneForm & f = mySimulation->getFlux();
+	// the test fails if neighboring faces have "incompatible" fluxes. So nvm
+	/*oneForm & f = mySimulation->getFlux();
 	tuple3f n_ab, n_bc, n_ca;
 	float test, test2;
-	for(int i = 0; i < dirs.size(); i++){
+	for(int j = 0; j < constr_dirs.size(); j++){
+		int i = constr_fcs[j];
 		tuple3f & a = verts[fcs[i].a];
 		tuple3f & b = verts[fcs[i].b];
 		tuple3f & c = verts[fcs[i].c];
@@ -174,13 +180,56 @@ void fluidControlWidget::newFluidSim()
 {
 	if(mySimulation == NULL){
 		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
 	}
 	//this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
 	this->mySimulation->oneStep((0.f +this->stepSlider->value())/100);
+	mySimulation->showFlux2Vel();
 }
 
 void fluidControlWidget::stepSizeChanged()
 {
 	stepSize = (0.f +this->stepSlider->value())/100;
-	newFluidSim();
+
+	if(mySimulation == NULL){
+		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
+	}
+
+	this->mySimulation->setStepSize(stepSize);
+	this->mySimulation->pathTraceAndShow(stepSize);
+}
+
+void fluidControlWidget::setForceFlux()
+{
+	if(mySimulation == NULL){
+		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
+	}
+
+	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
+	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
+	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
+
+	vector<tuple3f> dirs;
+	dirs.reserve(mesh.getBasicMesh().getFaces().size());
+	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
+		dirs.push_back(tuple3f());
+	}
+
+	for(int i = 0; i < constr_dirs.size(); i++){
+		dirs[constr_fcs[i]] = constr_dirs[i];
+	}
+
+	mySimulation->setForce(dirs);
+}
+
+void fluidControlWidget::viscosityChanged()
+{
+	if(mySimulation == NULL){
+		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+		Model::getModel()->setFluidSim(mySimulation);
+	}
+	float viscy = (0.f +this->viscositySlider->value())/20;
+	mySimulation->setViscosity(viscy);
 }

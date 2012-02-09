@@ -6,8 +6,9 @@
 #include "nullForm.h"
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
+#include "colorMap.h"
 
-class fluidSimulation
+class fluidSimulation:public colorMap
 {
 private:
 	meshMetaInfo * myMesh;
@@ -18,15 +19,32 @@ private:
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
 
+	//for visualisation: line stripes start at some position and wander
+	//around
+	vector<tuple3f> line_stripe_starts;
+	vector<int> line_strip_triangle;
+	vector<int> age;
+	int maxAge;
+
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
+	oneForm forceFlux;
 	nullForm vorticity;
+	nullForm tempNullForm;
 	//L^-1 * Vorticity is stored here.
 	nullForm L_m1Vorticity;
 
 	//oneForm2oneForm Laplacian
 	pardisoMatrix L;
 	pardisoMatrix d0;
+	pardisoMatrix dt_star1;
+	pardisoMatrix star0_,star0_inv;
+	pardisoMatrix star0_min_vhl;
+
+	//the viscosity. surprise surprise...
+	float viscosity;
+	//timeStep
+	float timeStep;
 
 public:
 
@@ -42,6 +60,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void setFlux( oneForm & f );
 	void setFlux( vector<tuple3f> & dirs );
+
+	void setForce(vector<tuple3f> & dirs);
+
+	void setViscosity(float visc);
 	//////////////////////////////////////////////////////////////////////////
 	// Pathtrace all dualvertices
 	//
@@ -61,6 +83,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void vorticity2Flux();
 
+	void flux2Vorticity();
+
 	//////////////////////////////////////////////////////////////////////////
 	// velocity2Flux
 	// method to inject motion i.e. stirring etc
@@ -73,14 +97,16 @@ public:
 	// if the border of the triangle is reached.
 	// If the border of the mesh is reached -1 is returned.
 	//////////////////////////////////////////////////////////////////////////
-	void walkPath(tuple3f * pos, int * triangle, float *  t);
+	void walkPath(tuple3f * pos, int * triangle, float *  t, int dir =-1);
 
 	float maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge );
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Method for curved manifolds. The Velocities are rectified along the
-	// curvature normal and then projected back
+	// Method to iterpolate the velocity field on curved manifolds. 
+	// The Velocities are projected locally along the
+	// curvature normal onto a plane, interpolated there and then projected 
+	// back
 	//////////////////////////////////////////////////////////////////////////
 	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex );
 
@@ -115,4 +141,22 @@ public:
 	tuple3f project( tuple3f& velocity, int actualTriangle );
 	void updateVelocities();
 	oneForm & getFlux();
+	void addForces2Vorticity(float timestep);
+	void setStepSize( float stepSize );
+	void addDiffusion2Vorticity();
+
+/////////////////////////////////////////////////////////////////////////
+// display the field
+//////////////////////////////////////////////////////////////////////////
+	void glDisplayField();
+	float texPos( int j, int nrPoints );
+
+
+//////////////////////////////////////////////////////////////////////////
+//colormap Methods
+//////////////////////////////////////////////////////////////////////////
+	virtual tuple3f color( int vertexNr );
+
+	virtual std::string additionalInfo( void );
+
 };

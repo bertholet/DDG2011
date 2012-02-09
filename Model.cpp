@@ -13,7 +13,8 @@ Model::Model(void)
 	points = NULL;
 	positions = NULL;
 	dirs = NULL;
-	displayLength = 0.3f;
+	fluidSim = NULL;
+	displayLength = 1.f;
 }
 
 Model::~Model(void)
@@ -65,6 +66,7 @@ void Model::setMesh( mesh * aMesh )
 	myMesh = aMesh;
 	metaInfo = new meshMetaInfo(myMesh);
 	vField = NULL;
+	fluidSim = NULL;
 
 	points = NULL;
 	dirs = NULL;
@@ -158,4 +160,14 @@ std::vector<tuple3f> * Model::getPos()
 std::vector<tuple3f> * Model::getDirs()
 {
 	return dirs;
+}
+
+fluidSimulation * Model::getFluidSimulation()
+{
+	return fluidSim;
+}
+
+void Model::setFluidSim( fluidSimulation * sim )
+{
+	fluidSim = sim;
 }

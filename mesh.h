@@ -4,7 +4,7 @@
 #include "tuple3.h"
 #include "colorMap.h"
 #include <GL/glew.h>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 #include "Observer.h"
 
 using namespace std;

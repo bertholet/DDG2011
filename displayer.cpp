@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include <math.h>
 #include <QtGui/QMouseEvent>
+#include "fluidSimulation.h"
 
 Displayer::Displayer(QWidget *parent)
 	: QGLWidget(parent)
@@ -52,6 +53,43 @@ void Displayer::initializeGL()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// textures for fluid sim
+	//////////////////////////////////////////////////////////////////////////
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	GLuint tex_id;
+	glGenTextures(1, &tex_id);
+	glBindTexture(GL_TEXTURE_1D, tex_id);
+
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	GLfloat Texture4[4][3] =
+	{
+
+	//	{ 0.f, 0.f, 0.f },
+		{ 0.1f, 0.1f, 0.1f },
+		{ 0.9f,0.9f,0.9f }, // Blue
+		{ 0.9f, 0.9f, 0.9f }, // Green
+		{ 0.1f, 0.1f, 0.1f },
+	/*	{ 0.f, 0.f, 0.f },
+		{ 0.f, 0.f, 0.f },
+		{ 0.f, 0.f, 0.f },
+		{ 1, 1, 1 }, // Blue
+		{ 1, 1, 1 }, // Green
+		{ 0.f, 0.f, 0.f },
+		{ 0.f, 0.f, 0.f }*/
+	};
+
+
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 4 ,0,GL_RGB, GL_FLOAT, 
+		Texture4);
+	//glEnable(GL_TEXTURE_1D);
+
+	//////////////////////////////////////////////////////////////////////////
+
 	glLineWidth(3.0);
 	glPointSize(3.f);
 }
@@ -74,9 +112,19 @@ void Displayer::paintGL()
 			theMesh->glDisplay((colorMap &) *tmmap);
 			Model::getModel()->getInputCollector().glOutputConstraints(theMesh);
 		}
+		else if(mode == FLUIDSIMMODE){
+			fluidSimulation * sim = Model::getModel()->getFluidSimulation();
+			theMesh->glDisplay(*sim);
+			if(sim != NULL){
+				sim->glDisplayField();
+			}
+			glFlush();
+			return;
+		}
 		else{
 			theMesh->glDisplay();
 		}
+
 
 		if(displayVField && Model::getModel()->getVField() != NULL){
 			Model::getModel()->getVField()->glOutputField(normedVField,Model::getModel()->getDisplayLength());

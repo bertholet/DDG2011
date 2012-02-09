@@ -19,15 +19,17 @@ public:
 	virtual void update( void * src, Model::modelMsg msg );
 
 public slots:
-	void circumcenters();
-	void flux2Vel();
+	void flux2vort2flux();
+	void getCollectedFlux();
 	void newFluidSim();
 	void stepSizeChanged();
-
+	void setForceFlux();
+	void viscosityChanged();
 private:
 	std::vector<tuple3f> dualVertices;
 	fluidSimulation * mySimulation;
 	QSlider * stepSlider;
+	QSlider * viscositySlider;
 	float stepSize;
 };
 

@@ -57,6 +57,7 @@ void MainWindow::setupButtons()
 	comboBox->addItem("Border");
 	comboBox->addItem("Curvature");
 	comboBox->addItem("Selections");
+	comboBox->addItem("FluidSimulation");
 
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Display Normed Field",this);
@@ -209,6 +210,10 @@ void MainWindow::setDisplayMode( int mode )
 		Model & model = *Model::getModel();
 		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setMode(MOUSEINPUTMODE);
+	}
+	else if(mode == 5){
+		//model.getMeshInfo()->activateCurvNormals(true);
+		this->myGLDisp->setMode(FLUIDSIMMODE);
 	}
 }
 
