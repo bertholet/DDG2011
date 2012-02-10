@@ -13,14 +13,21 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	mySimulation = NULL;
 
+	animationTimer = new QTimer(this);
+	connect( animationTimer, SIGNAL(timeout()), this, SLOT(doAnimation()) ); 
+
+	//setUp Gui
+
 	QPushButton * butt = new QPushButton("Flux 2 Vorticity 2 Flux!");
 	connect(butt, SIGNAL(released()), this, SLOT(flux2vort2flux()));
 	QPushButton * butt2 = new QPushButton("Define Flux!");
 	connect(butt2, SIGNAL(released()), this, SLOT(getCollectedFlux()));
 	QPushButton * butt_defForce = new QPushButton("Define Force!");
 	connect(butt_defForce, SIGNAL(released()), this, SLOT(setForceFlux()));
-	QPushButton * butt3 = new QPushButton("New Fluid Sim");
-	connect(butt3, SIGNAL(released()), this, SLOT(newFluidSim()));
+	QPushButton * butt_simStep = new QPushButton("Do 1 Timestep");
+	connect(butt_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
+	QPushButton * butt_startSim = new QPushButton("Start/Stop Simulation");
+	connect(butt_startSim , SIGNAL(released()), this, SLOT(startSim()));
 
 	QLabel * stepSliderLabel = new QLabel("Timestep Size [0,2]");
 	QLabel * viscosityLabel = new QLabel("Viscosity [0,10]");
@@ -44,7 +51,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(butt2);
 	layout->addWidget(butt);
 	layout->addWidget(butt_defForce);
-	layout->addWidget(butt3);
+	layout->addWidget(butt_simStep);
+	layout->addWidget(butt_startSim);
 	layout->addWidget(stepSliderLabel);
 	layout->addWidget(stepSlider);
 	layout->addWidget(viscosityLabel);
@@ -62,12 +70,24 @@ fluidControlWidget::~fluidControlWidget()
 	}
 }
 
+void fluidControlWidget::initSimulation()
+{
+	this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
+	Model::getModel()->setFluidSim(mySimulation);
+	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
+	dirs.reserve(mesh.getBasicMesh().getFaces().size());
+	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
+		dirs.push_back(tuple3f());
+	}
+
+	dirs_cleared = true;
+}
+
 void fluidControlWidget::flux2vort2flux()
 {
 
 	if(mySimulation == NULL){
-		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
-		Model::getModel()->setFluidSim(mySimulation);
+		initSimulation();
 	}
 	mySimulation->flux2Vorticity();
 	mySimulation->vorticity2Flux();
@@ -80,8 +100,7 @@ void fluidControlWidget::getCollectedFlux()
 {
 
 	if(mySimulation == NULL){
-		mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
-		Model::getModel()->setFluidSim(mySimulation);
+		initSimulation();
 	}
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
 
@@ -164,14 +183,14 @@ void fluidControlWidget::update( void * src, Model::modelMsg msg )
 	if(msg == Model::NEW_MESH_CREATED && mySimulation != NULL){
 		delete mySimulation;
 		mySimulation = NULL;
+		dirs.clear();
 	}
 }
 
-void fluidControlWidget::newFluidSim()
+void fluidControlWidget::singleSimulationStep()
 {
 	if(mySimulation == NULL){
-		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
-		Model::getModel()->setFluidSim(mySimulation);
+		initSimulation();
 	}
 	//this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
 	this->mySimulation->oneStep((0.f +this->stepSlider->value())/100);
@@ -183,8 +202,7 @@ void fluidControlWidget::stepSizeChanged()
 	stepSize = (0.f +this->stepSlider->value())/100;
 
 	if(mySimulation == NULL){
-		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
-		Model::getModel()->setFluidSim(mySimulation);
+		initSimulation();
 	}
 
 	this->mySimulation->setStepSize(stepSize);
@@ -194,19 +212,12 @@ void fluidControlWidget::stepSizeChanged()
 void fluidControlWidget::setForceFlux()
 {
 	if(mySimulation == NULL){
-		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
-		Model::getModel()->setFluidSim(mySimulation);
+		initSimulation();
+
 	}
 
 	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
 	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
-	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
-
-	vector<tuple3f> dirs;
-	dirs.reserve(mesh.getBasicMesh().getFaces().size());
-	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
-		dirs.push_back(tuple3f());
-	}
 
 	for(int i = 0; i < constr_dirs.size(); i++){
 		dirs[constr_fcs[i]] = constr_dirs[i];
@@ -218,9 +229,55 @@ void fluidControlWidget::setForceFlux()
 void fluidControlWidget::viscosityChanged()
 {
 	if(mySimulation == NULL){
-		this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
-		Model::getModel()->setFluidSim(mySimulation);
+		initSimulation();
 	}
 	float viscy = (0.f +this->viscositySlider->value())/20;
 	mySimulation->setViscosity(viscy);
 }
+
+void fluidControlWidget::doAnimation()
+{
+
+	if(mySimulation == NULL){
+		initSimulation();
+	}
+
+	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
+	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
+
+	if(constr_dirs.size() > 0){
+		for(int i = 0; i < constr_dirs.size(); i++){
+			dirs[constr_fcs[i]] = constr_dirs[i];
+		}
+		mySimulation->setForce(dirs);
+		Model::getModel()->getInputCollector().clear();
+		forceAge = 0;
+		dirs_cleared = false;
+	}
+
+	float stepSize = 0.025;
+
+	mySimulation->oneStep(stepSize);
+	Model::getModel()->updateObserver(Model::DISPLAY_CHANGED);
+	forceAge += stepSize;
+
+	if(forceAge > 0.2 && !dirs_cleared){
+		for(int i = 0; i < dirs.size(); i++){
+			dirs[i].set(0,0,0);
+		}
+		dirs_cleared = true;
+		mySimulation->setForce(dirs);
+	}
+}
+
+void fluidControlWidget::startSim()
+{
+	if(animationTimer->isActive()){
+		animationTimer->stop();
+	}
+	else{
+		animationTimer->start(40);
+	}
+}
+
+

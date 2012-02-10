@@ -52,7 +52,7 @@ public:
 	// Note: the Memory of points needs to be released elsewhere
 	// at the time given-..
 	//////////////////////////////////////////////////////////////////////////
-	void setVectors( std::vector<tuple3f>* pos, std::vector<tuple3f>* dir );
+	void setVectors( std::vector<tuple3f>* pos, std::vector<tuple3f>* dir , bool updateObservers = true);
 	std::vector<tuple3f> * getPos();
 	std::vector<tuple3f> * getDirs();
 	void setDisplayLength( float param1 );

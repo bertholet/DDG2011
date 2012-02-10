@@ -7,14 +7,19 @@
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
 #include "colorMap.h"
+#include <QTime>
 
 class fluidSimulation:public colorMap
 {
 private:
 	meshMetaInfo * myMesh;
+
+	// the actual simulation time.
+	float simulationtime;
+
+	// Things needed for Pathtracing
 	std::vector<tuple3f> velocities;
 	std::vector<tuple3f> dualVertices;
-	
 	std::vector<tuple3f> backtracedDualVertices;
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
@@ -25,7 +30,9 @@ private:
 	vector<int> line_strip_triangle;
 	vector<int> age;
 	int maxAge;
+	QTime lastFrame;
 
+	//Forms
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
 	oneForm forceFlux;
@@ -34,7 +41,7 @@ private:
 	//L^-1 * Vorticity is stored here.
 	nullForm L_m1Vorticity;
 
-	//oneForm2oneForm Laplacian
+	//The Matrices needed
 	pardisoMatrix L;
 	pardisoMatrix d0;
 	pardisoMatrix dt_star1;
@@ -150,13 +157,13 @@ public:
 //////////////////////////////////////////////////////////////////////////
 	void glDisplayField();
 	float texPos( int j, int nrPoints );
-
-
+	void actualizeFPS();
+	//helper method that returns a randomly chosen point on the triangle
+	tuple3f randPoint( int triangle );
 //////////////////////////////////////////////////////////////////////////
 //colormap Methods
 //////////////////////////////////////////////////////////////////////////
 	virtual tuple3f color( int vertexNr );
 
 	virtual std::string additionalInfo( void );
-
 };

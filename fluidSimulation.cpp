@@ -11,29 +11,38 @@
 #include "pardiso.h"
 #include <GL/glew.h>
 #include <stdlib.h>
+#include <iostream>
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
 {
 	myMesh = mesh;
+	simulationtime = 0;
+
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
 	backtracedDualVertices = dualVertices; //hope this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
 
-
+	//////////////////////////////////////////////////////////////////////////
+	//for visualisation
+	//////////////////////////////////////////////////////////////////////////
 	line_strip_triangle.reserve(dualVertices.size());
 	line_stripe_starts.reserve(dualVertices.size()); // for visualisation
 	age.reserve(dualVertices.size());
 	maxAge = 200;
-
 	int noFaces = myMesh->getBasicMesh().getFaces().size();
+	srand(0);
 	for(int i = 0; i < noFaces; i++){
 
 		line_strip_triangle.push_back(i);//(rand()%noFaces);
-		line_stripe_starts.push_back(dualVertices[line_strip_triangle[i]]);
+		line_stripe_starts.push_back(/**/randPoint(i));//*/dualVertices[line_strip_triangle[i]]);
 		age.push_back(rand()%maxAge);
 	}
 
+
+//////////////////////////////////////////////////////////////////////////
+	//for Backtracing
+	//////////////////////////////////////////////////////////////////////////
 	triangle_btVel.reserve(dualVertices.size());
 	velocities.reserve(dualVertices.size());
 	for(int i = 0; i < dualVertices.size(); i++){
@@ -137,7 +146,7 @@ void fluidSimulation::oneStep( float howmuuch )
 {
 	pathTraceDualVertices(howmuuch); //note: the second u is critical for success.
 
-	Model::getModel()->setPointCloud(&backtracedDualVertices);
+	//Model::getModel()->setPointCloud(&backtracedDualVertices);
 
 	updateBacktracedVelocities();
 
@@ -156,8 +165,9 @@ void fluidSimulation::oneStep( float howmuuch )
 
 	vorticity2Flux();
 	updateVelocities();
+	simulationtime += howmuuch;
 
-	Model::getModel()->setVectors(&dualVertices,&velocities);
+	Model::getModel()->setVectors(&dualVertices,&velocities, false);
 }
 
 void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t, int direction )
@@ -271,31 +281,6 @@ void fluidSimulation::flux2Vorticity()
 
 
 
-
-/*
-tuple3f fluidSimulation::project( tuple3f& velocity,int actualFc)
-{
-	tuple3i & actualFace =myMesh->getBasicMesh().getFaces()[actualFc];
-	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
-	tuple3f & a =verts[actualFace.a];
-	tuple3f & b =verts[actualFace.b];
-	tuple3f & c =verts[actualFace.c];
-	tuple3f b_a = (b-a);
-	b_a.normalize();
-	tuple3f c_a = (c-a);
-	c_a -= b_a * (c_a.dot(b_a));
-	c_a.normalize();
-
-	//assert(c_a.dot(b_a) < 0.000001 &&c_a.dot(b_a) >- 0.000001);
-	tuple3f result = c_a * (velocity.dot(c_a)) + b_a * (velocity.dot(b_a));
-	//result*=velocity.norm()/result.norm();
-
-	float tmp = ((b-a).cross(c-a)).dot(result);
-	assert(tmp < 0.00001&& tmp >-0.00001);
-
-	return result;
-
-}*/
 
 
 tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle)
@@ -442,12 +427,6 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 
 void fluidSimulation::glDisplayField()
 {
-
-	static GLushort forward_pattern = 0x3F3F;
-	static GLushort backward_pattern = 0xFCFC;
-
-	glEnable(GL_TEXTURE_1D);
-
 	int nrPoints_2 = 10;
 	int nrPoints = 2*nrPoints_2;
 	
@@ -457,14 +436,17 @@ void fluidSimulation::glDisplayField()
 	float t;
 	float col;
 	int sz = myMesh->getBasicMesh().getFaces().size();
+
+	actualizeFPS();
+	glEnable(GL_TEXTURE_1D);
 	for(int i = 0; i < line_stripe_starts.size(); i++){
+
 		temp = line_stripe_starts[i];
 		tempTriangle = line_strip_triangle[i];
-//		col = (age[i]<maxAge/2? age[i] : maxAge - age[i]);
-//		col *= 2.f/maxAge;
-
-//		glColor3f(col,col,col);
-//		glLineStipple(8, forward_pattern);
+		//speed up: do not animate regions where nothing happens.
+		if(getVelocityFlattened(temp,tempTriangle).norm() < 0.01){
+			continue;
+		}
 
 		glBegin(GL_LINE_STRIP);
 		glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//(0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
@@ -481,7 +463,7 @@ void fluidSimulation::glDisplayField()
 		}
 		glEnd();
 
-//		glLineStipple(8, backward_pattern);
+
 		temp = line_stripe_starts[i];
 		tempTriangle = line_strip_triangle[i];
 
@@ -495,19 +477,12 @@ void fluidSimulation::glDisplayField()
 				glTexCoord1f(texPos(age[i]+ j, nrPoints));//((0.f+(age[i] + j)%nrPoints)/(nrPoints+1));
 				glVertex3fv( (GLfloat *) &temp);
 			}
-
-			/*if(j==0){
-				line_strip_triangle[i] = tempTriangle;
-				line_stripe_starts[i]= temp;
-			}*/
 		}
 		glEnd();
 
 		age[i]--;
 		if(age[i]<0){
 			age[i] = maxAge;
-			//line_strip_triangle[i] = i;//rand()%sz;
-			//line_stripe_starts[i]=dualVertices[line_strip_triangle[i]];
 		}
 	}
 
@@ -515,6 +490,9 @@ void fluidSimulation::glDisplayField()
 	glDisable(GL_TEXTURE_1D);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Helper method that calculates 1d texture positions
+//////////////////////////////////////////////////////////////////////////
 float fluidSimulation::texPos( int j, int nrPoints )
 {
 	float temp = (j%nrPoints > nrPoints/2? 
@@ -524,16 +502,44 @@ float fluidSimulation::texPos( int j, int nrPoints )
 	return temp;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Method from colorMap
+//////////////////////////////////////////////////////////////////////////
 tuple3f fluidSimulation::color( int vertexNr )
 {
 	assert(vertexNr < vorticity.size());
 	float sth = vorticity.get(vertexNr,1);
 	sth = (sth>0? sth: -sth);
 	sth = (sth<0.2?0.2:(sth>0.8?0.8:sth));
-	return tuple3f(sth,sth,sth);
+	return tuple3f(0.2f,0.2f,sth);
 }
 
 std::string fluidSimulation::additionalInfo( void )
 {
 	throw std::runtime_error("The method or operation is not implemented.");
+}
+
+void fluidSimulation::actualizeFPS()
+{
+	float fps = 1000.f/lastFrame.elapsed();
+	lastFrame.restart();
+
+
+	cout << "FPS: " << fps << "; Simulation Time : " <<  simulationtime <<"\n";
+}
+
+tuple3f fluidSimulation::randPoint( int triangle )
+{
+	tuple3i & tr = myMesh->getBasicMesh().getFaces()[triangle];
+	std::vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
+	float a = (float)rand()/numeric_limits<float>::max();
+	float b = (float)rand()/numeric_limits<float>::max();
+	float c = (float)rand()/numeric_limits<float>::max();
+	float sum = a+b+c;
+	a/=sum;
+	b/=sum;
+	c/=sum;
+
+	return (verts[tr.a] * a) + (verts[tr.b]*b) + (verts[tr.c]*c);
+
 }

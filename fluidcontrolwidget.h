@@ -7,6 +7,7 @@
 #include "Model.h"
 #include "fluidSimulation.h"
 #include <QSlider>
+#include <qtimer.h>
 
 class fluidControlWidget : public QWidget, public Observer<Model::modelMsg>
 {
@@ -21,16 +22,25 @@ public:
 public slots:
 	void flux2vort2flux();
 	void getCollectedFlux();
-	void newFluidSim();
+	void singleSimulationStep();
 	void stepSizeChanged();
 	void setForceFlux();
+
+	void initSimulation();
+
 	void viscosityChanged();
+	void startSim();
+	void doAnimation();
 private:
-	std::vector<tuple3f> dualVertices;
+	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;
 	QSlider * stepSlider;
 	QSlider * viscositySlider;
 	float stepSize;
+	QTimer * animationTimer;
+
+	float forceAge;
+	bool dirs_cleared;
 };
 
 #endif // FLUIDCONTROLWIDGET_H

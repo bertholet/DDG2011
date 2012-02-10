@@ -224,7 +224,7 @@ void MainWindow::setMouseMode( int state )
 	}
 	if(state == 2){//checked
 		this->myGLDisp->setMouseMode(INPUTMODE);
-		this->myGLDisp->setMode(MOUSEINPUTMODE);
+		//this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}
 }
 

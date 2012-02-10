@@ -114,9 +114,12 @@ void Displayer::paintGL()
 		}
 		else if(mode == FLUIDSIMMODE){
 			fluidSimulation * sim = Model::getModel()->getFluidSimulation();
-			theMesh->glDisplay(*sim);
 			if(sim != NULL){
+				theMesh->glDisplay(*sim);
 				sim->glDisplayField();
+			}
+			else{
+				theMesh->glDisplay();
 			}
 			glFlush();
 			return;
