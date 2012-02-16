@@ -34,6 +34,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	QLabel * stepSliderLabel = new QLabel("Timestep Size [0,2]");
 	QLabel * viscosityLabel = new QLabel("Viscosity [0,10]");
+	forceAgeLabel = new QLabel("ForceAge (nr Iteratons): ");
 
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
@@ -49,6 +50,13 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	viscositySlider->setValue(0);
 	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
 
+	forceAgeSlider = new QSlider(Qt::Horizontal, this);
+	forceAgeSlider->setMinimum(0);
+	forceAgeSlider->setMaximum(100);
+	forceAgeSlider->setTickPosition(QSlider::TicksAbove);
+	forceAgeSlider->setValue(5);
+	connect(forceAgeSlider,SIGNAL(sliderReleased()), this, SLOT(forceAgeChanged()));
+	forceAgeChanged();
 
 	viscosityAndTimestep = new QLabel("");
 	updateViscTimeLabel();
@@ -65,6 +73,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(stepSlider);
 	layout->addWidget(viscosityLabel);
 	layout->addWidget(viscositySlider);
+	layout->addWidget(forceAgeLabel);
+	layout->addWidget(forceAgeSlider);
 	layout->addWidget(viscosityAndTimestep);
 	layout->addWidget(animationLabel);
 
@@ -147,11 +157,6 @@ void fluidControlWidget::getCollectedFlux()
 	}
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
 
-/*	std::vector<tuple2i> & edges = * mesh.getHalfedges();
-	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
-	std::vector<tuple3i> & f2e = * mesh.getFace2Halfedges();	
-	std::vector<tuple3i> & fcs = mesh.getBasicMesh().getFaces();*/
-
 	std::vector<tuple3f> dirs;
 	tuple3f dir(0.f,0.f,1.f);
 	tuple3f n;
@@ -160,12 +165,6 @@ void fluidControlWidget::getCollectedFlux()
 	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
 
 	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
-/*		tuple3f & a = verts[fcs[i].a];
-		tuple3f & b = verts[fcs[i].b];
-		tuple3f & c = verts[fcs[i].c];
-
-		n = (b-a).cross(c-a);
-		n.normalize();*/
 
 		dirs.push_back(tuple3f());
 	}
@@ -176,7 +175,6 @@ void fluidControlWidget::getCollectedFlux()
 
 	mySimulation->setFlux(dirs);
 	mySimulation->flux2Vorticity();
-//	mySimulation->vorticity2Flux();
 	
 	mySimulation->showFlux2Vel();
 
@@ -237,6 +235,7 @@ void fluidControlWidget::singleSimulationStep()
 	}
 	//this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
 	this->mySimulation->oneStep(getTimestep());
+	updateAnimationLabel(mySimulation->getSimTime(), mySimulation->getFPS());
 	mySimulation->showFlux2Vel();
 }
 
@@ -281,6 +280,16 @@ void fluidControlWidget::viscosityChanged()
 	mySimulation->setViscosity(viscy);
 }
 
+
+void fluidControlWidget::forceAgeChanged()
+{
+	this->maxForceAge = forceAgeSlider->value();
+	stringstream ss;
+	ss << "ForceAge (nr Iteratons): " << this->maxForceAge;
+	this->forceAgeLabel->setText(ss.str().c_str());
+}
+	
+
 void fluidControlWidget::doAnimation()
 {
 
@@ -305,9 +314,9 @@ void fluidControlWidget::doAnimation()
 
 	mySimulation->oneStep(stepSize);
 	Model::getModel()->updateObserver(Model::DISPLAY_CHANGED);
-	forceAge += stepSize;
+	forceAge += 1;
 
-	if(forceAge > 0.2 && !dirs_cleared){
+	if(forceAge > maxForceAge && !dirs_cleared){
 		for(int i = 0; i < dirs.size(); i++){
 			dirs[i].set(0,0,0);
 		}

@@ -35,6 +35,7 @@ public slots:
 	void initSimulation();
 
 	void viscosityChanged();
+	void forceAgeChanged();
 	void startSim();
 	void doAnimation();
 private:
@@ -42,12 +43,15 @@ private:
 	fluidSimulation * mySimulation;
 	QSlider * stepSlider;
 	QSlider * viscositySlider;
+	QSlider * forceAgeSlider;
 	float stepSize;
 	QTimer * animationTimer;
 	QLabel * viscosityAndTimestep;
 	QLabel * animationLabel;
+	QLabel * forceAgeLabel;
 
 	float forceAge;
+	float maxForceAge;
 	bool dirs_cleared;
 };
 
