@@ -6,6 +6,9 @@
 #include "fluidTools.h"
 #include "oneForm.h"
 #include <QLabel>
+#include <string>
+#include <sstream>
+#include <math.h>
 
 fluidControlWidget::fluidControlWidget(QWidget *parent)
 	: QWidget(parent)
@@ -46,6 +49,10 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	viscositySlider->setValue(0);
 	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
 
+
+	viscosityAndTimestep = new QLabel("");
+	updateViscTimeLabel();
+
 	QVBoxLayout * layout = new QVBoxLayout();
 
 	layout->addWidget(butt2);
@@ -57,6 +64,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(stepSlider);
 	layout->addWidget(viscosityLabel);
 	layout->addWidget(viscositySlider);
+	layout->addWidget(viscosityAndTimestep);
 
 	this->setLayout(layout);
 
@@ -82,6 +90,32 @@ void fluidControlWidget::initSimulation()
 
 	dirs_cleared = true;
 }
+
+float fluidControlWidget::getTimestep()
+{
+	return (0.f +this->stepSlider->value())/100;
+}
+
+float fluidControlWidget::getViscosity()
+{
+	float temp = this->viscositySlider->value()*4 - this->viscositySlider->maximum();
+	temp/= this->viscositySlider->maximum();
+	temp = pow(10,temp)- 0.1;
+	temp = temp < 0.0001?
+		0:
+		temp;
+	return temp;
+}
+
+
+void fluidControlWidget::updateViscTimeLabel()
+{
+	stringstream ss;
+	ss << "Timestep: " << getTimestep() <<", Viscosity: " << getViscosity();
+	this->viscosityAndTimestep->setText(ss.str().c_str());
+}
+
+
 
 void fluidControlWidget::flux2vort2flux()
 {
@@ -193,13 +227,14 @@ void fluidControlWidget::singleSimulationStep()
 		initSimulation();
 	}
 	//this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
-	this->mySimulation->oneStep((0.f +this->stepSlider->value())/100);
+	this->mySimulation->oneStep(getTimestep());
 	mySimulation->showFlux2Vel();
 }
 
 void fluidControlWidget::stepSizeChanged()
 {
-	stepSize = (0.f +this->stepSlider->value())/100;
+	stepSize = getTimestep();
+	updateViscTimeLabel();
 
 	if(mySimulation == NULL){
 		initSimulation();
@@ -231,7 +266,9 @@ void fluidControlWidget::viscosityChanged()
 	if(mySimulation == NULL){
 		initSimulation();
 	}
-	float viscy = (0.f +this->viscositySlider->value())/20;
+
+	updateViscTimeLabel();
+	float viscy = getViscosity();
 	mySimulation->setViscosity(viscy);
 }
 
@@ -255,7 +292,7 @@ void fluidControlWidget::doAnimation()
 		dirs_cleared = false;
 	}
 
-	float stepSize = 0.025;
+	float stepSize = getTimestep();
 
 	mySimulation->oneStep(stepSize);
 	Model::getModel()->updateObserver(Model::DISPLAY_CHANGED);
@@ -279,5 +316,9 @@ void fluidControlWidget::startSim()
 		animationTimer->start(40);
 	}
 }
+
+
+
+
 
 

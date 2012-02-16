@@ -7,6 +7,7 @@
 #include "Model.h"
 #include "fluidSimulation.h"
 #include <QSlider>
+#include <QLabel>
 #include <qtimer.h>
 
 class fluidControlWidget : public QWidget, public Observer<Model::modelMsg>
@@ -18,6 +19,10 @@ public:
 	~fluidControlWidget();
 
 	virtual void update( void * src, Model::modelMsg msg );
+
+	float getViscosity();
+	float getTimestep();
+	void updateViscTimeLabel();
 
 public slots:
 	void flux2vort2flux();
@@ -38,6 +43,7 @@ private:
 	QSlider * viscositySlider;
 	float stepSize;
 	QTimer * animationTimer;
+	QLabel * viscosityAndTimestep;
 
 	float forceAge;
 	bool dirs_cleared;
