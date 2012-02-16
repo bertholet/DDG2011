@@ -519,14 +519,6 @@ std::string fluidSimulation::additionalInfo( void )
 	throw std::runtime_error("The method or operation is not implemented.");
 }
 
-void fluidSimulation::actualizeFPS()
-{
-	float fps = 1000.f/lastFrame.elapsed();
-	lastFrame.restart();
-
-
-	cout << "FPS: " << fps << "; Simulation Time : " <<  simulationtime <<"\n";
-}
 
 tuple3f fluidSimulation::randPoint( int triangle )
 {
@@ -542,4 +534,19 @@ tuple3f fluidSimulation::randPoint( int triangle )
 
 	return (verts[tr.a] * a) + (verts[tr.b]*b) + (verts[tr.c]*c);
 
+}
+
+float fluidSimulation::getSimTime()
+{
+	return simulationtime;
+}
+float fluidSimulation::getFPS()
+{
+	return fps;
+}
+
+void fluidSimulation::actualizeFPS()
+{
+	fps = 1000.f/lastFrame.elapsed();
+	lastFrame.restart();
 }

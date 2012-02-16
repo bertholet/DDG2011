@@ -23,6 +23,7 @@ public:
 	float getViscosity();
 	float getTimestep();
 	void updateViscTimeLabel();
+	void updateAnimationLabel(float time, float fps);
 
 public slots:
 	void flux2vort2flux();
@@ -44,6 +45,7 @@ private:
 	float stepSize;
 	QTimer * animationTimer;
 	QLabel * viscosityAndTimestep;
+	QLabel * animationLabel;
 
 	float forceAge;
 	bool dirs_cleared;

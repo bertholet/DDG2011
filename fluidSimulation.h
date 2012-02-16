@@ -52,6 +52,7 @@ private:
 	float viscosity;
 	//timeStep
 	float timeStep;
+	float fps;
 
 public:
 
@@ -157,7 +158,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 	void glDisplayField();
 	float texPos( int j, int nrPoints );
-	void actualizeFPS();
+	float getFPS();
+	float getSimTime();
 	//helper method that returns a randomly chosen point on the triangle
 	tuple3f randPoint( int triangle );
 //////////////////////////////////////////////////////////////////////////
@@ -166,4 +168,5 @@ public:
 	virtual tuple3f color( int vertexNr );
 
 	virtual std::string additionalInfo( void );
+	void actualizeFPS();
 };

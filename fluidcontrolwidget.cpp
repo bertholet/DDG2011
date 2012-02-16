@@ -37,7 +37,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
-	stepSlider->setMaximum(200);
+	stepSlider->setMaximum(1000);
 	stepSlider->setTickPosition(QSlider::TicksAbove);
 	stepSlider->setValue(10);
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(stepSizeChanged()));
@@ -52,6 +52,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	viscosityAndTimestep = new QLabel("");
 	updateViscTimeLabel();
+	animationLabel = new QLabel("");
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
@@ -65,6 +66,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(viscosityLabel);
 	layout->addWidget(viscositySlider);
 	layout->addWidget(viscosityAndTimestep);
+	layout->addWidget(animationLabel);
 
 	this->setLayout(layout);
 
@@ -93,7 +95,7 @@ void fluidControlWidget::initSimulation()
 
 float fluidControlWidget::getTimestep()
 {
-	return (0.f +this->stepSlider->value())/100;
+	return 2*(0.f +this->stepSlider->value())/this->stepSlider->maximum();
 }
 
 float fluidControlWidget::getViscosity()
@@ -115,6 +117,13 @@ void fluidControlWidget::updateViscTimeLabel()
 	this->viscosityAndTimestep->setText(ss.str().c_str());
 }
 
+
+void fluidControlWidget::updateAnimationLabel(float time, float fps)
+{
+	stringstream ss;
+	ss << "Time: " <<time <<", Fps: " << fps;
+	this->animationLabel->setText(ss.str().c_str());
+}
 
 
 void fluidControlWidget::flux2vort2flux()
@@ -305,6 +314,8 @@ void fluidControlWidget::doAnimation()
 		dirs_cleared = true;
 		mySimulation->setForce(dirs);
 	}
+
+	updateAnimationLabel(mySimulation->getSimTime(), mySimulation->getFPS());
 }
 
 void fluidControlWidget::startSim()
