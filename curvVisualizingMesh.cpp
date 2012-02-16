@@ -33,6 +33,7 @@ curvColormap::curvColormap(mesh &myMesh)
 		}
 	}	
 
+	cout << "max curv: " << max << ", min curv: " <<min;
 	min = log(min + 1);
 	max = log(max + 1);
 	/*stringstream ss;

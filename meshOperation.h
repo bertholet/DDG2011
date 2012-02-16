@@ -340,6 +340,9 @@ public:
 		for(int i = 0; i < neighbor_faces.size(); i++){
 			//i is the vertex number
 			vector<int> & nbrFcs = neighbor_faces[i];
+			if(nbrFcs.size() == 0){
+				continue;
+			}
 			
 			//first îs the index of the first vertex of the one ring
 			// the first is well defined if i is a border vertex. Else
