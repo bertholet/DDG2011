@@ -57,13 +57,11 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	//the one in the comments would be if vorticity was defined on the edges in 3d.
 	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
 	d0 =DDGMatrices::d0(*myMesh);
-	L = DDGMatrices::delta1(*myMesh) * d0;
+
+	// L = d^tstar d0
+	L = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh) * d0;
 	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
-
-	star0_inv = DDGMatrices::star0(*myMesh);
-	star0_inv.elementWiseInv(0.00001f);
-
-	L_dual = DDGMatrices::star0(*myMesh) * L * star0_inv;//dt_star1 * DDGMatrices::d0(*myMesh) * star0_inv;
+	star0 = DDGMatrices::star0(*myMesh);
 
 	this->setStepSize(0.05);
 	this->setViscosity(0);
@@ -73,7 +71,6 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	//////////////////////////////////////////////////////////////////////////
 #ifdef printMat
 	L.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/laplace0.m");
-	L_dual.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/laplace_dual0.m");
 #endif
 
 }
@@ -94,7 +91,7 @@ void fluidSimulation::setViscosity( float visc )
 {
 	viscosity = visc;
 	//calc vhL;
-	star0_min_vhl = L_dual; // was L once
+	star0_min_vhl = L; 
 	star0_min_vhl *= viscosity*timeStep;
 
 #ifdef printMat
@@ -102,7 +99,7 @@ void fluidSimulation::setViscosity( float visc )
 #endif
 
 	//the final matrix
-	star0_min_vhl = DDGMatrices::id0(*myMesh) - star0_min_vhl; //was star0 not id0. 
+	star0_min_vhl = star0 - star0_min_vhl; //was star0 not id0. 
 
 #ifdef printMat
 	star0_min_vhl.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/id0_min_vtL0.m");
@@ -186,6 +183,9 @@ void fluidSimulation::oneStep()
 	addDiffusion2Vorticity();
 
 	vorticity2Flux();
+
+testFlux();
+
 	updateVelocities();
 	simulationtime += timeStep;
 
@@ -289,9 +289,9 @@ void fluidSimulation::vorticity2Flux()
 {
 	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(L,1);
-	star0_inv.mult((vorticity.getVals()),(tempNullForm.getVals()));
+//	star0_inv.mult((vorticity.getVals()),(tempNullForm.getVals()));
 
-	solver.solve(&(L_m1Vorticity.getVals()[0]), & (tempNullForm.getVals()[0]));
+	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vorticity.getVals()[0]));
 	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
 }
 
@@ -406,7 +406,7 @@ void fluidSimulation::addDiffusion2Vorticity()
 {
 	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(star0_min_vhl,1);
-	solver.setStoreResultInB(true);
+	//solver.setStoreResultInB(true);
 
 #ifdef printMat
 	L.saveVector(vorticity.getVals(),"vort_before","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_before_diffusion.m");
@@ -416,7 +416,7 @@ void fluidSimulation::addDiffusion2Vorticity()
 	L.saveVector(vorticity.getVals(),"vort_after","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_after_diffusion.m");
 #endif
 
-//	star0_.mult(tempNullForm.getVals(),vorticity.getVals());
+	star0.mult(tempNullForm.getVals(),vorticity.getVals());
 }
 
 
@@ -578,4 +578,23 @@ void fluidSimulation::actualizeFPS()
 {
 	fps = 1000.f/lastFrame.elapsed();
 	lastFrame.restart();
+}
+
+void fluidSimulation::testFlux()
+{
+	std::vector<tuple3i> & fcs = myMesh->getBasicMesh().getFaces();
+	std::vector<tuple2i> & edges = * myMesh->getHalfedges();
+	std::vector<tuple3i> & f2e = * myMesh->getFace2Halfedges();
+
+	float tot;
+	for(int  i= 0; i < fcs.size(); i++){
+		tot = 0;
+		tot += flux.get(f2e[i].a, fcs[i].orientation(edges[f2e[i].a]));
+		tot += flux.get(f2e[i].b, fcs[i].orientation(edges[f2e[i].b]));
+		tot += flux.get(f2e[i].c, fcs[i].orientation(edges[f2e[i].c]));
+
+		if(tot >0.001 || tot <-0.001){
+			assert(false);
+		}
+	}
 }

@@ -43,10 +43,10 @@ private:
 
 	//The Matrices needed
 	pardisoMatrix L;
-	pardisoMatrix L_dual;
 	pardisoMatrix d0;
 	pardisoMatrix dt_star1;
-	pardisoMatrix star0_inv;
+	pardisoMatrix star0;
+
 	pardisoMatrix star0_min_vhl;
 
 	//the viscosity. surprise surprise...
@@ -170,4 +170,5 @@ public:
 
 	virtual std::string additionalInfo( void );
 	void actualizeFPS();
+	void testFlux();
 };
