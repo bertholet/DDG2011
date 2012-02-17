@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#define printMat
+
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
 {
@@ -22,6 +24,7 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
 	backtracedDualVertices = dualVertices; //hope this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//for visualisation
@@ -62,6 +65,14 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 
 	this->setStepSize(0.05);
 	this->setViscosity(0);
+
+	//////////////////////////////////////////////////////////////////////////
+	//dbg
+	//////////////////////////////////////////////////////////////////////////
+#ifdef printMat
+	L.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/laplace0.m");
+#endif
+
 }
 
 fluidSimulation::~fluidSimulation(void)
@@ -83,8 +94,16 @@ void fluidSimulation::setViscosity( float visc )
 	star0_min_vhl = L;
 	star0_min_vhl *= viscosity*timeStep;
 
+#ifdef printMat
+	star0_min_vhl.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vtL0.m");
+#endif
+
 	//the final matrix
-	star0_min_vhl = DDGMatrices::id0(*myMesh) - star0_min_vhl; //was star0 not id0
+	star0_min_vhl = DDGMatrices::id0(*myMesh) - star0_min_vhl; //was star0 not id0. 
+
+#ifdef printMat
+	star0_min_vhl.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/id0_min_vtL0.m");
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -142,9 +161,9 @@ oneForm & fluidSimulation::getFlux()
 //////////////////////////////////////////////////////////////////////////
 // Do one Timestep. Does everything
 //////////////////////////////////////////////////////////////////////////
-void fluidSimulation::oneStep( float howmuuch )
+void fluidSimulation::oneStep()
 {
-	pathTraceDualVertices(howmuuch); //note: the second u is critical for success.
+	pathTraceDualVertices(timeStep); //note: the second u is critical for success.
 
 	//Model::getModel()->setPointCloud(&backtracedDualVertices);
 
@@ -159,13 +178,13 @@ void fluidSimulation::oneStep( float howmuuch )
 
 	backtracedVorticity();
 
-	addForces2Vorticity(howmuuch);
+	addForces2Vorticity(timeStep);
 
 	addDiffusion2Vorticity();
 
 	vorticity2Flux();
 	updateVelocities();
-	simulationtime += howmuuch;
+	simulationtime += timeStep;
 
 	Model::getModel()->setVectors(&dualVertices,&velocities, false);
 }
@@ -384,8 +403,15 @@ void fluidSimulation::addDiffusion2Vorticity()
 {
 	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(star0_min_vhl,1);
-	
+	solver.setStoreResultInB(true);
+
+#ifdef printMat
+	L.saveVector(vorticity.getVals(),"vort_before","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_before_diffusion.m");
+#endif
 	solver.solve(&(tempNullForm.getVals()[0]), & (vorticity.getVals()[0]));
+#ifdef printMat
+	L.saveVector(vorticity.getVals(),"vort_after","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_after_diffusion.m");
+#endif
 
 //	star0_.mult(tempNullForm.getVals(),vorticity.getVals());
 }

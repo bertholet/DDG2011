@@ -133,7 +133,7 @@ public:
 	void pathTraceAndShow(float howmuch);
 	void showFlux2Vel();
 
-	void oneStep(float howmuuch);
+	void oneStep();
 
 	//////////////////////////////////////////////////////////////////////////
 	// helpmethod that interpolates the velocityfield defined on the dualvertex

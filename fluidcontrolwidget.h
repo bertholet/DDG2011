@@ -29,12 +29,12 @@ public slots:
 	void flux2vort2flux();
 	void getCollectedFlux();
 	void singleSimulationStep();
-	void stepSizeChanged();
+	void updateTimeStep();
 	void setForceFlux();
 
 	void initSimulation();
 
-	void viscosityChanged();
+	void updateViscosity();
 	void forceAgeChanged();
 	void startSim();
 	void doAnimation();

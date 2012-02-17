@@ -41,14 +41,16 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	stepSlider->setMaximum(1000);
 	stepSlider->setTickPosition(QSlider::TicksAbove);
 	stepSlider->setValue(10);
-	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(stepSizeChanged()));
+	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(updateTimeStep()));
+
 
 	viscositySlider = new QSlider(Qt::Horizontal, this);
 	viscositySlider->setMinimum(0);
 	viscositySlider->setMaximum(200);
 	viscositySlider->setTickPosition(QSlider::TicksAbove);
 	viscositySlider->setValue(0);
-	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
+	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(updateViscosity()));
+
 
 	forceAgeSlider = new QSlider(Qt::Horizontal, this);
 	forceAgeSlider->setMinimum(0);
@@ -101,6 +103,8 @@ void fluidControlWidget::initSimulation()
 	}
 
 	dirs_cleared = true;
+	updateTimeStep();
+	updateViscosity();
 }
 
 float fluidControlWidget::getTimestep()
@@ -234,20 +238,19 @@ void fluidControlWidget::singleSimulationStep()
 		initSimulation();
 	}
 	//this->mySimulation->pathTraceAndShow((0.f +this->stepSlider->value())/100);
-	this->mySimulation->oneStep(getTimestep());
+	this->updateTimeStep();
+	this->mySimulation->oneStep();
 	updateAnimationLabel(mySimulation->getSimTime(), mySimulation->getFPS());
 	mySimulation->showFlux2Vel();
 }
 
-void fluidControlWidget::stepSizeChanged()
+void fluidControlWidget::updateTimeStep()
 {
-	stepSize = getTimestep();
-	updateViscTimeLabel();
-
 	if(mySimulation == NULL){
 		initSimulation();
 	}
-
+	stepSize = getTimestep();
+	updateViscTimeLabel();
 	this->mySimulation->setStepSize(stepSize);
 	this->mySimulation->pathTraceAndShow(stepSize);
 }
@@ -269,7 +272,7 @@ void fluidControlWidget::setForceFlux()
 	mySimulation->setForce(dirs);
 }
 
-void fluidControlWidget::viscosityChanged()
+void fluidControlWidget::updateViscosity()
 {
 	if(mySimulation == NULL){
 		initSimulation();
@@ -310,9 +313,8 @@ void fluidControlWidget::doAnimation()
 		dirs_cleared = false;
 	}
 
-	float stepSize = getTimestep();
 
-	mySimulation->oneStep(stepSize);
+	mySimulation->oneStep();
 	Model::getModel()->updateObserver(Model::DISPLAY_CHANGED);
 	forceAge += 1;
 
