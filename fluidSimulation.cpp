@@ -59,9 +59,11 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	d0 =DDGMatrices::d0(*myMesh);
 	L = DDGMatrices::delta1(*myMesh) * d0;
 	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
-	star0_ = DDGMatrices::star0(*myMesh);
-	star0_inv = star0_;
+
+	star0_inv = DDGMatrices::star0(*myMesh);
 	star0_inv.elementWiseInv(0.00001f);
+
+	L_dual = DDGMatrices::star0(*myMesh) * L * star0_inv;//dt_star1 * DDGMatrices::d0(*myMesh) * star0_inv;
 
 	this->setStepSize(0.05);
 	this->setViscosity(0);
@@ -71,6 +73,7 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	//////////////////////////////////////////////////////////////////////////
 #ifdef printMat
 	L.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/laplace0.m");
+	L_dual.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/laplace_dual0.m");
 #endif
 
 }
@@ -91,7 +94,7 @@ void fluidSimulation::setViscosity( float visc )
 {
 	viscosity = visc;
 	//calc vhL;
-	star0_min_vhl = L;
+	star0_min_vhl = L_dual; // was L once
 	star0_min_vhl *= viscosity*timeStep;
 
 #ifdef printMat
