@@ -9,7 +9,10 @@
 #include <string>
 #include <sstream>
 #include <math.h>
-
+#include <QRegExp>
+#include <stdlib.h>
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
 
 /*#include "mesh.h"
 #include "Operator.h"*/
@@ -79,6 +82,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	animationLabel = new QLabel("");
 
 	vectorInput = new QLineEdit();
+	//vectorInput->setInputMask("#09.00 #09.00 #09.00");
+	connect(vectorInput,SIGNAL(textChanged( const QString& )), this, SLOT(borderDirInput(const QString & )));
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
@@ -102,6 +107,12 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	this->setLayout(layout);
 
 	Model::getModel()->attach(this);
+
+
+	this->selectedBorder = 0;
+	for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
+		borderConstrDirs.push_back(tuple3f());
+	}
 }
 
 fluidControlWidget::~fluidControlWidget()
@@ -124,6 +135,11 @@ void fluidControlWidget::initSimulation()
 	dirs_cleared = true;
 	updateTimeStep();
 	updateViscosity();
+
+//	this->selectedBorder = 0;
+//	for(int i = 0; i < mesh.getBorder().size(); i++){
+//		dirs.push_back(tuple3f());
+//	}
 }
 
 float fluidControlWidget::getTimestep()
@@ -274,7 +290,25 @@ void fluidControlWidget::update( void * src, Model::modelMsg msg )
 		delete mySimulation;
 		mySimulation = NULL;
 		dirs.clear();
+		borderConstrDirs.clear();
+		this->selectedBorder = 0;
+
 	}
+
+	this->selectedBorder = 0;
+	for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
+		borderConstrDirs.push_back(tuple3f());
+	}
+}
+
+void fluidControlWidget::update( void * src, borderMarkupMap * msg )
+{
+	this->selectedBorder = msg->markedBorder;
+	stringstream ss;
+	ss << borderConstrDirs[selectedBorder].x << " ";
+	ss << borderConstrDirs[selectedBorder].y << " ";
+	ss << borderConstrDirs[selectedBorder].z;
+	this->vectorInput->setText(ss.str().c_str());
 }
 
 void fluidControlWidget::singleSimulationStep()
@@ -391,6 +425,19 @@ void fluidControlWidget::forceStrengthChanged()
 	stringstream ss;
 	ss << "Force Strength (" << getForceStrength() << " ):";
 	this->forceStrengthLabel->setText(ss.str().c_str());
+}
+
+void fluidControlWidget::borderDirInput( const QString & text )
+{
+
+	std::string buff = text.toStdString();
+	float val1 =0,val2=0,val3=0;
+
+	sscanf(buff.c_str(), "%f %f %f", &val1, &val2, &val3);
+
+	if(borderConstrDirs.size() > 0){
+		borderConstrDirs[selectedBorder].set(val1,val2,val3);
+	}
 }
 
 

@@ -169,6 +169,8 @@ public:
 	virtual tuple3f color( int vertexNr );
 
 	virtual std::string additionalInfo( void );
+	void scrollAction(int what){};
 	void actualizeFPS();
 	void testFlux();
+
 };

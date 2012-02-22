@@ -10,8 +10,9 @@
 #include <QLabel>
 #include <qtimer.h>
 #include <QLineEdit>
+#include "curvVisualizingMesh.h"
 
-class fluidControlWidget : public QWidget, public Observer<Model::modelMsg>
+class fluidControlWidget : public QWidget, public Observer<Model::modelMsg>, public Observer<borderMarkupMap*>
 {
 	Q_OBJECT
 
@@ -20,6 +21,7 @@ public:
 	~fluidControlWidget();
 
 	virtual void update( void * src, Model::modelMsg msg );
+	virtual void update( void * src, borderMarkupMap * msg );
 
 	float getViscosity();
 	float getForceStrength();
@@ -41,6 +43,8 @@ public slots:
 	void startSim();
 	void doAnimation();
 	void forceStrengthChanged();
+	void borderDirInput( const QString & text );
+
 
 private:
 	std::vector<tuple3f> dirs;
@@ -60,6 +64,12 @@ private:
 	float forceAge;
 	float maxForceAge;
 	bool dirs_cleared;
+
+	//////////////////////////////////////////////////////////////////////////
+	//border constraints.
+	int selectedBorder;
+	std::vector<tuple3f> borderConstrDirs;
+	//tuple3f borderConstrDir;
 };
 
 #endif // FLUIDCONTROLWIDGET_H
