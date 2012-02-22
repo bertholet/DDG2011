@@ -9,10 +9,9 @@
 #include <string>
 #include <sstream>
 #include <math.h>
-#include <QRegExp>
 #include <stdlib.h>
-#include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
+#include "pardisoMatrix.h"
+#include "DDGMatrices.h"
 
 /*#include "mesh.h"
 #include "Operator.h"*/
@@ -38,6 +37,10 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	connect(butt_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
 	QPushButton * butt_startSim = new QPushButton("Start/Stop Simulation");
 	connect(butt_startSim , SIGNAL(released()), this, SLOT(startSim()));
+
+
+	QPushButton * debug = new QPushButton("Debug!");
+	connect(debug , SIGNAL(released()), this, SLOT(debugSome()));
 
 	QLabel * stepSliderLabel = new QLabel("Timestep Size [0,2]");
 	QLabel * viscosityLabel = new QLabel("Viscosity [0,10]");
@@ -92,6 +95,10 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(butt_defForce);
 	layout->addWidget(butt_simStep);
 	layout->addWidget(butt_startSim);
+
+layout->addWidget(debug);
+
+
 	layout->addWidget(stepSliderLabel);
 	layout->addWidget(stepSlider);
 	layout->addWidget(viscosityLabel);
@@ -124,6 +131,7 @@ fluidControlWidget::~fluidControlWidget()
 
 void fluidControlWidget::initSimulation()
 {
+
 	this->mySimulation = new fluidSimulation(Model::getModel()->getMeshInfo());
 	Model::getModel()->setFluidSim(mySimulation);
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
@@ -135,11 +143,7 @@ void fluidControlWidget::initSimulation()
 	dirs_cleared = true;
 	updateTimeStep();
 	updateViscosity();
-
-//	this->selectedBorder = 0;
-//	for(int i = 0; i < mesh.getBorder().size(); i++){
-//		dirs.push_back(tuple3f());
-//	}
+	
 }
 
 float fluidControlWidget::getTimestep()
@@ -223,7 +227,6 @@ void fluidControlWidget::getCollectedFlux()
 	meshMetaInfo & mesh = * Model::getModel()->getMeshInfo();
 
 	std::vector<tuple3f> dirs;
-	tuple3f dir(0.f,0.f,1.f);
 	tuple3f n;
 
 	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
@@ -438,6 +441,26 @@ void fluidControlWidget::borderDirInput( const QString & text )
 	if(borderConstrDirs.size() > 0){
 		borderConstrDirs[selectedBorder].set(val1,val2,val3);
 	}
+}
+
+void fluidControlWidget::debugSome()
+{
+	meshMetaInfo * mesh = Model::getModel()->getMeshInfo();
+	pardisoMatrix star0 = DDGMatrices::star0(*mesh);
+	star0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star0.m");
+
+	pardisoMatrix star1 = DDGMatrices::star1(*mesh);
+	star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star1.m");
+
+	pardisoMatrix star2 = DDGMatrices::star2(*mesh);
+	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star2.m");
+
+	pardisoMatrix d0 = DDGMatrices::d0(*mesh);
+	d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d0.m");
+
+	pardisoMatrix d1 = DDGMatrices::d1(*mesh);
+	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d1.m");
+
 }
 
 

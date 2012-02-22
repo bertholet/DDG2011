@@ -4,6 +4,7 @@
 #include "tuple3.h"
 #include "Operator.h"
 #include <algorithm>
+#include <limits>
 
 class d_0Creator: public pardisoMatCreator
 {
@@ -80,8 +81,14 @@ public:
 		if(i!= j){
 			return 0;
 		}
+
+
 		// i is the row
-		return Operator::aVornoi(i, mesh->getBasicMesh());
+		float temp =Operator::aVornoi(i, mesh->getBasicMesh());
+		assert(temp < numeric_limits<float>::infinity());
+		assert(temp > -numeric_limits<float>::infinity());
+
+		return temp;
 	}
 
 	// row: its the vertex number; 

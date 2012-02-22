@@ -414,12 +414,17 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	//border compatible version: if there is no next you will get the last
-	//index of the neighbor component
-	static int getPrevious_bc( int center_index, int v, mesh& m );
+	//index of the neighbor component. trueneighbor, if not null, will
+	// contain true if the returned vertex is a true neighbor of v 
+	// and false if it is another border index.
+	static int getPrevious_bc( int center_index, int v, mesh& m , bool * trueNeighbor = NULL);
 	//////////////////////////////////////////////////////////////////////////
 	//border compatible version: if there is no next you will get the first
 	//index of the neighbor component
-	static int getNext_bc( int center_index, int v, mesh& m );
+	// trueneighbor, if not null will
+	// contain true if the returned vertex is a true neighbor of v 
+	// and false if it is another border index.
+	static int getNext_bc( int center_index, int v, mesh& m, bool * trueNeighbor = NULL );
 
 	static int getFirst( int center_index, int v, mesh& m );
 	static int getLast( int center_index, int v, mesh& m );

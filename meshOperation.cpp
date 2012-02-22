@@ -96,19 +96,25 @@ int meshOperation::getLast( int center_index, int v, mesh& m )
 	return actual;
 }
 
-int meshOperation::getPrevious_bc( int center_index, int v, mesh& m )
+int meshOperation::getPrevious_bc( int center_index, int v, mesh& m , bool * trueNeighbor)
 {
 	int prev = getPrevious(center_index,v,m);
+	if(trueNeighbor != NULL){
+		*trueNeighbor = prev >= 0;
+	}
 	if(prev < 0){
 		return getLast(center_index,v,m);
 	}
 	return prev;
 }
 
-int meshOperation::getNext_bc( int center_index, int v, mesh& m )
+int meshOperation::getNext_bc( int center_index, int v, mesh& m, bool * trueNeighbor )
 {
 
 	int next = getNext(center_index,v,m);
+	if(trueNeighbor != NULL){
+		*trueNeighbor = next >= 0;
+	}
 	if(next < 0){
 		return getFirst(center_index,v,m);
 	}

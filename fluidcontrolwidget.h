@@ -44,7 +44,7 @@ public slots:
 	void doAnimation();
 	void forceStrengthChanged();
 	void borderDirInput( const QString & text );
-
+	void debugSome();
 
 private:
 	std::vector<tuple3f> dirs;
