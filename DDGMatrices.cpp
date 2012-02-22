@@ -16,7 +16,7 @@ public:
 	}
 
 	float val(int i , int j){
-		// i is the row
+		// i is the row, j the vertex
 		tuple2i & edge =(*mesh->getHalfedges())[i];
 		return edge.orientation(j);
 	}

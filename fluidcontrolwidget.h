@@ -9,6 +9,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <qtimer.h>
+#include <QLineEdit>
 
 class fluidControlWidget : public QWidget, public Observer<Model::modelMsg>
 {
@@ -21,6 +22,7 @@ public:
 	virtual void update( void * src, Model::modelMsg msg );
 
 	float getViscosity();
+	float getForceStrength();
 	float getTimestep();
 	void updateViscTimeLabel();
 	void updateAnimationLabel(float time, float fps);
@@ -38,17 +40,22 @@ public slots:
 	void forceAgeChanged();
 	void startSim();
 	void doAnimation();
+	void forceStrengthChanged();
+
 private:
 	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;
 	QSlider * stepSlider;
 	QSlider * viscositySlider;
 	QSlider * forceAgeSlider;
+	QSlider * forceStrengthSlider;
 	float stepSize;
 	QTimer * animationTimer;
 	QLabel * viscosityAndTimestep;
 	QLabel * animationLabel;
 	QLabel * forceAgeLabel;
+	QLabel * forceStrengthLabel;
+	QLineEdit * vectorInput;
 
 	float forceAge;
 	float maxForceAge;

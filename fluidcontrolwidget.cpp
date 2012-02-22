@@ -10,6 +10,10 @@
 #include <sstream>
 #include <math.h>
 
+
+/*#include "mesh.h"
+#include "Operator.h"*/
+
 fluidControlWidget::fluidControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
@@ -35,6 +39,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	QLabel * stepSliderLabel = new QLabel("Timestep Size [0,2]");
 	QLabel * viscosityLabel = new QLabel("Viscosity [0,10]");
 	forceAgeLabel = new QLabel("ForceAge (nr Iteratons): ");
+	forceStrengthLabel = new QLabel("Force Strength (): ");
 
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
@@ -60,9 +65,20 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	connect(forceAgeSlider,SIGNAL(sliderReleased()), this, SLOT(forceAgeChanged()));
 	forceAgeChanged();
 
+	forceStrengthSlider = new QSlider(Qt::Horizontal, this);
+	forceStrengthSlider->setMinimum(0);
+	forceStrengthSlider->setMaximum(480);
+	forceStrengthSlider->setTickPosition(QSlider::TicksAbove);
+	forceStrengthSlider->setValue(80);
+	connect(forceStrengthSlider,SIGNAL(sliderReleased()), this, SLOT(forceStrengthChanged()));
+	forceStrengthChanged();
+
+
 	viscosityAndTimestep = new QLabel("");
 	updateViscTimeLabel();
 	animationLabel = new QLabel("");
+
+	vectorInput = new QLineEdit();
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
@@ -77,8 +93,11 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(viscositySlider);
 	layout->addWidget(forceAgeLabel);
 	layout->addWidget(forceAgeSlider);
+	layout->addWidget(forceStrengthLabel);
+	layout->addWidget(forceStrengthSlider);
 	layout->addWidget(viscosityAndTimestep);
 	layout->addWidget(animationLabel);
+	layout->addWidget(vectorInput);
 
 	this->setLayout(layout);
 
@@ -114,12 +133,23 @@ float fluidControlWidget::getTimestep()
 
 float fluidControlWidget::getViscosity()
 {
-	float temp = this->viscositySlider->value()*4 - this->viscositySlider->maximum();
+	float temp = this->viscositySlider->value()*6 - 3*this->viscositySlider->maximum();
 	temp/= this->viscositySlider->maximum();
-	temp = pow(10,temp)- 0.1;
-	temp = temp < 0.0001?
+	temp = pow(10,temp)- 0.00001;
+	temp = temp < 0.000001?
 		0:
 		temp;
+	return temp;
+}
+
+float fluidControlWidget::getForceStrength()
+{
+	float temp = this->forceStrengthSlider->value()*6 - this->forceStrengthSlider->maximum();
+	temp/= this->forceStrengthSlider->maximum();
+	temp = pow(10,temp)- 0.1;
+	temp = temp < 0.00001?
+		0:
+	temp;
 	return temp;
 }
 
@@ -147,9 +177,24 @@ void fluidControlWidget::flux2vort2flux()
 		initSimulation();
 	}
 	mySimulation->flux2Vorticity();
+
+	updateViscosity();
+	updateTimeStep();
+	
+	mySimulation->addDiffusion2Vorticity();
+
+
 	mySimulation->vorticity2Flux();
-	//mySimulation->updateVelocities();
 	mySimulation->showFlux2Vel();
+
+
+/*	mesh & m = * Model::getModel()->getMesh();
+	float temp = 0;
+	for(int i = 0; i < m.getVertices().size(); i++){
+		temp += Operator::aVornoi(i,m);
+	}
+	
+	cout << "Overall Area: " << temp << "\n";*/
 
 }
 
@@ -265,8 +310,9 @@ void fluidControlWidget::setForceFlux()
 	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
 	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
 
+	float strength = getForceStrength();
 	for(int i = 0; i < constr_dirs.size(); i++){
-		dirs[constr_fcs[i]] = constr_dirs[i];
+		dirs[constr_fcs[i]] = constr_dirs[i] * strength;
 	}
 
 	mySimulation->setForce(dirs);
@@ -303,9 +349,10 @@ void fluidControlWidget::doAnimation()
 	vector<tuple3f> & constr_dirs = Model::getModel()->getInputCollector().getFaceDir();
 	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
 
+	float strength = getForceStrength();
 	if(constr_dirs.size() > 0){
 		for(int i = 0; i < constr_dirs.size(); i++){
-			dirs[constr_fcs[i]] = constr_dirs[i];
+			dirs[constr_fcs[i]] = constr_dirs[i]*strength;
 		}
 		mySimulation->setForce(dirs);
 		Model::getModel()->getInputCollector().clear();
@@ -338,6 +385,14 @@ void fluidControlWidget::startSim()
 		animationTimer->start(40);
 	}
 }
+
+void fluidControlWidget::forceStrengthChanged()
+{
+	stringstream ss;
+	ss << "Force Strength (" << getForceStrength() << " ):";
+	this->forceStrengthLabel->setText(ss.str().c_str());
+}
+
 
 
 

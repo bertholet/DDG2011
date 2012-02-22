@@ -22,7 +22,7 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	simulationtime = 0;
 
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
-	backtracedDualVertices = dualVertices; //hope this copies everything.
+	backtracedDualVertices = dualVertices; //this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
 
 
@@ -59,8 +59,16 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	d0 =DDGMatrices::d0(*myMesh);
 
 	// L = d^tstar d0
+
+	//under the assumption that star1 primal = -DDGMatrices::star1 and star1 dual = (DDGMatrices::star1)^-1
+
 	L = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh) * d0;
+	L *= -1; //the assumption
+
 	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
+	dt_star1 *= -1; // the assumption
+
+	//star0 = DDGMatrices::star1(*myMesh);
 	star0 = DDGMatrices::star0(*myMesh);
 
 	this->setStepSize(0.05);
@@ -99,7 +107,7 @@ void fluidSimulation::setViscosity( float visc )
 #endif
 
 	//the final matrix
-	star0_min_vhl = star0 - star0_min_vhl; //was star0 not id0. 
+	star0_min_vhl = star0 - star0_min_vhl; //was star0 not id0. WAS MINUS !!! Now IS minus because of star1 assumption
 
 #ifdef printMat
 	star0_min_vhl.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/id0_min_vtL0.m");
@@ -163,7 +171,7 @@ oneForm & fluidSimulation::getFlux()
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::oneStep()
 {
-	pathTraceDualVertices(timeStep); //note: the second u is critical for success.
+	pathTraceDualVertices(timeStep); 
 
 	//Model::getModel()->setPointCloud(&backtracedDualVertices);
 
@@ -184,7 +192,7 @@ void fluidSimulation::oneStep()
 
 	vorticity2Flux();
 
-testFlux();
+//testFlux();
 
 	updateVelocities();
 	simulationtime += timeStep;
@@ -370,8 +378,8 @@ void fluidSimulation::backtracedVorticity()
 		std::vector<int> & dualV = dualf2v[i];
 		sz = dualV.size();
 		for(int j = 0; j < sz; j++){
-			temp += 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
-				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]]));
+			temp -= 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
+				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); // was += now -= because of assumption!!!
 		}
 		vort[i] =temp;
 	}
@@ -406,7 +414,7 @@ void fluidSimulation::addDiffusion2Vorticity()
 {
 	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(star0_min_vhl,1);
-	//solver.setStoreResultInB(true);
+//	solver.setStoreResultInB(true);
 
 #ifdef printMat
 	L.saveVector(vorticity.getVals(),"vort_before","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_before_diffusion.m");
@@ -417,6 +425,7 @@ void fluidSimulation::addDiffusion2Vorticity()
 #endif
 
 	star0.mult(tempNullForm.getVals(),vorticity.getVals());
+
 }
 
 
@@ -517,6 +526,23 @@ void fluidSimulation::glDisplayField()
 
 	//glDisable(GL_LINE_STIPPLE);
 	glDisable(GL_TEXTURE_1D);
+
+
+	/*tuple3f temp;
+	int tempTriangle;
+	for(int i = 0; i < line_stripe_starts.size(); i++){
+
+		temp = line_stripe_starts[i];
+		tempTriangle = line_strip_triangle[i];
+		//speed up: do not animate regions where nothing happens.
+
+		glBegin(GL_LINE);
+		glVertex3fv( (GLfloat *) &temp);
+		temp = getVelocityFlattened(temp,tempTriangle);
+		glVertex3fv( (GLfloat *) &temp);
+		glEnd();
+
+	}*/
 }
 
 //////////////////////////////////////////////////////////////////////////
