@@ -39,4 +39,12 @@ public:
 	vector<tuple2i> * getHalfedges();
 	vector<tuple3i> * getFace2Halfedges();
 	vector<vector<int>> & getBorder();
+
+	//////////////////////////////////////////////////////////////////////////
+	// This method returns the id of the mesh a,b (or b,a) if it exists
+	// and additionally sotres the edge in the optional argument target, 
+	// if target is not null, so one can know if the edge a.b. OR b a exists
+	// furthermore: it the edge is not found -1 is returned (target is set to
+	// -1,-1
+	int getHalfedgeId( int a, int b , tuple2i * target = NULL);
 };

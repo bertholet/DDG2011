@@ -58,16 +58,18 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
 	d0 =DDGMatrices::d0(*myMesh);
 
-	// L = d^tstar d0
+	// L = dual_d1 *star1 *d0
 
 	//under the assumption that star1 primal = -DDGMatrices::star1 and star1 dual = (DDGMatrices::star1)^-1
 
-	L = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh) * d0;
-	L *= -1; //the assumption
+//	L = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh) * d0;
+//	L *= -1; //the assumption
+	L = DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh) * d0;
 
-	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
-	dt_star1 *= -1; // the assumption
+//	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
+//	dt_star1 *= -1; // the assumption
 
+	dt_star1 = DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh);
 	//star0 = DDGMatrices::star1(*myMesh);
 	star0 = DDGMatrices::star0(*myMesh);
 
@@ -378,8 +380,11 @@ void fluidSimulation::backtracedVorticity()
 		std::vector<int> & dualV = dualf2v[i];
 		sz = dualV.size();
 		for(int j = 0; j < sz; j++){
+
+			// was += now -= because the dual edges are oriented in the oposite way of following the border of the
+			// one ring of vertex.!!!
 			temp -= 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
-				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); // was += now -= because of assumption!!!
+				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
 		}
 		vort[i] =temp;
 	}

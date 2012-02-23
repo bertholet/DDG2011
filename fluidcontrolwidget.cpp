@@ -10,9 +10,11 @@
 #include <sstream>
 #include <math.h>
 #include <stdlib.h>
+
+
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
-
+#include "pardiso.h"
 /*#include "mesh.h"
 #include "Operator.h"*/
 
@@ -460,6 +462,28 @@ void fluidControlWidget::debugSome()
 
 	pardisoMatrix d1 = DDGMatrices::d1(*mesh);
 	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d1.m");
+
+	pardisoMatrix delta1 = DDGMatrices::delta1(*mesh);
+	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta1.m");
+
+	pardisoMatrix delta2 = DDGMatrices::delta2(*mesh);
+	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta2.m");
+
+	pardisoMatrix Lflux = d0*delta1 + delta2*d1;
+
+	//set matrix to id on border
+/*	vector<vector<int>> & brdr = mesh->getBorder();
+	int sz;
+	for(int i = 0; i < brdr.size(); i++){
+		sz =brdr[i].size();
+		for(int j = 0; j < sz){
+			Lflux.setLineToID(mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz]));
+		}
+	}
+
+	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
+	solver.setMatrix(Lflux,1);*/
+
 
 }
 

@@ -200,6 +200,19 @@ pardisoMatrix DDGMatrices::d1( meshMetaInfo & aMesh )
 	return d_1;
 }
 
+pardisoMatrix DDGMatrices::dual_d0( meshMetaInfo & aMesh )
+{
+	pardisoMatrix d1_=d1(aMesh);
+	return (id1(aMesh) % d1_);
+}
+
+pardisoMatrix DDGMatrices::dual_d1( meshMetaInfo & aMesh )
+{
+	pardisoMatrix d_0= d0(aMesh);
+	d_0*=(-1);//^1
+	return (id0(aMesh) % d_0);
+}
+
 //0 for surface meshes, as this is all for now. 
 /*pardisoMatrix DDGMatrices::d2( meshMetaInfo & aMesh )
 {
@@ -277,5 +290,7 @@ pardisoMatrix DDGMatrices::id2( meshMetaInfo & aMesh )
 	id.initMatrix(idCreator(), aMesh.getBasicMesh().getFaces().size());
 	return id;
 }
+
+
 
 
