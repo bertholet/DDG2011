@@ -465,4 +465,28 @@ void pardisoMatrix::mult( std::vector<double> & x, std::vector<double> & target 
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+// set line line to 0.... 1 ... 0 where line is the line in 0 based notation
+//////////////////////////////////////////////////////////////////////////
+void pardisoMatrix::setLineToID( int line )
+{
+	bool diagElementExisted = false;
+	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
+		if(ja[j] -1 == line){
+			a[j] = 1;
+			diagElementExisted = true;
+		}
+		else{
+			a[j] = 0;
+		}
+	}
+
+	assert(diagElementExisted);
+	if(!diagElementExisted){
+		throw std::runtime_error( "Unimplemented Case in setLineToID(), curse the lazy programmer who preferred to write this error msg than to implement a better method");
+	}
+	//was lazy and did not yet implement this method if the diag element does not exist.
+
+}
+
 

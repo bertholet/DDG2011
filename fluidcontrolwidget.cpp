@@ -471,12 +471,16 @@ void fluidControlWidget::debugSome()
 
 	pardisoMatrix Lflux = d0*delta1 + delta2*d1;
 
+//	Lflux.setLineToID(3);
+//	Lflux.setLineToID(5);
+
+//	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	//set matrix to id on border
 /*	vector<vector<int>> & brdr = mesh->getBorder();
 	int sz;
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
-		for(int j = 0; j < sz){
+		for(int j = 0; j < sz;j++){
 			Lflux.setLineToID(mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz]));
 		}
 	}
