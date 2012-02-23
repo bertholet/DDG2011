@@ -223,7 +223,7 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 			val = 0;
 			for(int l=Aia_start,l2 = 0; l < Aia_stop; l++,l2++){
 				//"B(k,next_j)!=0" i.e. multiplicating row i with column j
-				if(B.ja[b_idx[l2]] == next_j && b_idx[l2] < b_stop[l2]){
+				if(b_idx[l2] < b_stop[l2]&&B.ja[b_idx[l2]] == next_j){
 					val+=this->a[l]*B.a[b_idx[l2]];
 					b_idx[l2]++;//this row is done. Advance to next non zero row
 				}

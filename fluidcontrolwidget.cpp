@@ -10,7 +10,7 @@
 #include <sstream>
 #include <math.h>
 #include <stdlib.h>
-
+#include <assert.h>
 
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
@@ -476,17 +476,32 @@ void fluidControlWidget::debugSome()
 
 //	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	//set matrix to id on border
-/*	vector<vector<int>> & brdr = mesh->getBorder();
+	vector<vector<int>> & brdr = mesh->getBorder();
 	int sz;
+	tuple2i edge;
+	int edgeId;
+	oneForm fluxConstraint(*mesh);
+
+	vector<double> & fluxConstr = fluxConstraint.getVals();
+	vector<tuple3f> & verts = mesh->getBasicMesh().getVertices();
+
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
 		for(int j = 0; j < sz;j++){
-			Lflux.setLineToID(mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz]));
+			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
+			assert(edgeId >=0);
+			Lflux.setLineToID(mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge));
+			
+			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
+
 		}
 	}
 
-	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
-	solver.setMatrix(Lflux,1);*/
+	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
+	Lflux.saveVector(fluxConstr, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");
+
+	//pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
+	//solver.setMatrix(Lflux,1);
 
 
 }
