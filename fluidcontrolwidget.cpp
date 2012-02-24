@@ -249,44 +249,6 @@ void fluidControlWidget::getCollectedFlux()
 	mySimulation->showFlux2Vel();
 
 	
-
-	// the test.
-	// the test fails if neighboring faces have "incompatible" fluxes. So nvm
-	/*oneForm & f = mySimulation->getFlux();
-	tuple3f n_ab, n_bc, n_ca;
-	float test, test2;
-	for(int j = 0; j < constr_dirs.size(); j++){
-		int i = constr_fcs[j];
-		tuple3f & a = verts[fcs[i].a];
-		tuple3f & b = verts[fcs[i].b];
-		tuple3f & c = verts[fcs[i].c];
-
-		n = (b-a).cross(c-a);
-		n.normalize();
-		//normals
-		n_ab = (b-a).cross(n);
-		//n_ab.normalize(); unnormalized is correct: flux is times sidelength
-		n_bc = (c-b).cross(n);
-		//n_bc.normalize();
-		n_ca = (a-c).cross(n);
-		//n_ca.normalize();
-
-		test = n.dot(dirs[i]);
-		assert(test < 0.00001 && test > -0.00001);
-		test = f.get(f2e[i].a,fcs[i].orientation(edges[f2e[i].a]));
-		test2 = n_ab.dot(dirs[i]);
-		test = test - test2;
-		//test = n_ab.dot(dirs[i]);
-		//test = test - f.get(f2e[i].a,fcs[i].orientation(edges[f2e[i].a]));
-		assert(test < 0.00001 && test > -0.00001);
-		test = n_bc.dot(dirs[i]);
-		test = test - f.get(f2e[i].b,fcs[i].orientation(edges[f2e[i].b]));
-		assert(test < 0.00001 && test > -0.00001);
-		test = n_ca.dot(dirs[i]);
-		test = test - f.get(f2e[i].c,fcs[i].orientation(edges[f2e[i].c]));
-		assert(test < 0.00001 && test > -0.00001);
-		test = test;
-	}*/
 }
 
 void fluidControlWidget::update( void * src, Model::modelMsg msg )
@@ -469,7 +431,8 @@ void fluidControlWidget::debugSome()
 	pardisoMatrix delta2 = DDGMatrices::delta2(*mesh);
 	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta2.m");
 
-	pardisoMatrix Lflux = d0*delta1 + delta2*d1;
+	pardisoMatrix Lflux = delta2*d1 + d0*delta1;
+	//Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
 
 //	Lflux.setLineToID(3);
 //	Lflux.setLineToID(5);
@@ -484,14 +447,20 @@ void fluidControlWidget::debugSome()
 
 	vector<double> & fluxConstr = fluxConstraint.getVals();
 	vector<tuple3f> & verts = mesh->getBasicMesh().getVertices();
+	vector<double> buff = fluxConstr;
+	vector<tuple2i> & edgs = * mesh->getHalfedges();
 
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
 		for(int j = 0; j < sz;j++){
 			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
 			assert(edgeId >=0);
-			Lflux.setLineToID(mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge));
+			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
+					(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
+			//Lflux.setLineToID(edgeId);
+			// i have to make sure there is no rot on the border and no divergence!!!!!!!!
 			
+			Lflux.add(edgeId,edgeId,1);
 			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
 
 		}
@@ -500,9 +469,59 @@ void fluidControlWidget::debugSome()
 	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	Lflux.saveVector(fluxConstr, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");
 
-	//pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
-	//solver.setMatrix(Lflux,1);
+		Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
 
+	/*pardisoMatrix d0delta1 = d0*delta1;
+	d0delta1.mult(fluxConstr,buff);
+
+	//////////////////////////////////////////////////////////////////////////
+	// inefficient way to make fluxConstr = what it has to be on the border plus something
+	// on corners etc
+	fluxConstr = buff;
+	for(int i = 0; i < brdr.size(); i++){
+		sz =brdr[i].size();
+		for(int j = 0; j < sz;j++){
+			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
+			assert(edgeId >=0);
+			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
+				(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
+			Lflux.setLineToID(edgeId);
+
+			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
+
+		}
+	}*/
+
+	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
+	solver.setMatrix(Lflux,1);
+	solver.setStoreResultInB(true);
+	solver.solve(& (buff[0]), & (fluxConstr[0]));
+
+	if(mySimulation ==  NULL){
+		initSimulation();
+	}
+	mySimulation->setFlux(fluxConstraint);
+	mySimulation->showFlux2Vel();
+
+	Lflux.mult(fluxConstr,buff);
+
+	float temp;
+	for(int i = 0; i < brdr.size(); i++){
+		sz =brdr[i].size();
+		for(int j = 0; j < sz;j++){
+			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
+
+			temp = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
+			assert(temp -buff[edgeId] < 0.0001 && temp -buff[edgeId] > -0.0001);
+
+			buff[edgeId] = 0;
+
+		}
+	}
+
+	for(int i = 0; i < buff.size(); i++){
+			assert(buff[edgeId] < 0.0001 && buff[edgeId] > -0.0001);
+	}
 
 }
 
