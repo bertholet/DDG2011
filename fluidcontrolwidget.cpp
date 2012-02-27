@@ -87,6 +87,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	animationLabel = new QLabel("");
 
 	vectorInput = new QLineEdit();
+	vectorInput->setText("");
 	//vectorInput->setInputMask("#09.00 #09.00 #09.00");
 	connect(vectorInput,SIGNAL(textChanged( const QString& )), this, SLOT(borderDirInput(const QString & )));
 
@@ -122,6 +123,7 @@ layout->addWidget(debug);
 	for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
 		borderConstrDirs.push_back(tuple3f());
 	}
+
 }
 
 fluidControlWidget::~fluidControlWidget()
@@ -263,6 +265,7 @@ void fluidControlWidget::update( void * src, Model::modelMsg msg )
 	}
 
 	this->selectedBorder = 0;
+	borderConstrDirs.clear();
 	for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
 		borderConstrDirs.push_back(tuple3f());
 	}
@@ -272,10 +275,14 @@ void fluidControlWidget::update( void * src, borderMarkupMap * msg )
 {
 	this->selectedBorder = msg->markedBorder;
 	stringstream ss;
+
 	ss << borderConstrDirs[selectedBorder].x << " ";
 	ss << borderConstrDirs[selectedBorder].y << " ";
 	ss << borderConstrDirs[selectedBorder].z;
+
+	//	this->vectorInput->setText("0 0 0");
 	this->vectorInput->setText(ss.str().c_str());
+
 }
 
 void fluidControlWidget::singleSimulationStep()
@@ -397,14 +404,19 @@ void fluidControlWidget::forceStrengthChanged()
 void fluidControlWidget::borderDirInput( const QString & text )
 {
 
-	std::string buff = text.toStdString();
-	float val1 =0,val2=0,val3=0;
+	QByteArray ba = text.toLatin1();
+	std::string buff = ba.data();
 
-	sscanf(buff.c_str(), "%f %f %f", &val1, &val2, &val3);
+	float val1 =0;
+	float val2=0;
+	float val3=0;
 
-	if(borderConstrDirs.size() > 0){
+	sscanf_s(buff.c_str(), "%f %f %f", &val1, &val2, &val3);
+
+	if(borderConstrDirs.size() > selectedBorder){
 		borderConstrDirs[selectedBorder].set(val1,val2,val3);
 	}
+
 }
 
 void fluidControlWidget::debugSome()
@@ -468,8 +480,10 @@ void fluidControlWidget::debugSome()
 			temp_vals.push_back(1);
 			
 			Lflux.addLine(temp_indx, temp_vals);
+			buff.push_back( borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]));
+
 			//Lflux.add(edgeId,edgeId,1);
-			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
+			//fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
 
 		}
 	}
@@ -478,7 +492,8 @@ void fluidControlWidget::debugSome()
 	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	Lflux.saveVector(fluxConstr, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");
 
-		Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
+	Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
+	(DDGMatrices::id1(*mesh)%Lflux).mult(buff, fluxConstr);
 
 	/*pardisoMatrix d0delta1 = d0*delta1;
 	d0delta1.mult(fluxConstr,buff);
@@ -512,7 +527,7 @@ void fluidControlWidget::debugSome()
 	mySimulation->setFlux(fluxConstraint);
 	mySimulation->showFlux2Vel();
 
-	Lflux.mult(fluxConstr,buff);
+	/*Lflux.mult(fluxConstr,buff);
 
 	float temp;
 	for(int i = 0; i < brdr.size(); i++){
@@ -530,7 +545,7 @@ void fluidControlWidget::debugSome()
 
 	for(int i = 0; i < buff.size(); i++){
 			assert(buff[edgeId] < 0.0001 && buff[edgeId] > -0.0001);
-	}
+	}*/
 
 }
 

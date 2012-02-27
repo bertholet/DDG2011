@@ -203,26 +203,23 @@ void MainWindow::setDisplayMode( int mode )
 	}
 	else if(mode == 3){
 		Model & model = *Model::getModel();
-		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setColormap((colorMap *) new curvColormap(* Model::getModel()->getMesh()));
 		this->myGLDisp->setMode(COLORMAPMODE);
 	}
 	else if(mode == 4){
 		Model & model = *Model::getModel();
-		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}
 	else if(mode == 5){
 		Model & model = *Model::getModel();
-		//model.getMeshInfo()->activateCurvNormals(true);
 		borderMarkupMap * mp = new borderMarkupMap(Model::getModel()->getMeshInfo()->getBorder());
 		mp->attach(this->fluidcontWidget);
+
 		this->myGLDisp->setColormap((colorMap *) mp);
 		this->myGLDisp->setMode(COLORMAPMODE);
 
 	}
 	else if(mode == 6){
-		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setMode(FLUIDSIMMODE);
 	}
 

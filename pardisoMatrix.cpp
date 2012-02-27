@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "pardisoMatrix.h"
 #include <assert.h>
+#include "idCreator.h"
 
 pardisoMatrix::pardisoMatrix(void)
 {
@@ -501,6 +502,13 @@ void pardisoMatrix::setLineToID( int line )
 	}
 	//was lazy and did not yet implement this method if the diag element does not exist.
 
+}
+
+pardisoMatrix pardisoMatrix::transpose( pardisoMatrix & mat )
+{
+	pardisoMatrix id;
+	id.initMatrix(idCreator(),mat.m);
+	return id % mat;
 }
 
 

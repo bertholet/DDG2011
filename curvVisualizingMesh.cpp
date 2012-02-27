@@ -187,7 +187,10 @@ void borderMarkupMap::scrollAction( int wht )
 void borderMarkupMap::attach( Observer<borderMarkupMap*> * obs_ )
 {
 	this->obs.push_back(obs_);
+	cout << "attached, now updating.... \n";
+
 	obs_->update(this,this);
+	cout << "updated\n";
 }
 
 void borderMarkupMap::updateObserver()

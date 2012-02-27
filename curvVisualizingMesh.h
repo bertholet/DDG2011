@@ -7,6 +7,7 @@
 #include <string>
 #include <algorithm>
 #include "Observer.h"
+#include <iostream>
 
 class curvColormap : colorMap
 {
@@ -49,6 +50,7 @@ public:
 
 	int markedBorder;
 	borderMarkupMap(vector<vector<int>> & border_){
+
 		sz = max_(border_)+1;
 		markedBorder = 0;
 		nrBorders = border_.size();

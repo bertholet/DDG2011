@@ -172,4 +172,5 @@ public:
 	// values vals. The indices have to be 0 based.
 	//////////////////////////////////////////////////////////////////////////
 	void addLine(std::vector<int> & js, std::vector<double> & vals);
+	static pardisoMatrix  transpose(pardisoMatrix & mat);
 };
