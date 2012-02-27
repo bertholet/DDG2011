@@ -25,6 +25,7 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	line_stripe_starts.reserve(dualVertices.size()); // for visualisation
 	age.reserve(dualVertices.size());
 	maxAge = 200;
+	maxVorticity = 0.01;
 
 	int noFaces = myMesh->getBasicMesh().getFaces().size();
 	for(int i = 0; i < noFaces; i++){
@@ -353,6 +354,7 @@ void fluidSimulation::backtracedVorticity()
 {
 	std::vector<std::vector<int>> & dualf2v = myMesh->getBasicMesh().getNeighborFaces();
 	std::vector<double> & vort = vorticity.getVals();
+	float tempMaxVorticity = 0;
 
 	updateBacktracedVelocities();
 	double temp;
@@ -367,7 +369,16 @@ void fluidSimulation::backtracedVorticity()
 				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]]));
 		}
 		vort[i] =temp;
+
+		if(temp >tempMaxVorticity){
+			tempMaxVorticity = temp;
+		}
+		else if(-temp > tempMaxVorticity){
+			tempMaxVorticity = -temp;
+		}
 	}
+
+	maxVorticity = tempMaxVorticity;
 }
 
 void fluidSimulation::updateBacktracedVelocities()
@@ -529,6 +540,7 @@ tuple3f fluidSimulation::color( int vertexNr )
 	assert(vertexNr < vorticity.size());
 	float sth = vorticity.get(vertexNr,1);
 	sth = (sth>0? sth: -sth);
+	sth = sth / maxVorticity;
 	sth = (sth<0.2?0.2:(sth>0.8?0.8:sth));
 	return tuple3f(sth,sth,sth);
 }

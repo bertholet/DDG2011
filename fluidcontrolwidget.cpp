@@ -98,13 +98,13 @@ void fluidControlWidget::getCollectedFlux()
 	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
 
 	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
-/*		tuple3f & a = verts[fcs[i].a];
+		//tuple3f & a = verts[fcs[i].a];
 		dirs.push_back(tuple3f());
 	}
 
 	float tmp;
-	for(int i = 0; i < constrFcs.size(); i++){
-		tuple3f & a = verts[fcs[constrFcs[i]].a];
+	for(int i = 0; i < constr_fcs.size(); i++){
+		/*tuple3f & a = verts[fcs[constrFcs[i]].a];
 		tuple3f & b = verts[fcs[constrFcs[i]].b];
 		tuple3f & c = verts[fcs[constrFcs[i]].c];
 
@@ -112,9 +112,9 @@ void fluidControlWidget::getCollectedFlux()
 		n.normalize();*/
 		
 		dirs.push_back(tuple3f());
-		assert(tmp < 0.0001 && tmp > -0.0001);
+		//assert(tmp < 0.0001 && tmp > -0.0001);
 
-		dirs[constrFcs[i]] = constrDir[i];
+		dirs[constr_fcs[i]] = constr_dirs[i];
 	}
 
 	for(int i = 0; i < constr_dirs.size(); i++){

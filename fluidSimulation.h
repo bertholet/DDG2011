@@ -25,6 +25,7 @@ private:
 	vector<int> line_strip_triangle;
 	vector<int> age;
 	int maxAge;
+	float maxVorticity;
 
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;

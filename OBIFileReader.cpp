@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-
+#include <assert.h>
 
 #define VERTEX "v"
 #define COMMENT "#"
@@ -153,10 +153,10 @@ void OBIFileReader::checkAllVerticesUsed( void )
 	bool * arr = new bool[vertices.size()];
 	vector<int>  unusedVertices;
 
-		//if thou passes here, thee takest a moment to comemorate
+		//if thou passes here, thee takest a moment to commemorate
 		//the exact place, were I, for the first time,
 		//overwrote memory not belonging to me
-		//resulting in a wunderfull unpredictable code behaviour...
+		//resulting in a wonderful unpredictable code behavior...
 
 	for(unsigned int i = 0; i < vertices.size(); i++){
 		arr[i] = false;
@@ -164,6 +164,7 @@ void OBIFileReader::checkAllVerticesUsed( void )
 
 
 	for(unsigned int i = 0; i < faces.size(); i++){
+		assert(faces[i].a < vertices.size() && faces[i].b< vertices.size() && faces[i].c < vertices.size());
 		arr[faces[i].a] = true;
 		arr[faces[i].b] = true;
 		arr[faces[i].c] = true;
