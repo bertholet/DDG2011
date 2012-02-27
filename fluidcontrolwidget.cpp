@@ -449,6 +449,8 @@ void fluidControlWidget::debugSome()
 	vector<tuple3f> & verts = mesh->getBasicMesh().getVertices();
 	vector<double> buff = fluxConstr;
 	vector<tuple2i> & edgs = * mesh->getHalfedges();
+	vector<int> temp_indx;
+	vector<double> temp_vals;;
 
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
@@ -459,12 +461,19 @@ void fluidControlWidget::debugSome()
 					(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
 			//Lflux.setLineToID(edgeId);
 			// i have to make sure there is no rot on the border and no divergence!!!!!!!!
+
+			temp_indx.clear();
+			temp_indx.push_back(edgeId);
+			temp_vals.clear();
+			temp_vals.push_back(1);
 			
-			Lflux.add(edgeId,edgeId,1);
+			Lflux.addLine(temp_indx, temp_vals);
+			//Lflux.add(edgeId,edgeId,1);
 			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
 
 		}
 	}
+
 
 	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	Lflux.saveVector(fluxConstr, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");

@@ -172,6 +172,20 @@ void pardisoMatrix::add( int i, int j, float val )
 	}
 }
 
+void pardisoMatrix::addLine(std::vector<int> & js, std::vector<double> & vals){
+	assert(js.size()  == vals.size());
+	for(int i = 0; i < js.size();i++){
+		a.push_back(vals[i]);
+		ja.push_back(js[i]+1);
+		if(n < js[i]){
+			n= js[i];
+		}
+	}
+	ia.push_back(a.size() +1);
+	m++;
+
+}
+
 pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 {
 	assert(B.getn() == this->getm());
