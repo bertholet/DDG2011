@@ -177,13 +177,9 @@ void pardisoMatrix::addLine(std::vector<int> & js, std::vector<double> & vals){
 	assert(js.size()  == vals.size());
 	for(int i = 0; i < js.size();i++){
 		a.push_back(vals[i]);
-		ja.push_back(js[i]+1);
-		if(n < js[i]){
-			n= js[i];
-		}
+		japush_back(js[i]+1);
 	}
-	ia.push_back(a.size() +1);
-	m++;
+	iapush_back(a.size() +1);
 
 }
 
@@ -267,6 +263,7 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 {
 	assert(B.getm() == this->getm());
+	bool emptyLineFound = false;
 	pardisoMatrix AB;
 
 	AB.ia.reserve(this->dim());
@@ -321,8 +318,19 @@ pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 			}
 		}
 
+
 		//adapt AB.ia
-		AB.iapush_back(AB.a.size()+1);
+		if(AB.ia.back() == AB.a.size()+1){
+			emptyLineFound = true;
+		}
+		else if( !emptyLineFound){
+			AB.iapush_back(AB.a.size()+1);
+		}
+		else{
+			//cout << "Matrix degenerated!in pardisoMatrix%";
+			assert(false);
+			throw std::runtime_error("Matrix degenerated in pardisoMatrix::%");
+		}
 
 
 	}

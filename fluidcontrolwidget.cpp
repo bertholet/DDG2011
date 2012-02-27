@@ -462,10 +462,19 @@ void fluidControlWidget::debugSome()
 	vector<double> buff = fluxConstr;
 	vector<tuple2i> & edgs = * mesh->getHalfedges();
 	vector<int> temp_indx;
-	vector<double> temp_vals;;
+	vector<double> temp_vals;
 
+	oneForm constFlux(*mesh);
+	vector<double> ddelta_constFlux = constFlux.getVals();
+
+
+
+	float weight = 1;
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
+		initToConstFlux(constFlux, borderConstrDirs[i]);
+		(d0*delta1).mult(constFlux.getVals(), ddelta_constFlux);
+
 		for(int j = 0; j < sz;j++){
 			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
 			assert(edgeId >=0);
@@ -477,10 +486,12 @@ void fluidControlWidget::debugSome()
 			temp_indx.clear();
 			temp_indx.push_back(edgeId);
 			temp_vals.clear();
-			temp_vals.push_back(1);
+			temp_vals.push_back(weight);
 			
 			Lflux.addLine(temp_indx, temp_vals);
-			buff.push_back( borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]));
+			buff.push_back( weight*borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]));
+			
+			buff[edgeId] =  ddelta_constFlux[edgeId];
 
 			//Lflux.add(edgeId,edgeId,1);
 			//fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
@@ -492,8 +503,11 @@ void fluidControlWidget::debugSome()
 	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	Lflux.saveVector(fluxConstr, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");
 
-	Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
-	(DDGMatrices::id1(*mesh)%Lflux).mult(buff, fluxConstr);
+	pardisoMatrix temp = pardisoMatrix::transpose(Lflux);
+
+	temp.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxTransposed.m");
+	Lflux = (temp) * Lflux;
+	temp.mult(buff, fluxConstr);
 
 	/*pardisoMatrix d0delta1 = d0*delta1;
 	d0delta1.mult(fluxConstr,buff);
@@ -547,6 +561,15 @@ void fluidControlWidget::debugSome()
 			assert(buff[edgeId] < 0.0001 && buff[edgeId] > -0.0001);
 	}*/
 
+}
+
+void fluidControlWidget::initToConstFlux( oneForm & constFlux, tuple3f & dir )
+{
+	vector<tuple2i> & he = * constFlux.getMesh()->getHalfedges();
+	vector<tuple3f> & verts = constFlux.getMesh()->getBasicMesh().getVertices();
+	for(int i = 0; i < he.size(); i++){
+		constFlux.set(i,(verts[he[i].b] -verts[he[i].a]).dot(dir),1);
+	}
 }
 
 

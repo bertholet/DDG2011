@@ -45,7 +45,6 @@ public slots:
 	void forceStrengthChanged();
 	void borderDirInput( const QString & text );
 	void debugSome();
-
 private:
 	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;
@@ -70,6 +69,8 @@ private:
 	int selectedBorder;
 	std::vector<tuple3f> borderConstrDirs;
 	//tuple3f borderConstrDir;
+
+	void initToConstFlux( oneForm & constFlux, tuple3f & borderConstrDirs );
 };
 
 #endif // FLUIDCONTROLWIDGET_H
