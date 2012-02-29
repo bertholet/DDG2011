@@ -74,6 +74,11 @@ vector<tuple2i> * meshMetaInfo::getHalfedges()
 	return & halfedges;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Note the half edges are ordered by occurrence: return[i].a is the (pos OR
+// negatively oriented seen from face i, both is possible ) halfedge 
+// between face[i].a and face[i].b and so on.
+//////////////////////////////////////////////////////////////////////////
 vector<tuple3i> * meshMetaInfo::getFace2Halfedges()
 {
 	if(halfedges_valid){

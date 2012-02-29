@@ -165,7 +165,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// multiplication with vector
 	//////////////////////////////////////////////////////////////////////////
-	void mult(std::vector<double> & x, std::vector<double> & target);
+	void mult(std::vector<double> & x, std::vector<double> & target, bool adaptTargetSize = false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Adds a row at the end of the matrix. js are the column indices of the
@@ -173,4 +173,5 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void addLine(std::vector<int> & js, std::vector<double> & vals);
 	static pardisoMatrix  transpose(pardisoMatrix & mat);
+	void forceNrColumns( int nrColumns );
 };

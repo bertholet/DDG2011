@@ -32,4 +32,18 @@ public:
 	static pardisoMatrix id0(meshMetaInfo & aMesh);
 	static pardisoMatrix id1(meshMetaInfo & aMesh);
 	static pardisoMatrix id2(meshMetaInfo & aMesh);
+
+	//////////////////////////////////////////////////////////////////////////
+	// special matrices for bordered meshs in an incompressibility setting
+	// 
+	// matrix takes a oneform and returns the dual values on the
+	// primal simplices.
+	//////////////////////////////////////////////////////////////////////////
+	static pardisoMatrix dualVals1(meshMetaInfo & aMesh);
+	//////////////////////////////////////////////////////////////////////////
+	// duald1 + duald1border diff will be dual d1 in a setting where there are
+	// borders and no compression i.e. the onforms sum up to zeor around 
+	// each triangle.
+	//////////////////////////////////////////////////////////////////////////
+	static pardisoMatrix dual_d1_borderdiff( meshMetaInfo & aMesh );
 };

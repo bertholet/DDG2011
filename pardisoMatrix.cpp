@@ -63,12 +63,19 @@ void pardisoMatrix::saveMatrix( std::string file )
 {
 	std::ofstream myFile;
 	int internI;
+	bool element_n_m_missing = (ia[ia.size()-1] - ia[ia.size()-2] == 0 ||
+		 ja[ja.size()-1]!=m);
+	//bool lastRowDegenerated = (ia[ia.size()-1] - ia[ia.size()-2] == 0);
+
 	myFile.open(file.c_str());
 
 	myFile << "i= [";
+	//internI is the row number
 	internI = 0;
 	for(int i = 0; i < a.size(); i++){
-		if(i+1 >= ia[internI+1]){
+		//i goes over all indices. i.e determine for each a[i] its "i" matrix
+		//coordinate. ia[internI+1] is the start index of 0 based row internI
+		while(i+1 >= ia[internI+1]){
 			internI++;
 			myFile << "...\n";
 		}
@@ -77,12 +84,15 @@ void pardisoMatrix::saveMatrix( std::string file )
 			myFile <<", ";
 		}
 	}
+	if(element_n_m_missing){
+		myFile << ",...\n " << boost::lexical_cast<std::string>(n);
+	}
 
 	myFile << "];\n\n j=[";
 
 	internI = 0;
 	for(int i = 0; i < a.size(); i++){
-		if(i+1 >= ia[internI+1]){
+		while(i+1 >= ia[internI+1]){
 			internI++;
 			myFile << "...\n";
 		}
@@ -91,11 +101,14 @@ void pardisoMatrix::saveMatrix( std::string file )
 			myFile <<", ";
 		}
 	}
+	if(element_n_m_missing){
+		myFile << ",...\n " << boost::lexical_cast<std::string>(m);
+	}
 
 	myFile << "];\n\n a=[";
 	internI = 0;
 	for(int i = 0; i < a.size(); i++){
-		if(i+1 >= ia[internI+1]){
+		while(i+1 >= ia[internI+1]){
 			internI++;
 			myFile << "...\n";
 		}
@@ -103,6 +116,9 @@ void pardisoMatrix::saveMatrix( std::string file )
 		if(i!= a.size() -1){
 			myFile <<", ";
 		}
+	}
+	if(element_n_m_missing){
+		myFile << ",...\n " << boost::lexical_cast<std::string>(0);
 	}
 	myFile << "];";
 
@@ -255,6 +271,7 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 		
 	}
 		
+	AB.forceNrColumns(B.getm());
 
 	return AB;
 }
@@ -358,7 +375,7 @@ pardisoMatrix pardisoMatrix::operator+( pardisoMatrix & B )
 		Bia_start = B.ia[i]-1;
 		Bia_stop = B.ia[i+1]-1;
 		for(j1 = Aia_start, j2 = Bia_start; j1 <Aia_stop || j2 < Bia_stop;){
-			if(this->ja[j1]< B.ja[j2] && j1 < Aia_stop || j2 >= Bia_stop){
+			if(j2 >= Bia_stop || this->ja[j1]< B.ja[j2] && j1 < Aia_stop){
 				val = this->a[j1];
 				if(val!=0){
 					AnB.japush_back(this->ja[j1]);
@@ -366,7 +383,7 @@ pardisoMatrix pardisoMatrix::operator+( pardisoMatrix & B )
 				}
 				j1++;
 			}
-			else if (this->ja[j1]> B.ja[j2] && j2 < Bia_stop || j1 >= Aia_stop){
+			else if (j1 >= Aia_stop || this->ja[j1]> B.ja[j2] && j2 < Bia_stop){
 				val = B.a[j2];
 				if(val!= 0){
 					AnB.japush_back(B.ja[j2]);
@@ -475,12 +492,19 @@ void pardisoMatrix::clear()
 	m= 0;
 }
 
-void pardisoMatrix::mult( std::vector<double> & x, std::vector<double> & target )
+void pardisoMatrix::mult( std::vector<double> & x, std::vector<double> & target, bool adaptTarget )
 {
-	assert(x.size() == getm() && target.size() == getn());
+	assert(x.size() == getm() && (adaptTarget|| target.size() == getn()));
 	assert(&target != &x);
 
+	if(adaptTarget){
+		target.clear();
+		target.reserve(getn());
+	}
 	for(int i = 0; i < getn(); i++){
+		if(adaptTarget){
+			target.push_back(0);
+		}
 		target[i] = 0;
 		for(int j = ia[i]-1; j < ia[i+1]-1; j++){
 			target[i] += x[ja[j]-1]*a[j];
@@ -517,6 +541,17 @@ pardisoMatrix pardisoMatrix::transpose( pardisoMatrix & mat )
 	pardisoMatrix id;
 	id.initMatrix(idCreator(),mat.m);
 	return id % mat;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// force the number columns to have nrColums size.
+// This might be needed if you want to assure the dimension of the matrix
+// are n x nrColumns when the last columns are empty. ( this sparse format
+// would ignore empty trailing columns)
+void pardisoMatrix::forceNrColumns( int nrColumns )
+{
+	assert(m <=nrColumns); // else the matrix will behave strangely..
+	m= nrColumns;
 }
 
 

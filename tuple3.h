@@ -220,6 +220,11 @@ public:
 			(tuple.b == a || tuple.b == b || tuple.b == c);
 	}
 
+	bool contains(int what)
+	{
+		return 	(a == what || what == b || what == c);
+	}
+
 	int orientation(tuple2i & edge){
 		
 		if(a == edge.a && b == edge.b){
