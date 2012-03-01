@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <iostream>
 
-#define printMat
+//#define printMat
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
@@ -57,20 +57,10 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	//the one in the comments would be if vorticity was defined on the edges in 3d.
 	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
 	d0 =DDGMatrices::d0(*myMesh);
+	//borderdiff is zero if there is no border.
+	dt_star1 = (DDGMatrices::dual_d1(*myMesh) +DDGMatrices::dual_d1_borderdiff(*myMesh))* DDGMatrices::star1(*myMesh);
 
-	// L = dual_d1 *star1 *d0
-
-	//under the assumption that star1 primal = -DDGMatrices::star1 and star1 dual = (DDGMatrices::star1)^-1
-
-//	L = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh) * d0;
-//	L *= -1; //the assumption
-	L = DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh) * d0;
-
-//	dt_star1 = (DDGMatrices::id0(*myMesh) % DDGMatrices::d0(*myMesh)) * DDGMatrices::star1(*myMesh);
-//	dt_star1 *= -1; // the assumption
-
-	dt_star1 = DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh);
-	//star0 = DDGMatrices::star1(*myMesh);
+	L = dt_star1*d0;/*DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh) * d0;*/
 	star0 = DDGMatrices::star0(*myMesh);
 
 	this->setStepSize(0.05);
@@ -154,6 +144,62 @@ void fluidSimulation::setForce(vector<tuple3f> & dirs)
 {
 	fluidTools::dirs2Flux(dirs,forceFlux,*myMesh, dualVertices);
 }
+
+
+
+void fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
+{
+	if(myMesh->getBorder().size() == 0){
+		//only for bordered meshs.
+		return;
+	}
+	//compute a border adapted least square formulation laplacian.
+	pardisoMatrix d1 = DDGMatrices::d1(*myMesh);
+	pardisoMatrix star0inv = DDGMatrices::star0(*myMesh);
+	star0inv.elementWiseInv(0.00001);
+	pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*DDGMatrices::star2(*myMesh)*d1 
+		+ pardisoMatrix::transpose(dt_star1)*star0inv*dt_star1;
+
+
+	// setting flux constraints
+	float weight = 10000;
+	
+	vector<vector<int>> & brdr = myMesh->getBorder();
+	vector<tuple2i> & edgs = * myMesh->getHalfedges();
+	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
+	oneForm constFlux(*myMesh), harmonicFlux(*myMesh);
+	vector<tuple3f> buff;
+	vector<tuple3f> & fluxConstr = harmonicFlux.getVals();
+	int sz,edgeId;
+	tuple2i edge;
+	for(int i = 0; i < brdr.size(); i++){
+		sz =brdr[i].size();
+		constFlux.initToConstFlux(borderConstraints[i]);
+		Lflux.mult(constFlux.getVals(), buff,true);
+		for(int j = 0; j < sz;j++){
+			edgeId =myMesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
+			assert(edgeId >=0);
+			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
+				(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
+
+
+			Lflux.add(edgeId,edgeId,weight);
+			fluxConstr[edgeId] = borderConstraints[i].dot(verts[edge.b] -verts[edge.a]) * weight + buff[edgeId];
+
+		}
+	}
+
+	//solve for the harmonic flux.
+	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
+	solver.setMatrix(Lflux,1);
+	solver.setStoreResultInB(true);
+	solver.solve(& (buff[0]), & (fluxConstr[0]));
+	//already stored in harmonicFlux.
+
+	fluidTools::flux2Velocity(harmonicFlux,harmonicVelocities, *myMesh);
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // get the Flux oneForm

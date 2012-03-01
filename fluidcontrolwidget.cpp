@@ -255,20 +255,24 @@ void fluidControlWidget::getCollectedFlux()
 
 void fluidControlWidget::update( void * src, Model::modelMsg msg )
 {
-	if(msg == Model::NEW_MESH_CREATED && mySimulation != NULL){
-		delete mySimulation;
-		mySimulation = NULL;
+
+	if(msg== Model::NEW_MESH_CREATED ){
+		if(mySimulation != NULL){
+			delete mySimulation;
+			mySimulation = NULL;
+		}
 		dirs.clear();
 		borderConstrDirs.clear();
 		this->selectedBorder = 0;
 
+		this->selectedBorder = 0;
+		borderConstrDirs.clear();
+		for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
+			borderConstrDirs.push_back(tuple3f());
+		}
 	}
 
-	this->selectedBorder = 0;
-	borderConstrDirs.clear();
-	for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
-		borderConstrDirs.push_back(tuple3f());
-	}
+
 }
 
 void fluidControlWidget::update( void * src, borderMarkupMap * msg )
@@ -441,43 +445,30 @@ void fluidControlWidget::debugSome()
 	pardisoMatrix delta1 = DDGMatrices::delta1(*mesh);
 	delta1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta1.m");
 
-	pardisoMatrix delta2 = DDGMatrices::delta2(*mesh);
-	delta2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta2.m");
-
-//	pardisoMatrix dualVal1 = DDGMatrices::dualVals1(*mesh);
-//	dualVal1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/dualVal1.m");
-	//pardisoMatrix Lflux = delta2*d1 - d0*delta1;
-	//Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
 	pardisoMatrix borderDiff = DDGMatrices::dual_d1_borderdiff(*mesh);
 	borderDiff.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/borderDiff.m");
 
 	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*mesh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
 	duald1_border = duald1_border  + DDGMatrices::dual_d1_borderdiff(*mesh);
-
-//	pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*star2*d1 + star1*d0*star0inv*pardisoMatrix::transpose(d0)*star1;
 	pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*star2*d1 + star1*pardisoMatrix::transpose(duald1_border)*star0inv*duald1_border*star1;
 
-//	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	//set matrix to id on border
-	vector<vector<int>> & brdr = mesh->getBorder();
-	int sz;
 	tuple2i edge;
 	int edgeId;
 	oneForm fluxConstraint(*mesh);
 
 	vector<double> & fluxConstr = fluxConstraint.getVals();
 	vector<tuple3f> & verts = mesh->getBasicMesh().getVertices();
-	vector<double> buff = fluxConstr;
 	vector<tuple2i> & edgs = * mesh->getHalfedges();
-	vector<int> temp_indx;
-	vector<double> temp_vals;
-
+	vector<double> buff = fluxConstr;
 	oneForm constFlux(*mesh);
 	vector<double> ddelta_constFlux = constFlux.getVals();
 
 
 
 	// setting flux constraints
+	vector<vector<int>> & brdr = mesh->getBorder();
+	int sz;
 	float weight = 10000;
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
@@ -491,7 +482,7 @@ void fluidControlWidget::debugSome()
 
 
 			Lflux.add(edgeId,edgeId,weight);
-			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]) * weight + ddelta_constFlux[edgeId];
+			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]) * weight;/* + ddelta_constFlux[edgeId];*/
 
 		}
 	}
@@ -516,77 +507,17 @@ void fluidControlWidget::debugSome()
 
 	}*/
 
-	//trying to set up an overconstrained system...
-	/*float weight = 10000;
-	for(int i = 0; i < brdr.size(); i++){
-		sz =brdr[i].size();
-		initToConstFlux(constFlux, borderConstrDirs[i]);
-		(d0*delta1).mult(constFlux.getVals(), ddelta_constFlux);
 
-		for(int j = 0; j < sz;j++){
-			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
-			assert(edgeId >=0);
-			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
-					(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
-			//Lflux.setLineToID(edgeId);
-			// i have to make sure there is no rot on the border and no divergence!!!!!!!!
-
-			temp_indx.clear();
-			temp_indx.push_back(edgeId);
-			temp_vals.clear();
-			temp_vals.push_back(weight);
-			
-			Lflux.addLine(temp_indx, temp_vals);
-			buff.push_back( weight*borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]));
-			
-			buff[edgeId] =  ddelta_constFlux[edgeId];
-
-			//Lflux.add(edgeId,edgeId,1);
-			//fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
-
-		}
-	}*/
-
-
+/*
 	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
-	Lflux.saveVector(buff, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");
+	Lflux.saveVector(buff, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");*/
 
 	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(Lflux,1);
 	solver.setStoreResultInB(true);
 	solver.solve(& (buff[0]), & (fluxConstr[0]));
 
-/*	pardisoMatrix Lt = pardisoMatrix::transpose(Lflux);
 
-	Lt.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxTransposed.m");
-	Lflux = (Lt) * Lflux;
-	Lt.mult(buff, fluxConstr);*/
-
-	/*pardisoMatrix d0delta1 = d0*delta1;
-	d0delta1.mult(fluxConstr,buff);
-
-	//////////////////////////////////////////////////////////////////////////
-	// inefficient way to make fluxConstr = what it has to be on the border plus something
-	// on corners etc
-	fluxConstr = buff;
-	for(int i = 0; i < brdr.size(); i++){
-		sz =brdr[i].size();
-		for(int j = 0; j < sz;j++){
-			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
-			assert(edgeId >=0);
-			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
-				(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
-			Lflux.setLineToID(edgeId);
-
-			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
-
-		}
-	}
-
-	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
-	solver.setMatrix(Lflux,1);
-	solver.setStoreResultInB(true);
-	solver.solve(& (buff[0]), & (fluxConstr[0]));*/
 
 	if(mySimulation ==  NULL){
 		initSimulation();
@@ -596,9 +527,7 @@ void fluidControlWidget::debugSome()
 
 
 
-
-
-	d1.mult(fluxConstr,buff,true);
+	//d1.mult(fluxConstr,buff,true);
 
 	/*for(int i = 0; i < buff.size(); i++){
 		assert(buff[i] < 0.01 && buff[i] > -0.01);

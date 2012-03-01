@@ -24,6 +24,9 @@ private:
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
 
+	//the harmonic field as velocities (in case of bordered meshs and constraints.
+	std::vector<tuple3f> harmonicVelocities;
+
 	//for visualisation: line stripes start at some position and wander
 	//around
 	vector<tuple3f> line_stripe_starts;
@@ -65,7 +68,7 @@ public:
 	~fluidSimulation(void);
 
 	//////////////////////////////////////////////////////////////////////////
-	// setter. Note if mesh does not coincide an assertion fails
+	// setter. Note if mesh does not coincide with the oneform's an assertion fails
 	//////////////////////////////////////////////////////////////////////////
 	void setFlux( oneForm & f );
 	void setFlux( vector<tuple3f> & dirs );
@@ -73,6 +76,9 @@ public:
 	void setForce(vector<tuple3f> & dirs);
 
 	void setViscosity(float visc);
+
+	void setStepSize( float stepSize );
+	
 	//////////////////////////////////////////////////////////////////////////
 	// Pathtrace all dualvertices
 	//
@@ -120,6 +126,19 @@ public:
 	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex );
 
 
+	void addForces2Vorticity(float timestep);
+
+	void addDiffusion2Vorticity();
+
+	//////////////////////////////////////////////////////////////////////////
+	// calculate the harmonic flow for a bordered mesh, where
+	// the constraints on the border are given by borderconstraints.
+	// The constraints have to be understood as that the flow on the border
+	// component i is constrained to be borderConstraints[i].
+	// this will be added to the velocity field when pathtracing.
+	//////////////////////////////////////////////////////////////////////////
+	void setHarmonicFlow(vector<tuple3f> & borderConstraints);
+	
 //////////////////////////////////////////////////////////////////////////
 	// ID IE IB IU IG   IS IT IU IF IF 
 	//////////////////////////////////////////////////////////////////////////
@@ -150,9 +169,7 @@ public:
 	tuple3f project( tuple3f& velocity, int actualTriangle );
 	void updateVelocities();
 	oneForm & getFlux();
-	void addForces2Vorticity(float timestep);
-	void setStepSize( float stepSize );
-	void addDiffusion2Vorticity();
+
 
 /////////////////////////////////////////////////////////////////////////
 // display the field
@@ -171,6 +188,10 @@ public:
 	virtual std::string additionalInfo( void );
 	void scrollAction(int what){};
 	void actualizeFPS();
+
+//////////////////////////////////////////////////////////////////////////
+// debug/quality check
+//////////////////////////////////////////////////////////////////////////
 	void testFlux();
 
 };

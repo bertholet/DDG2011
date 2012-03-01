@@ -47,5 +47,16 @@ void oneForm::setZero()
 	}
 }
 
+void oneForm::initToConstFlux( tuple3f& dir )
+{
+	vector<tuple2i> & he = * m->getHalfedges();
+	vector<tuple3f> & verts = m->getBasicMesh().getVertices();
+	for(int i = 0; i < he.size(); i++){
+		this->set(i,(verts[he[i].b] -verts[he[i].a]).dot(dir),1);
+	}
+	assert(false);
+	throw std::runtime_error("The method or operation is not implemented.");
+}
+
 
 

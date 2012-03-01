@@ -22,4 +22,6 @@ public:
 	//sets form[edge] = val*orientation
 	void set( int edge, double val, int orientation );
 	void setZero();
+	// sets to the flux defined by this direction
+	void initToConstFlux( tuple3f& dir);
 };

@@ -305,7 +305,8 @@ pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 			Bia_start = B.ia[j] -1;
 			Bia_stop = B.ia[j+1] -1; // first index of next row
 
-			if(this->ja[Aia_start] > B.ja[Bia_stop-1] || 
+			if(Bia_start == Bia_stop|| Aia_start == Aia_stop ||
+				this->ja[Aia_start] > B.ja[Bia_stop-1] || 
 				this->ja[Aia_stop-1] < B.ja[Bia_start]){
 					continue;
 			}
