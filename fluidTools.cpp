@@ -104,6 +104,8 @@ void fluidTools::bariCoords( tuple3f & point, int dualFace_id, std::vector<tuple
 	float tmp;
 	for(int i = 0; i<nrFcs; i++){
 		tmp = bariWeight(point, i,dualFace_id,v2f,dualVert_pos,mesh);
+		tmp = (tmp<0? -tmp:tmp);
+		assert(tmp*0 == 0 );
 		target.push_back(tmp);
 		sum += tmp;
 	}
