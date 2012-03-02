@@ -26,9 +26,8 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	backtracedVelocity = dualVertices; // just to have the right dimension
 
 
-	//////////////////////////////////////////////////////////////////////////
+
 	//for visualisation
-	//////////////////////////////////////////////////////////////////////////
 	line_strip_triangle.reserve(dualVertices.size());
 	line_stripe_starts.reserve(dualVertices.size()); // for visualisation
 	age.reserve(dualVertices.size());
@@ -43,19 +42,18 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	}
 
 
-//////////////////////////////////////////////////////////////////////////
 	//for Backtracing
-	//////////////////////////////////////////////////////////////////////////
 	triangle_btVel.reserve(dualVertices.size());
 	velocities.reserve(dualVertices.size());
+	harmonicVelocities.reserve(dualVertices.size());
 	for(int i = 0; i < dualVertices.size(); i++){
 		triangle_btVel.push_back(-1);
 		velocities.push_back(tuple3f());
+		harmonicVelocities.push_back(tuple3f());
 	}
 
 
-	//the one in the comments would be if vorticity was defined on the edges in 3d.
-	//L = DDGMatrices::d0(*myMesh) * DDGMatrices::delta1(*myMesh) + DDGMatrices::delta2(*myMesh) * DDGMatrices::d1(*myMesh);
+	//matrix set up.
 	d0 =DDGMatrices::d0(*myMesh);
 	//borderdiff is zero if there is no border.
 	dt_star1 = (DDGMatrices::dual_d1(*myMesh) +DDGMatrices::dual_d1_borderdiff(*myMesh))* DDGMatrices::star1(*myMesh);
@@ -66,9 +64,7 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	this->setStepSize(0.05);
 	this->setViscosity(0);
 
-	//////////////////////////////////////////////////////////////////////////
-	//dbg
-	//////////////////////////////////////////////////////////////////////////
+
 #ifdef printMat
 	L.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/laplace0.m");
 #endif
@@ -168,8 +164,8 @@ void fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
 	vector<tuple2i> & edgs = * myMesh->getHalfedges();
 	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
 	oneForm constFlux(*myMesh), harmonicFlux(*myMesh);
-	vector<tuple3f> buff;
-	vector<tuple3f> & fluxConstr = harmonicFlux.getVals();
+	vector<double> buff;
+	vector<double> & fluxConstr = harmonicFlux.getVals();
 	int sz,edgeId;
 	tuple2i edge;
 	for(int i = 0; i < brdr.size(); i++){
@@ -365,8 +361,8 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 {
 
 	assert(actualTriangle >=0);
-	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
-	vector<float> weights;
+	std::vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
+	std::vector<float> weights;
 	tuple3f result;
 	tuple3i & tr = myMesh->getBasicMesh().getFaces()[actualTriangle];
 	//determine actual dual Face
@@ -396,10 +392,14 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 	tuple3f curvNormal = (*myMesh->getCurvNormals())[dualFace];
 	curvNormal.normalize();
 	tuple3f triangleNormal = (verts[tr.b]-verts[tr.a]).cross(verts[tr.c]-verts[tr.a]);
+	tuple3f vel;
 
 	for(int i = 0; i < weights.size(); i++){
+		vel.set(velocities[dualVertIDs[i]]);
+		vel+=harmonicVelocities[dualVertIDs[i]];
 		//result += turnVelocityInRightPlane(velocities[dualVertIDs[i]], dualVertIDs[i], actualTriangle)*weights[i];
-		result += (velocities[dualVertIDs[i]] - curvNormal * (curvNormal.dot(velocities[dualVertIDs[i]])) )*weights[i];
+		//result += (velocities[dualVertIDs[i]] - curvNormal * (curvNormal.dot(velocities[dualVertIDs[i]])) )*weights[i];
+		result += (vel - curvNormal * (curvNormal.dot(vel) ))*weights[i];
 	}
 
 	result = result - curvNormal * (result.dot(triangleNormal) / curvNormal.dot(triangleNormal));
@@ -675,3 +675,8 @@ void fluidSimulation::testFlux()
 		}
 	}
 }
+
+void fluidSimulation::showHarmonicField()
+{
+		Model::getModel()->setVectors(&dualVertices,&harmonicVelocities);
+}	

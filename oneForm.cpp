@@ -54,8 +54,7 @@ void oneForm::initToConstFlux( tuple3f& dir )
 	for(int i = 0; i < he.size(); i++){
 		this->set(i,(verts[he[i].b] -verts[he[i].a]).dot(dir),1);
 	}
-	assert(false);
-	throw std::runtime_error("The method or operation is not implemented.");
+
 }
 
 

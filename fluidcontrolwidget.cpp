@@ -278,6 +278,9 @@ void fluidControlWidget::update( void * src, Model::modelMsg msg )
 void fluidControlWidget::update( void * src, borderMarkupMap * msg )
 {
 	this->selectedBorder = msg->markedBorder;
+	if(borderConstrDirs.size()==0){
+		return;
+	}
 	stringstream ss;
 
 	ss << borderConstrDirs[selectedBorder].x << " ";
@@ -426,7 +429,7 @@ void fluidControlWidget::borderDirInput( const QString & text )
 void fluidControlWidget::debugSome()
 {
 	meshMetaInfo * mesh = Model::getModel()->getMeshInfo();
-	pardisoMatrix star0inv = DDGMatrices::star0(*mesh);
+	/*pardisoMatrix star0inv = DDGMatrices::star0(*mesh);
 	star0inv.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star0.m");
 	star0inv.elementWiseInv(0.0001);
 
@@ -482,92 +485,33 @@ void fluidControlWidget::debugSome()
 
 
 			Lflux.add(edgeId,edgeId,weight);
-			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]) * weight;/* + ddelta_constFlux[edgeId];*/
+			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]) * weight + ddelta_constFlux[edgeId];
 
 		}
 	}
 
-	//just some debug constraints somewhere..
-	/*float weight = 100;
-	for(int k = 5; k < 8; k++){
-		tuple3i edges = (* mesh->getFace2Halfedges())[k];
-		int i = edges.a;
-			edge = (* mesh->getHalfedges())[i];
-			Lflux.add(i,i,weight);
-			fluxConstr[i] = tuple3f(1,1,1).dot(verts[edge.b] -verts[edge.a]) * weight;
 
-			i = edges.b;
-			edge = (* mesh->getHalfedges())[i];
-			Lflux.add(i,i,weight);
-			fluxConstr[i] = tuple3f(1,1,1).dot(verts[edge.b] -verts[edge.a]) * weight;
-			i = edges.c;
-			edge = (* mesh->getHalfedges())[i];
-			Lflux.add(i,i,weight);
-			fluxConstr[i] = tuple3f(1,1,1).dot(verts[edge.b] -verts[edge.a]) * weight;
-
-	}*/
-
-
-/*
-	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
-	Lflux.saveVector(buff, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");*/
 
 	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(Lflux,1);
 	solver.setStoreResultInB(true);
-	solver.solve(& (buff[0]), & (fluxConstr[0]));
+	solver.solve(& (buff[0]), & (fluxConstr[0]));*/
 
 
 
 	if(mySimulation ==  NULL){
 		initSimulation();
 	}
-	mySimulation->setFlux(fluxConstraint);
-	mySimulation->showFlux2Vel();
+	
+	mySimulation->setHarmonicFlow(borderConstrDirs);
+	mySimulation->showHarmonicField();
+
+	/*mySimulation->setFlux(fluxConstraint);
+	mySimulation->showFlux2Vel();*/
 
 
 
-	//d1.mult(fluxConstr,buff,true);
-
-	/*for(int i = 0; i < buff.size(); i++){
-		assert(buff[i] < 0.01 && buff[i] > -0.01);
-	}*/
-
-	/*delta1.mult(fluxConstr,buff,true);
-
-	float temp;
-	for(int i = 0; i < brdr.size(); i++){
-		sz =brdr[i].size();
-		for(int j = 0; j < sz;j++){
-			buff[brdr[i][j]] = 0;
-
-		}
-	}
-
-	for(int i = 0; i < buff.size(); i++){
-			assert(buff[i] < 0.0001 && buff[i] > -0.0001);
-	}*/
-
-	/*Lflux.mult(fluxConstr,buff);
-
-	float temp;
-	for(int i = 0; i < brdr.size(); i++){
-		sz =brdr[i].size();
-		for(int j = 0; j < sz;j++){
-			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
-
-			temp = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
-			assert(temp -buff[edgeId] < 0.0001 && temp -buff[edgeId] > -0.0001);
-
-			buff[edgeId] = 0;
-
-		}
-	}
-
-	for(int i = 0; i < buff.size(); i++){
-			assert(buff[i] < 0.0001 && buff[i] > -0.0001);
-	}*/
-
+	
 }
 
 void fluidControlWidget::initToConstFlux( oneForm & constFlux, tuple3f & dir )
