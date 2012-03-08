@@ -229,14 +229,14 @@ public:
 		return a_ij*-1;
 	}
 
-	// row: its the edge number; target is the two other edges in the triangle; 
+	// row: is the edge number; target will be the two other edges in the triangle; 
 	void indices(int row, std::vector<int> & target){
 		target.clear();
 		tuple2i & edg = (* mesh->getHalfedges())[row];
 		int nbr_fc1, nbr_fc2;
 		meshOperation::getNbrFaces(edg,&nbr_fc1,&nbr_fc2, mesh->getBasicMesh().getNeighborFaces());
 
-		//if is border vertex
+		//if is border edge (i.e. we want to calculate dual value for this edge!)
 		if(nbr_fc2 < 0){
 			tuple3i he = (* mesh->getFace2Halfedges())[nbr_fc1];
 			target.push_back(he.a);
@@ -261,6 +261,8 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 // primal part of dual d1 with bordered mehs-
+// d1_dual_primal times the dual values  on the primal edges
+// gives the part of d1...
 class d1dual_primal: public pardisoMatCreator
 {
 
@@ -281,6 +283,10 @@ public:
 		int nbr_fc1, nbr_fc2;
 		meshOperation::getNbrFaces(edge,&nbr_fc1,&nbr_fc2, mesh->getBasicMesh().getNeighborFaces());
 		
+		if(nbr_fc2 >=0){
+			assert(nbr_fc1>=0);
+			return 0;
+		}
 		//j is a border vertex adjascent to vertex i.
 		//border vertices
 		if(nbr_fc2<0){
@@ -292,6 +298,8 @@ public:
 			return 0.5 * or;
 		}
 
+		assert(false);
+		return 0;
 	}
 
 	void indices(int row, std::vector<int> & target){
@@ -356,9 +364,21 @@ pardisoMatrix DDGMatrices::dual_d1_borderdiff( meshMetaInfo & aMesh )
 	d1diff.forceNrColumns(aMesh.getHalfedges()->size());
 
 	pardisoMatrix star1inv = star1(aMesh);
-	star1inv.elementWiseInv(0.0001);
+	star1inv.elementWiseInv(0.000);
 	return d1diff*dual1*star1inv;
 }
+
+
+pardisoMatrix DDGMatrices::dual_d1star1_borderdiff( meshMetaInfo & aMesh )
+{
+	pardisoMatrix dual1 = dualVals1(aMesh);
+	pardisoMatrix d1diff;
+	//dual edges to dual faces i.e. vertices
+	d1diff.initMatrix(d1dual_primal(aMesh),aMesh.getBasicMesh().getVertices().size());
+	d1diff.forceNrColumns(aMesh.getHalfedges()->size());
+	return d1diff*dual1;
+}
+
 
 //0 for surface meshes, as this is all for now. 
 /*pardisoMatrix DDGMatrices::d2( meshMetaInfo & aMesh )
@@ -399,7 +419,7 @@ pardisoMatrix DDGMatrices::delta1( meshMetaInfo & aMesh )
 	pardisoMatrix duald1 = dual_d1(aMesh);
 
 	pardisoMatrix star_0_inv = star0(aMesh);
-	star_0_inv.elementWiseInv(0.00000001);
+	star_0_inv.elementWiseInv(0.0000000);
 
 	return star_0_inv * duald1 * star_1;
 	//return (star_0_inv % d_0)* star_1;
@@ -414,7 +434,7 @@ pardisoMatrix DDGMatrices::delta2( meshMetaInfo & aMesh )
 	pardisoMatrix duald0 = dual_d0(aMesh);
 
 	pardisoMatrix star_1_inv = star1(aMesh);
-	star_1_inv.elementWiseInv(0.00000001);
+	star_1_inv.elementWiseInv(0.0000000);
 
 	return star_1_inv * duald0 * star_2;
 	//return (star_1_inv % d_1)* star_2;
@@ -451,6 +471,14 @@ pardisoMatrix DDGMatrices::dualVals1( meshMetaInfo & aMesh )
 	assert(dual1.getn() == aMesh.getHalfedges()->size() &&
 		dual1.getm() == aMesh.getHalfedges()->size() );
 	return dual1;
+}
+
+pardisoMatrix DDGMatrices::onesBorder( std::vector<std::vector<int>> & border, int n, int m /*= n*/ )
+{
+	pardisoMatrix ones;
+	ones.initMatrix(sparseDiagCreator(&border),n);
+	ones.forceNrColumns(m);
+	return ones;
 }
 
 

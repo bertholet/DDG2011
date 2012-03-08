@@ -57,5 +57,13 @@ void oneForm::initToConstFlux( tuple3f& dir )
 
 }
 
+void oneForm::add( oneForm & other )
+{
+	assert(other.m == this->m);
+	for(int i = 0; i < form.size(); i++){
+		form[i]+= other.form[i];
+	}
+}
+
 
 

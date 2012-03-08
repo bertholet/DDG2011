@@ -12,6 +12,9 @@ public:
 	~meshOperation(void);
 
 	static void getHalf(mesh & m, mesh & target, tuple3f direction, float dist);
+
+	static bool consistentlyOriented(mesh & m);
+
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Detects dangling border positions, i.e. vertices that have more than 2 

@@ -21,4 +21,7 @@ public:
 
 	//cotan phik + cotan phil.
 	static float dualEdge_edge_ratio(int i, int j, mesh & m);
+
+	//largest over smallest area ratio
+	static float maxAreaRatio(mesh & m);
 };

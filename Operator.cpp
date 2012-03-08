@@ -265,3 +265,18 @@ float Operator::dualEdge_edge_ratio( int i, int j, mesh & m )
 
 	return (cot_alpha1 + cot_alpha2)/2;
 }
+
+float Operator::maxAreaRatio( mesh & m )
+{
+	float maxArea = 0, minArea = area(0,m), temp;
+	for(int i = 0; i < m.getFaces().size(); i++){
+		temp = area(i, m);
+		if(temp > maxArea){
+			maxArea = temp;
+		}
+		if( temp < minArea){
+			minArea = temp;
+		}
+	}
+	return maxArea/minArea;
+}

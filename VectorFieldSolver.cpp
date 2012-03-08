@@ -218,7 +218,7 @@ void VectorFieldSolver::addDirConstraint2Mat( vector<int> & constr_faces ,
 											 float weight, 
 											 pardisoMatrix * target )
 {
-	float eps = 0.001;
+	//float eps = 0.001;
 
 	vector<tuple3i> & f2e = * Model::getModel()->getMeshInfo()->getFace2Halfedges();
 	vector<tuple2i> & edges = * Model::getModel()->getMeshInfo()->getHalfedges();

@@ -33,6 +33,8 @@ public:
 	static pardisoMatrix id1(meshMetaInfo & aMesh);
 	static pardisoMatrix id2(meshMetaInfo & aMesh);
 
+	static pardisoMatrix onesBorder(std::vector<std::vector<int>> & border, int n, int m);
+
 	//////////////////////////////////////////////////////////////////////////
 	// special matrices for bordered meshs in an incompressibility setting
 	// 
@@ -46,4 +48,6 @@ public:
 	// each triangle.
 	//////////////////////////////////////////////////////////////////////////
 	static pardisoMatrix dual_d1_borderdiff( meshMetaInfo & aMesh );
+
+	static pardisoMatrix dual_d1star1_borderdiff( meshMetaInfo & aMesh );
 };

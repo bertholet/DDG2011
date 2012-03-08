@@ -5,6 +5,7 @@
 #include "DirectionalLight.h"
 #include "Operator.h"
 #include "meshOperation.h"
+#include <iostream>
 
 
 
@@ -72,6 +73,10 @@ void mesh::init( const char* file, tuple3f & col, float scale )
 	color = col;
 
 	showOrientation = false;
+
+	cout << " Max Area Ratio " << Operator::maxAreaRatio(*this) << "\n";
+	cout << " Checking Orientation... " ;
+	cout << " Consistent = " << (meshOperation::consistentlyOriented(*this)? "yes" : "no") << "\n";
 }
 
 void mesh::reset( vector<tuple3f> & _vertices, vector<tuple3i> &_faces )
@@ -134,7 +139,7 @@ void mesh::initFaceNormals()
 	tuple3f temp_normal;
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-		temp_normal = tuple3f::cross(vertices[faces[i].a] - vertices[faces[i].b], vertices[faces[i].c] - vertices[faces[i].b]);
+		temp_normal = tuple3f::cross(vertices[faces[i].b] - vertices[faces[i].a], vertices[faces[i].c] - vertices[faces[i].a]);
 		temp_normal.normalize();
 		face_normals.push_back(temp_normal);
 	}
@@ -587,6 +592,11 @@ void mesh::initNbrNbrfc()
 void mesh::move( float dz )
 {
 	this->position = this->position * matrixFactory::translate(0,0,dz);
+}
+
+vector<tuple3f> & mesh::getFaceNormals()
+{
+	return this->face_normals;
 }
 
 

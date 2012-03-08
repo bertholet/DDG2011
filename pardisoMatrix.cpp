@@ -143,7 +143,26 @@ void pardisoMatrix::saveVector(std::vector<double> & vctor, std::string  name,
 	myFile << "];";
 	myFile.close();
 }
- 
+
+
+void pardisoMatrix::saveVector(std::vector<int> & vctor, std::string  name, 
+							   std::string  file )
+{
+	std::ofstream myFile;
+	int internI;
+	myFile.open(file.c_str());
+	myFile << name << " = [";
+
+	for(int i = 0; i < vctor.size(); i++){
+		myFile << vctor[i];
+		if(i != vctor.size() -1){
+			myFile << ", ";
+		}
+	}
+
+	myFile << "];";
+	myFile.close();
+}
 
 int pardisoMatrix::dim()
 {
@@ -274,6 +293,13 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 	AB.forceNrColumns(B.getm());
 
 	return AB;
+}
+
+pardisoMatrix pardisoMatrix::operator*( float other )
+{
+	pardisoMatrix A = *this;
+	A*= other;
+	return A;
 }
 
 
@@ -430,7 +456,7 @@ pardisoMatrix pardisoMatrix::operator-( pardisoMatrix & B )
 		Bia_start = B.ia[i]-1;
 		Bia_stop = B.ia[i+1]-1;
 		for(j1 = Aia_start, j2 = Bia_start; j1 <Aia_stop || j2 < Bia_stop;){
-			if(this->ja[j1]< B.ja[j2] && j1 < Aia_stop || j2 >= Bia_stop){
+			if(j2 >= Bia_stop|| (j1 < Aia_stop && this->ja[j1]< B.ja[j2]) ){
 
 				val = this->a[j1];
 				if(val!=0){
@@ -439,7 +465,7 @@ pardisoMatrix pardisoMatrix::operator-( pardisoMatrix & B )
 				}
 				j1++;
 			}
-			else if (this->ja[j1]> B.ja[j2] && j2 < Bia_stop || j1 >= Aia_stop){
+			else if (j1 >= Aia_stop || (j2 < Bia_stop && this->ja[j1]> B.ja[j2]) ){
 				val = - B.a[j2];
 				if(val!= 0){
 					AnB.japush_back(B.ja[j2]);
@@ -477,6 +503,7 @@ void pardisoMatrix::operator*=( float  other )
 
 void pardisoMatrix::elementWiseInv(double eps)
 {
+	assert(eps == 0); // nvm.... don't ask....
 	for(int i = 0; i < a.size(); i++){
 		if(a[i]> eps || a[i]< -eps){
 			a[i] = 1/ a[i];

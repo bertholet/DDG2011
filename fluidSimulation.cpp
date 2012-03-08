@@ -14,6 +14,7 @@
 #include <iostream>
 
 //#define printMat
+//#define printMat_harmonicFlux
 
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
@@ -22,6 +23,8 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	simulationtime = 0;
 
 	dualMeshTools::getDualVertices(*mesh, dualVertices);
+	assert(checkAllDualVerticesInside());
+
 	backtracedDualVertices = dualVertices; //this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
 
@@ -56,16 +59,15 @@ flux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceF
 	//matrix set up.
 	d0 =DDGMatrices::d0(*myMesh);
 	//borderdiff is zero if there is no border.
-	dt_star1 = (DDGMatrices::dual_d1(*myMesh) +DDGMatrices::dual_d1_borderdiff(*myMesh))* DDGMatrices::star1(*myMesh);
+//	dt_star1 = (DDGMatrices::dual_d1(*myMesh) +DDGMatrices::dual_d1_borderdiff(*myMesh))* DDGMatrices::star1(*myMesh);
+	dt_star1 = ((DDGMatrices::dual_d1(*myMesh))* DDGMatrices::star1(*myMesh)) + DDGMatrices::dual_d1star1_borderdiff(*myMesh);
 
 	L = dt_star1*d0;/*DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh) * d0;*/
+
 	//add stuff for 0 on border condition. Might be a bad idea.
-	for(int i = 0; i <myMesh->getBorder().size(); i++){
-		vector<int> & brdr = myMesh->getBorder()[i];
-		for(int j = 0; j < brdr.size(); j++){
-			L.add(brdr[j],brdr[j],1);
-		}
-	}
+	pardisoMatrix border = DDGMatrices::onesBorder(myMesh->getBorder(),L.getn(), L.getn());
+	border *= 0.0001;
+	L = L + border;
 
 	star0 = DDGMatrices::star0(*myMesh);
 
@@ -137,7 +139,7 @@ void fluidSimulation::setFlux( oneForm & f )
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::setFlux( vector<tuple3f> & dirs )
 {
-	fluidTools::dirs2Flux(dirs,flux,*myMesh, dualVertices);
+	fluidTools::dirs2Flux(dirs,flux,*myMesh/*, dualVertices*/);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,23 +148,25 @@ void fluidSimulation::setFlux( vector<tuple3f> & dirs )
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::setForce(vector<tuple3f> & dirs)
 {
-	fluidTools::dirs2Flux(dirs,forceFlux,*myMesh, dualVertices);
+	fluidTools::dirs2Flux(dirs,forceFlux,*myMesh/*, dualVertices*/);
 }
 
 
 
-void fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
+oneForm fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
 {
 	if(myMesh->getBorder().size() == 0){
 		//only for bordered meshs.
-		return;
+		return oneForm(*myMesh);
 	}
 	//compute a border adapted least square formulation laplacian.
 	pardisoMatrix d1 = DDGMatrices::d1(*myMesh);
 	pardisoMatrix star0inv = DDGMatrices::star0(*myMesh);
-	star0inv.elementWiseInv(0.00001);
-	pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*DDGMatrices::star2(*myMesh)*d1 
+	star0inv.elementWiseInv(0);
+	pardisoMatrix Lflux = (pardisoMatrix::transpose(d1)*DDGMatrices::star2(*myMesh)*d1) //* 100
 		+ pardisoMatrix::transpose(dt_star1)*star0inv*dt_star1;
+
+
 
 
 	// setting flux constraints
@@ -173,9 +177,15 @@ void fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
 	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
 	oneForm constFlux(*myMesh), harmonicFlux(*myMesh);
 	vector<double> buff;
-	vector<double> & fluxConstr = harmonicFlux.getVals();
+	vector<double> fluxConstr = harmonicFlux.getVals(); //init to zero, right size.
 	int sz,edgeId;
 	tuple2i edge;
+
+#ifdef printMat_harmonicFlux
+	std:vector<int> borderEdges;
+	borderEdges.reserve(edgs.size());
+#endif
+
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
 		constFlux.initToConstFlux(borderConstraints[i]);
@@ -188,21 +198,63 @@ void fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
 
 
 			Lflux.add(edgeId,edgeId,weight);
-			fluxConstr[edgeId] = borderConstraints[i].dot(verts[edge.b] -verts[edge.a]) * weight + buff[edgeId];
+			fluxConstr[edgeId] = borderConstraints[i].dot(verts[edge.b] -verts[edge.a]) * weight;// + buff[edgeId];
+
+#ifdef printMat_harmonicFlux
+			borderEdges.push_back(edgeId);;
+#endif
 
 		}
 	}
 
+	/*constFlux.initToConstFlux(tuple3f());
+	//debug stuff..
+	Lflux.mult(constFlux.getVals(), buff,true);
+	for(int i = 10; i < 50; i++){
+		Lflux.add(i,i,weight);
+		fluxConstr[i] = tuple3f(1.f,1.f,1.f).dot(verts[edgs[i].b] -verts[edgs[i].a]) * weight;// + buff[edgeId];
+	}
+
+	for(int i = 209; i < 259; i++){
+		Lflux.add(i,i,weight);
+		fluxConstr[i] = tuple3f(1.f,1.f,1.f).dot(verts[edgs[i].b] -verts[edgs[i].a]) * weight;// + buff[edgeId];
+	}
+
+	for(int i = 2009; i < 2059; i++){
+		Lflux.add(i,i,weight);
+		fluxConstr[i] = tuple3f(1.f,1.f,1.f).dot(verts[edgs[i].b] -verts[edgs[i].a]) * weight;// + buff[edgeId];
+	}
+	for(int i = 6009; i < 6059; i++){
+		Lflux.add(i,i,weight);
+		fluxConstr[i] = tuple3f(1.f,1.f,1.f).dot(verts[edgs[i].b] -verts[edgs[i].a]) * weight;// + buff[edgeId];
+	}
+	for(int i = 14009; i < 14059; i++){
+		Lflux.add(i,i,weight);
+		fluxConstr[i] = tuple3f(1.f,1.f,1.f).dot(verts[edgs[i].b] -verts[edgs[i].a]) * weight;// + buff[edgeId];
+	}*/
+
 	//solve for the harmonic flux.
-	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
+	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,15);
 	solver.setMatrix(Lflux,1);
-	solver.setStoreResultInB(true);
-	solver.solve(& (buff[0]), & (fluxConstr[0]));
+	solver.setStoreResultInB(false);
+	solver.solve(& (harmonicFlux.getVals()[0]), & (fluxConstr[0]));
 	//already stored in harmonicFlux.
 
 	fluidTools::flux2Velocity(harmonicFlux,harmonicVelocities, *myMesh);
 
+	//fluidTools::dirs2Flux(harmonicVelocities, harmonicFlux,*myMesh);
+
 	updateVelocities();
+
+#ifdef printMat_harmonicFlux
+	for(int i = 0; i < fluxConstr.size(); i++){
+		fluxConstr[i] /= weight;
+	}
+	Lflux.saveVector(fluxConstr, "flux_constraint","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/fluxConstr.m");
+	Lflux.saveVector(borderEdges, "border_edges","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/borderEdges.m");
+#endif // printMat_harmonicFlux
+
+	return harmonicFlux;
 
 }
 
@@ -366,13 +418,13 @@ void fluidSimulation::vorticity2Flux()
 		vorticity.getVals()[vorticity.getVals().size()/2] > -10E10 );
 
 
-	//zero border condition...
-	for(int i = 0; i < myMesh->getBorder().size(); i++){
+	//zero border condition... thats stupid, the vorticity is not 0: the flux should be.
+	/*for(int i = 0; i < myMesh->getBorder().size(); i++){
 		vector<int> & brdr = myMesh->getBorder()[i];
 		for(int j = 0; j < brdr.size(); j++){
 			vorticity.getVals()[brdr[j]] = 0;
 		}
-	}
+	}*/
 
 	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vorticity.getVals()[0]));
 	d0.mult(L_m1Vorticity.getVals(),flux.getVals());
@@ -390,7 +442,7 @@ void fluidSimulation::flux2Vorticity()
 
 
 
-tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle)
+tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, bool useHarmonicField)
 {
 
 	if(actualTriangle <0){
@@ -433,6 +485,9 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 		for(int i = 0; i < weights.size(); i++){
 			assert(weights[i]== weights[i]);
 			result += (velocities[dualVertIDs[i]]/*+harmonicVelocities[dualVertIDs[i]]*/)*weights[i];
+			if(!useHarmonicField){
+				result -= harmonicVelocities[dualVertIDs[i]]*weights[i];
+			}
 		}
 	}
 	else{
@@ -452,14 +507,16 @@ tuple3f fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle
 		result = result - curvNormal * (result.dot(triangleNormal) / curvNormal.dot(triangleNormal));
 			assert(result.x == result.x && result.y == result.y && result.z == result.z);
 	}
-	assert(result.x == result.x && result.y == result.y && result.z == result.z);
+	assert(result.x *0 == 0 && result.y*0 ==0 && result.z*0 == 0);
 	return result;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 //Bugs:
-//maybe overly imprecise, maybe because of orientation errors or sth?
+//maybe overly imprecise on curved surfaces because of taking euclidean distance
+// which is a CRUDE approx of the geodesic distance (which is implicitely
+// used in the dual edge edge ratios)
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::backtracedVorticity()
 {
@@ -481,6 +538,7 @@ void fluidSimulation::backtracedVorticity()
 
 			if(triangle_btVel[dualV[j]] == -1){
 				anyVertexOutside = true;
+				continue; // velocity is assumed to be zero on this edge
 			}
 			// was += now -= because the dual edges are oriented in the oposite way of following the border of the
 			// one ring of vertex.!!!
@@ -489,16 +547,16 @@ void fluidSimulation::backtracedVorticity()
 		}
 		vort[i] =temp;
 
-		if(anyVertexOutside){
-			vort[i] = 0;
-		}
+//		if(anyVertexOutside){
+//			vort[i] = 0;
+//		}
 	}
 }
 
 void fluidSimulation::updateBacktracedVelocities()
 {
 	for(int i = 0; i < backtracedVelocity.size(); i++){
-		backtracedVelocity[i] = getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i]);
+		backtracedVelocity[i] = getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i], true);
 	}
 }
 
@@ -559,7 +617,8 @@ void fluidSimulation::showDualPositions()
 void fluidSimulation::showFlux2Vel()
 {
 
-	fluidTools::flux2Velocity(flux,velocities, *myMesh);
+	//fluidTools::flux2Velocity(flux,velocities, *myMesh);
+	updateVelocities();
 	//display hack
 	Model::getModel()->setVectors(&dualVertices,&velocities);
 }
@@ -745,3 +804,67 @@ void fluidSimulation::showHarmonicField()
 {
 		Model::getModel()->setVectors(&dualVertices,&harmonicVelocities);
 }	
+
+vector<tuple3f> & fluidSimulation::getVelocities()
+{
+	return this->velocities;
+}
+
+vector<tuple3f> & fluidSimulation::getBacktracedVelocities()
+{
+	return this->backtracedVelocity;
+}
+
+nullForm & fluidSimulation::getVorticity()
+{
+	return vorticity;
+}
+
+bool fluidSimulation::checkAllDualVerticesInside()
+{
+	tuple3f a,b,c,n;
+	vector<tuple3f> & fcNormals = myMesh->getBasicMesh().getFaceNormals();
+	vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
+	vector<tuple3i> & fcs = myMesh->getBasicMesh().getFaces();
+	float temp, eps = 0.01;
+	
+	bool allOk = true;
+	for(int i = 0; i < dualVertices.size(); i++){
+		a.set(verts[fcs[i].a]);
+		b.set(verts[fcs[i].b]);
+		c.set(verts[fcs[i].c]);
+		n.set(fcNormals[i]);
+		
+		if( (temp = n.cross(b-a).dot(dualVertices[i] -a)) < 0){
+			if(temp > -eps){
+				dualVertices[i] = (a+b)*0.5f;
+				continue;
+			}
+			allOk = false;
+//			break;
+		}
+		if((temp = n.cross(c-b).dot(dualVertices[i] -b)) < 0){
+			if(temp > -eps){
+				dualVertices[i] = (c+b)*0.5f;
+				continue;
+			}
+			allOk = false;
+//			break;
+		}
+		if((temp = n.cross(a-c).dot(dualVertices[i] -c)) < 0){
+			if(temp > -eps){
+				dualVertices[i] = (a+c)*0.5f;
+				continue;
+			}
+			allOk = false;
+//			break;
+		}
+
+	}
+
+	return allOk;
+}
+
+
+
+

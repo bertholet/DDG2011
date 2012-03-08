@@ -129,7 +129,7 @@ public:
 	// curvature normal onto a plane, interpolated there and then projected 
 	// back
 	//////////////////////////////////////////////////////////////////////////
-	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex );
+	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex, bool useHarmonicField = true);
 
 
 	void addForces2Vorticity(float timestep);
@@ -143,7 +143,10 @@ public:
 	// component i is constrained to be borderConstraints[i].
 	// this will be added to the velocity field when pathtracing.
 	//////////////////////////////////////////////////////////////////////////
-	void setHarmonicFlow(vector<tuple3f> & borderConstraints);
+	oneForm setHarmonicFlow(vector<tuple3f> & borderConstraints);
+
+	void updateVelocities();
+	oneForm & getFlux();
 	
 //////////////////////////////////////////////////////////////////////////
 	// ID IE IB IU IG   IS IT IU IF IF 
@@ -174,8 +177,9 @@ public:
 	// borders, between neiighboring triangles.
 	//////////////////////////////////////////////////////////////////////////
 	tuple3f project( tuple3f& velocity, int actualTriangle );
-	void updateVelocities();
-	oneForm & getFlux();
+
+	bool checkAllDualVerticesInside();
+
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -201,4 +205,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 	void testFlux();
 
+	//////////////////////////////////////////////////////////////////////////
+	// Intern variable. Methods for debug/quality check.
+	//////////////////////////////////////////////////////////////////////////
+	vector<tuple3f> & getVelocities();
+	vector<tuple3f> & getBacktracedVelocities();
+	nullForm & getVorticity();
 };

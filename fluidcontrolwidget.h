@@ -26,7 +26,7 @@ public:
 	float getViscosity();
 	float getForceStrength();
 	float getTimestep();
-	void updateViscTimeLabel();
+	//void updateViscTimeLabel();
 	void updateAnimationLabel(float time, float fps);
 
 public slots:
@@ -45,6 +45,7 @@ public slots:
 	void forceStrengthChanged();
 	void borderDirInput( const QString & text );
 	void debugSome();
+	void debugSome2();
 private:
 	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;
@@ -54,7 +55,8 @@ private:
 	QSlider * forceStrengthSlider;
 	float stepSize;
 	QTimer * animationTimer;
-	QLabel * viscosityAndTimestep;
+	QLabel * viscosityLabel;
+	QLabel * stepSliderLabel;
 	QLabel * animationLabel;
 	QLabel * forceAgeLabel;
 	QLabel * forceStrengthLabel;
@@ -70,7 +72,7 @@ private:
 	std::vector<tuple3f> borderConstrDirs;
 	//tuple3f borderConstrDir;
 
-	void initToConstFlux( oneForm & constFlux, tuple3f & borderConstrDirs );
+	//void initToConstFlux( oneForm & constFlux, tuple3f & borderConstrDirs );
 };
 
 #endif // FLUIDCONTROLWIDGET_H

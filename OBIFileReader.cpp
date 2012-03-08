@@ -147,6 +147,8 @@ void OBIFileReader::parse(const char * file){
 		<< faces.size() << " faces. :-*\n";
 
 	checkAllVerticesUsed();
+
+
 }
 
 void OBIFileReader::checkAllVerticesUsed( void )

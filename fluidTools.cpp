@@ -62,7 +62,8 @@ float fluidTools::bariWeight( tuple3f & point ,int nr, int dualFace_id, std::vec
 {
 	std::vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();
 	tuple3i & face = mesh.getBasicMesh().getFaces()[dualVert_ids[nr]];
-	tuple3f & pos = point; // shit: dualVert_pos[dualVert_ids[nr]];
+	tuple3f & pos = point; 
+	tuple3f & vert = dualVert_pos[dualVert_ids[nr]];
 	int other1 = face.a;
 	int other2 = face.b;
 	if (other1 == dualFace_id){
@@ -73,22 +74,22 @@ float fluidTools::bariWeight( tuple3f & point ,int nr, int dualFace_id, std::vec
 		other2 = face.c;
 	}
 
-	//false!!!!!!!!!! only true in plane. a+b/...
+	//Actually only true in plane. a+b/...
 	tuple3f n1 = verts[other1] - verts[dualFace_id];
 	n1.normalize();
 	tuple3f n2 = verts[other2] -verts[dualFace_id];
 	n2.normalize();
-	return (n1.cross(n2)).norm() / (nonzeroDot(n1, pos)*nonzeroDot(n2, pos));
+	return (n1.cross(n2)).norm() / (nonzeroDot(n1, pos-vert)*nonzeroDot(n2, pos-vert));
 }
 
 float fluidTools::nonzeroDot( tuple3f & n, tuple3f & pos )
 {
 	float dot = n.dot(pos);
 	if(dot>=0){
-		dot+= 0.0000001f;
+		dot+= 10E-10;
 	}
 	else{
-		dot-= 0.0000001f;
+		dot-= 10E-10;//0.0000001f;
 	}
 	return dot;
 }
@@ -119,7 +120,7 @@ void fluidTools::bariCoords( tuple3f & point, int dualFace_id, std::vector<tuple
 //////////////////////////////////////////////////////////////////////////
 // dualVertPos, the circumcenters as can be calculated with dualMeshTools
 //////////////////////////////////////////////////////////////////////////
-void fluidTools::dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, meshMetaInfo & mesh , vector<tuple3f> & dualVert)
+void fluidTools::dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, meshMetaInfo & mesh /*, vector<tuple3f> & dualVert*/)
 {
 	assert(target.getMesh() == &mesh);
 	vector<tuple3f> & verts = mesh.getBasicMesh().getVertices();

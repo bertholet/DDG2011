@@ -103,6 +103,8 @@ public:
 	void saveMatrix(std::string file);
 	void saveVector(std::vector<double> & vctor, std::string  name, 
 		std::string  file );
+	void saveVector(std::vector<int> & vctor, std::string  name, 
+		std::string  file );
 
 	//////////////////////////////////////////////////////////////////////////
 	// Stores the indices i in target, such that a[i] is a value on the diagonal
@@ -143,6 +145,10 @@ public:
 	// multiply matrix with scalar value
 	//////////////////////////////////////////////////////////////////////////
 	void operator *=(float  other);
+
+	// multiply matrix with scalar value
+	//////////////////////////////////////////////////////////////////////////
+	pardisoMatrix operator *(float  other);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Matrix multiplication with transposed matrix. Returned by value, so
