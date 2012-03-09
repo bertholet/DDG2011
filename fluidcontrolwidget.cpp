@@ -446,30 +446,31 @@ void fluidControlWidget::debugSome()
 {
 	meshMetaInfo * mesh = Model::getModel()->getMeshInfo();
 	pardisoMatrix star0inv = DDGMatrices::star0(*mesh);
-	//star0inv.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star0.m");
+	star0inv.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star0.m");
 	star0inv.elementWiseInv(0.000);
 
 	pardisoMatrix star1 = DDGMatrices::star1(*mesh);
-	//star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star1.m");
+	star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star1.m");
 
 	pardisoMatrix star2 = DDGMatrices::star2(*mesh);
-	//star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star2.m");
+	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star2.m");
 
-	//pardisoMatrix d0 = DDGMatrices::d0(*mesh);
-	//d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d0.m");
+	pardisoMatrix d0 = DDGMatrices::d0(*mesh);
+	d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/d0.m");
 
 	pardisoMatrix d1 = DDGMatrices::d1(*mesh);
-	//d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d1.m");
+	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/d1.m");
 
-	//pardisoMatrix delta1 = DDGMatrices::delta1(*mesh);
-	//delta1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta1.m");
+	pardisoMatrix delta1 = DDGMatrices::delta1(*mesh);
+	delta1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/delta1.m");
 
-	pardisoMatrix borderDiff = DDGMatrices::dual_d1_borderdiff(*mesh);
-	//borderDiff.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/borderDiff.m");
+	//pardisoMatrix borderDiff = DDGMatrices::dual_d1_borderdiff(*mesh);
+	//borderDiff.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/borderDiff.m");
 
 	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*mesh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
 	duald1_border = duald1_border  + DDGMatrices::dual_d1_borderdiff(*mesh);
-	//pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*star2*d1 + star1*pardisoMatrix::transpose(duald1_border)*star0inv*duald1_border*star1;
+
+	duald1_border.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/dualD1Border.m");
 	pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*star2*d1 + star1*pardisoMatrix::transpose(duald1_border)*star0inv*duald1_border*star1;
 
 	//set matrix to id on border
