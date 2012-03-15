@@ -7,6 +7,7 @@ pardisoMatrix::pardisoMatrix(void)
 {
 	n= 0;
 	m= 0;
+	//this->iapush_back(1);
 }
 
 pardisoMatrix::pardisoMatrix( int * ia_, int *ja_,
@@ -210,6 +211,11 @@ void pardisoMatrix::add( int i, int j, float val )
 
 void pardisoMatrix::addLine(std::vector<int> & js, std::vector<double> & vals){
 	assert(js.size()  == vals.size());
+	if(ia.size() == 0){
+		assert(a.size() == 0 && ja.size() == 0);
+		iapush_back(1);
+	}
+
 	for(int i = 0; i < js.size();i++){
 		a.push_back(vals[i]);
 		japush_back(js[i]+1);
@@ -564,6 +570,13 @@ void pardisoMatrix::setLineToID( int line )
 
 }
 
+void pardisoMatrix::setLineToZero( int line )
+{
+	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
+		a[j] = 0;
+	}
+}
+
 pardisoMatrix pardisoMatrix::transpose( pardisoMatrix & mat )
 {
 	pardisoMatrix id;
@@ -581,5 +594,19 @@ void pardisoMatrix::forceNrColumns( int nrColumns )
 	assert(m <=nrColumns); // else the matrix will behave strangely..
 	m= nrColumns;
 }
+
+//returns the zero based indices of values in this column and the values.
+void pardisoMatrix::getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals )
+{
+	assert(line < getn());
+	target_vals.clear();
+	target_ind.clear();
+	for(int i = ia[line]-1; i < ia[line+1]-1; i++){
+		target_ind.push_back(ja[i]-1);
+		target_vals.push_back(a[i]);
+	}
+}
+
+
 
 

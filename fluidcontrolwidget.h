@@ -70,6 +70,8 @@ private:
 	//border constraints.
 	int selectedBorder;
 	std::vector<tuple3f> borderConstrDirs;
+
+	std::vector<tuple3f> debugVectors;
 	//tuple3f borderConstrDir;
 
 	//void initToConstFlux( oneForm & constFlux, tuple3f & borderConstrDirs );

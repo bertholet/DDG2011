@@ -383,6 +383,25 @@ bool meshOperation::consistentlyOriented( mesh & m )
 	return consistent;
 }
 
+void meshOperation::getBorderEdges( vector<int> & brdr, vector<int> & target, meshMetaInfo & mesh , vector<double> * orientations)
+{
+	target.clear();
+	target.reserve(mesh.getHalfedges()->size());
+	tuple2i edge;
+	int sz = brdr.size(),edgeId;
+	for(int j = 0; j < brdr.size();j++){
+		edgeId =mesh.getHalfedgeId(brdr[j%sz], brdr[(j+1)%sz],&edge);
+		target.push_back(edgeId);
+		if(orientations!= NULL){
+			//the second edge should be a '+1' for positive orientation
+			// i.e. this is just the orientation of the edge edge relative
+			// to the orientation of the border, given by
+			// (brdr[j],brdr[j+1]
+			orientations->push_back(edge.orientation( brdr[(j+1)%sz]));
+		}
+	}
+}
+
 /*int meshOperation::orientation( tuple2i & edge, tuple3i & face )
 {
 	assert(edge.a == face.a || edge.a == face.b || edge.a == face.c);

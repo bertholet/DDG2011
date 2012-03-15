@@ -208,16 +208,16 @@ void fluidControlWidget::flux2vort2flux()
 		initSimulation();
 	}
 
-	mySimulation->flux2Vorticity();
+	//mySimulation->flux2Vorticity();
 
 	updateViscosity();
 	updateTimeStep();
 	
 //	mySimulation->addDiffusion2Vorticity();
 
-
-	mySimulation->vorticity2Flux();
-	mySimulation->showFlux2Vel();
+	
+//	mySimulation->vorticity2Flux();
+//	mySimulation->showFlux2Vel();
 
 
 /*	mesh & m = * Model::getModel()->getMesh();
@@ -227,6 +227,19 @@ void fluidControlWidget::flux2vort2flux()
 	}
 	
 	cout << "Overall Area: " << temp << "\n";*/
+
+	meshMetaInfo & mesh = *Model::getModel()->getMeshInfo();
+	pardisoMatrix dtstar1 = DDGMatrices::dual_d1(mesh) * DDGMatrices::star1(mesh) + DDGMatrices::dual_d1star1_borderdiff(mesh);
+	nullForm harmonicVort(mesh);
+	oneForm & flux = mySimulation->getHarmonicFlux();
+	oneForm f2v2f(mesh);
+	fluidTools::flux2Vorticity(flux, harmonicVort, mesh, dtstar1);
+
+	mySimulation->vorticity2Flux(harmonicVort,f2v2f);
+	
+	fluidTools::flux2Velocity(f2v2f, debugVectors,mesh);
+
+	Model::getModel()->setVectors(& mySimulation->getDualVertices(),&debugVectors);
 
 }
 
@@ -532,7 +545,8 @@ void fluidControlWidget::debugSome()
 	d1.saveVector(mesh->getBorder()[0],"border_0","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border0.m");
 	d1.saveVector(mesh->getBorder()[1],"border_1","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border1.m");
 
-	(duald1_border*star1).mult(harmonicFlux.getVals(), buff,true);
+	//(duald1_border*star1).mult(harmonicFlux.getVals(), buff,true);
+	(DDGMatrices::dual_d1(*mesh)*star1).mult(harmonicFlux.getVals(), buff,true);
 	d1.saveVector(buff,"d1star_harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/duald1star_harmonic.m");
 
 	Lflux.mult(harmonicFlux.getVals(), buff,true);

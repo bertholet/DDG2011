@@ -57,11 +57,11 @@ void oneForm::initToConstFlux( tuple3f& dir )
 
 }
 
-void oneForm::add( oneForm & other )
+void oneForm::add( oneForm & other ,float scale)
 {
 	assert(other.m == this->m);
 	for(int i = 0; i < form.size(); i++){
-		form[i]+= other.form[i];
+		form[i]+= other.form[i]*scale;
 	}
 }
 

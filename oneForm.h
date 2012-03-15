@@ -24,5 +24,5 @@ public:
 	void setZero();
 	// sets to the flux defined by this direction
 	void initToConstFlux( tuple3f& dir);
-	void add( oneForm & other );
+	void add( oneForm & other, float scale = 1 );
 };

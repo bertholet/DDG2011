@@ -50,4 +50,15 @@ public:
 	static pardisoMatrix dual_d1_borderdiff( meshMetaInfo & aMesh );
 
 	static pardisoMatrix dual_d1star1_borderdiff( meshMetaInfo & aMesh );
+
+	//////////////////////////////////////////////////////////////////////////
+	// matrix that maps oneforms to 0 forms and has for border vertex
+	// lines the entries ...0.5 .... 0.5... for border edges adjacent
+	// to the vertex. i.e it is the part of the dual values on primal
+	// edges for rot calculation.
+	//////////////////////////////////////////////////////////////////////////
+	static pardisoMatrix dual_d1_dualprimal( meshMetaInfo & aMesh );
+
+
+	static pardisoMatrix onesBorderEdges( meshMetaInfo & aMesh );
 };

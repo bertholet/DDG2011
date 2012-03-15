@@ -314,6 +314,39 @@ public:
 	}
 };
 
+class onesBorderEdgesCreator: public pardisoMatCreator
+{
+
+	meshMetaInfo * mesh;
+
+public:
+	onesBorderEdgesCreator(meshMetaInfo & aMesh){
+		mesh = & aMesh;
+	}
+
+	float val(int i , int j){
+		if(i!= j){
+			return 0;
+		}
+
+		tuple2i & edge = (* mesh->getHalfedges())[i];
+
+		int nbr_fc1, nbr_fc2;
+		meshOperation::getNbrFaces(edge,&nbr_fc1,&nbr_fc2, mesh->getBasicMesh().getNeighborFaces());
+
+		if(nbr_fc2 >=0){
+			return 0;
+		}
+		return 1;
+	}
+
+	// row: its the vertex number; 
+	void indices(int row, std::vector<int> & target){
+		target.clear();
+		target.push_back(row);
+	}
+};
+
 DDGMatrices::DDGMatrices(void)
 {
 }
@@ -473,12 +506,31 @@ pardisoMatrix DDGMatrices::dualVals1( meshMetaInfo & aMesh )
 	return dual1;
 }
 
+//ones on border for border Vertices!
 pardisoMatrix DDGMatrices::onesBorder( std::vector<std::vector<int>> & border, int n, int m /*= n*/ )
 {
 	pardisoMatrix ones;
 	ones.initMatrix(sparseDiagCreator(&border),n);
 	ones.forceNrColumns(m);
 	return ones;
+}
+
+//edge x edge matrix with ones exactly for border edges.
+pardisoMatrix DDGMatrices::onesBorderEdges( meshMetaInfo & aMesh  )
+{
+	pardisoMatrix ones;
+	ones.initMatrix(onesBorderEdgesCreator(aMesh),aMesh.getHalfedges()->size());
+	ones.forceNrColumns(aMesh.getHalfedges()->size());
+	return ones;
+}
+
+pardisoMatrix DDGMatrices::dual_d1_dualprimal( meshMetaInfo & aMesh )
+{
+	pardisoMatrix dualprimal;
+	//dual edges to dual faces i.e. vertices
+	dualprimal.initMatrix(d1dual_primal(aMesh),aMesh.getBasicMesh().getVertices().size());
+	dualprimal.forceNrColumns(aMesh.getHalfedges()->size());
+	return dualprimal;
 }
 
 

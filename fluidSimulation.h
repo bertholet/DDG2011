@@ -9,6 +9,7 @@
 #include "colorMap.h"
 #include <QTime>
 
+
 class fluidSimulation:public colorMap
 {
 private:
@@ -39,6 +40,7 @@ private:
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
 	oneForm forceFlux;
+	oneForm harmonicFlux;
 	nullForm vorticity;
 	nullForm tempNullForm;
 	//L^-1 * Vorticity is stored here.
@@ -58,6 +60,10 @@ private:
 	float timeStep;
 	float fps;
 
+
+	double minVort, maxVort;
+
+
 public:
 
 	//////////////////////////////////////////////////////////////////////////
@@ -65,6 +71,9 @@ public:
 	// or destroyed.
 	//////////////////////////////////////////////////////////////////////////
 	fluidSimulation(meshMetaInfo * mesh);
+
+	void setupMatrices();
+
 	~fluidSimulation(void);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -103,7 +112,7 @@ public:
 	// Vorticity 2 Flux
 	//////////////////////////////////////////////////////////////////////////
 	void vorticity2Flux();
-
+	void vorticity2Flux(nullForm & vort, oneForm & target);
 	void flux2Vorticity();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -144,6 +153,8 @@ public:
 	// this will be added to the velocity field when pathtracing.
 	//////////////////////////////////////////////////////////////////////////
 	oneForm setHarmonicFlow(vector<tuple3f> & borderConstraints);
+
+	oneForm & getHarmonicFlux();
 
 	void updateVelocities();
 	oneForm & getFlux();
@@ -200,6 +211,7 @@ public:
 	void scrollAction(int what){};
 	void actualizeFPS();
 
+
 //////////////////////////////////////////////////////////////////////////
 // debug/quality check
 //////////////////////////////////////////////////////////////////////////
@@ -211,4 +223,7 @@ public:
 	vector<tuple3f> & getVelocities();
 	vector<tuple3f> & getBacktracedVelocities();
 	nullForm & getVorticity();
+	std::vector<tuple3f> & getDualVertices();
+
+	
 };

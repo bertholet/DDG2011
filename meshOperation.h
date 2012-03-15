@@ -3,6 +3,7 @@
 #include "tuple3.h"
 #include <vector>
 #include <algorithm>
+#include "meshMetaInfo.h"
 
 
 class meshOperation
@@ -276,6 +277,7 @@ public:
 
 	}
 
+	static void getBorderEdges(vector<int> & borderComponent, vector<int> & target, meshMetaInfo & mesh,vector<double> * orientations = NULL);
 	//////////////////////////////////////////////////////////////////////////
 	//Returns the neighbors by vertex nr, ordered in ascending order, each time.
 	//Stores them in "neighbors", a preallocated and preinitialized vector of sz

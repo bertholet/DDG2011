@@ -124,6 +124,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void setLineToID( int line );
 
+	void setLineToZero( int line );
+
 	//////////////////////////////////////////////////////////////////////////
 	// This method will replace all values in this Matrix by 1/val, if the
 	// absolute values is > eps
@@ -180,4 +182,5 @@ public:
 	void addLine(std::vector<int> & js, std::vector<double> & vals);
 	static pardisoMatrix  transpose(pardisoMatrix & mat);
 	void forceNrColumns( int nrColumns );
+	void getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals );
 };
