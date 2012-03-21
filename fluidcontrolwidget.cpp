@@ -58,7 +58,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	stepSlider->setMinimum(0);
 	stepSlider->setMaximum(1000);
 	stepSlider->setTickPosition(QSlider::TicksAbove);
-	stepSlider->setValue(10);
+	stepSlider->setValue(0);
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(updateTimeStep()));
 
 
@@ -337,7 +337,7 @@ void fluidControlWidget::updateTimeStep()
 	this->stepSliderLabel->setText(ss.str().c_str());
 
 	this->mySimulation->setStepSize(stepSize);
-//	this->mySimulation->pathTraceAndShow(stepSize);
+	this->mySimulation->pathTraceAndShow(stepSize);
 }
 
 void fluidControlWidget::setForceFlux()
@@ -542,9 +542,10 @@ void fluidControlWidget::debugSome()
 	d1.saveVector(harmonicFlux.getVals(),"harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/harmonic.m");
 	d1.mult(harmonicFlux.getVals(), buff, true);
 	d1.saveVector(buff,"d1_harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/d1_harmonic.m");
-	d1.saveVector(mesh->getBorder()[0],"border_0","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border0.m");
-	d1.saveVector(mesh->getBorder()[1],"border_1","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border1.m");
-
+	if(mesh->getBorder().size() > 1){
+		d1.saveVector(mesh->getBorder()[0],"border_0","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border0.m");
+		d1.saveVector(mesh->getBorder()[1],"border_1","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border1.m");
+	}
 	//(duald1_border*star1).mult(harmonicFlux.getVals(), buff,true);
 	(DDGMatrices::dual_d1(*mesh)*star1).mult(harmonicFlux.getVals(), buff,true);
 	d1.saveVector(buff,"d1star_harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/duald1star_harmonic.m");

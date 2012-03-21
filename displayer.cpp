@@ -71,8 +71,8 @@ void Displayer::initializeGL()
 
 	//	{ 0.f, 0.f, 0.f },
 		{ 0.1f, 0.1f, 0.1f },
-		{ 0.9f,0.9f,0.9f }, // Blue
-		{ 0.9f, 0.9f, 0.9f }, // Green
+		{ 0.1f,0.1f,0.2f }, // Blue
+		{ 0.1f, 0.1f, 0.2f }, // Green
 		{ 0.1f, 0.1f, 0.1f },
 	/*	{ 0.f, 0.f, 0.f },
 		{ 0.f, 0.f, 0.f },

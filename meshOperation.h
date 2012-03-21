@@ -332,7 +332,6 @@ public:
 	// if a vertex is on a border the first and the last face will be well
 	// defined and be the border faces. Else no guaranty on what the
 	// first face will be is given.
-
 	//////////////////////////////////////////////////////////////////////////
 	static void sortV2F(vector<vector<int>> & neighbor_faces, mesh & m){
 

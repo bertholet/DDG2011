@@ -22,8 +22,11 @@ private:
 	std::vector<tuple3f> velocities;
 	std::vector<tuple3f> dualVertices;
 	std::vector<tuple3f> backtracedDualVertices;
+
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
+	//for fast borderdecision during pathtracing
+	std::vector<bool> vertexOnBorder;
 
 	//the harmonic field as velocities (in case of bordered meshs and constraints.
 	std::vector<tuple3f> harmonicVelocities;
@@ -71,6 +74,8 @@ public:
 	// or destroyed.
 	//////////////////////////////////////////////////////////////////////////
 	fluidSimulation(meshMetaInfo * mesh);
+
+	void initVertexOnBorder();
 
 	void setupMatrices();
 
@@ -153,6 +158,8 @@ public:
 	// this will be added to the velocity field when pathtracing.
 	//////////////////////////////////////////////////////////////////////////
 	oneForm setHarmonicFlow(vector<tuple3f> & borderConstraints);
+
+	void adaptMatrices_zeroTotalBorderVort( vector<vector<int>> &brdr, pardisoMatrix &star0inv,pardisoMatrix &duald1 );
 
 	oneForm & getHarmonicFlux();
 
