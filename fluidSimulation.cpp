@@ -103,7 +103,7 @@ void fluidSimulation::setupMatrices()
 {
 
 	//matrix setup for 0 viscosity.
-	bool zeroViscosity = true;
+	bool zeroViscosity = false;
 
 	d0 =DDGMatrices::d0(*myMesh);
 	//borderdiff is zero if there is no border.
@@ -144,7 +144,10 @@ void fluidSimulation::setViscosity( float visc )
 {
 	viscosity = visc;
 	//calc vhL;
-	star0_min_vhl = L ;//(dt_star1)*d0; //was = L (i.e. with constriction of zero flux on borders) 
+	/*pardisoMatrix dualD1 = DDGMatrices::dual_d1()
+	pardisoMatrix zeroVortDt_star1;*/
+
+	star0_min_vhl = (dt_star1)*d0; //was = L (i.e. with constriction of zero flux on borders) 
 	star0_min_vhl *= viscosity*timeStep;
 
 #ifdef printMat
@@ -468,8 +471,8 @@ oneForm & fluidSimulation::getFlux()
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::oneStep()
 {
-	//pathTraceDualVertices(timeStep); //how it should be
-	pathTraceDualVertices(0); //just for debugging
+	pathTraceDualVertices(timeStep); //how it should be
+	//pathTraceDualVertices(0); //just for debugging
 
 
 	updateBacktracedVelocities();
@@ -481,7 +484,7 @@ void fluidSimulation::oneStep()
 
 	backtracedVorticity();
 
-	addForces2Vorticity(timeStep);
+	//addForces2Vorticity(timeStep);  TODO comment in
 
 	addDiffusion2Vorticity();
 
@@ -601,7 +604,7 @@ void fluidSimulation::pathTraceDualVertices( float t )
 void fluidSimulation::vorticity2Flux()
 {
 	vorticity2Flux(vorticity,flux);
-/*	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
+	/*	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(L,1);
 //	star0_inv.mult((vorticity.getVals()),(tempNullForm.getVals()));
 	assert(vorticity.getVals()[vorticity.getVals().size()/2] < 10E10 &&
@@ -752,7 +755,7 @@ void fluidSimulation::backtracedVorticity()
 		sz = dualV.size();
 		start = 0;
 		stop = sz;
-		if(/*viscosity != 0 &&*/ vertexOnBorder[i]){
+		if(viscosity != 0 && vertexOnBorder[i]){
 			//do not take the flow along border edge into account.
 			stop = sz-1;
 		}
@@ -832,6 +835,7 @@ void fluidSimulation::addDiffusion2Vorticity()
 	L.saveVector(vorticity.getVals(),"vort_after","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_after_diffusion.m");
 #endif
 
+	//tempNullForm.add(vorticity,-1); //TODO remove this line.
 	star0.mult(tempNullForm.getVals(),vorticity.getVals());
 
 }

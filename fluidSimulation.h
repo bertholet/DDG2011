@@ -159,6 +159,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	oneForm setHarmonicFlow(vector<tuple3f> & borderConstraints);
 
+	//////////////////////////////////////////////////////////////////////////
 	void adaptMatrices_zeroTotalBorderVort( vector<vector<int>> &brdr, pardisoMatrix &star0inv,pardisoMatrix &duald1 );
 
 	oneForm & getHarmonicFlux();
