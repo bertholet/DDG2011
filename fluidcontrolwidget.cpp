@@ -337,7 +337,7 @@ void fluidControlWidget::updateTimeStep()
 	this->stepSliderLabel->setText(ss.str().c_str());
 
 	this->mySimulation->setStepSize(stepSize);
-	this->mySimulation->pathTraceAndShow(stepSize);
+//	this->mySimulation->pathTraceAndShow(stepSize);
 }
 
 void fluidControlWidget::setForceFlux()

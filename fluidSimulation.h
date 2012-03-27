@@ -38,6 +38,7 @@ private:
 	vector<int> age;
 	int maxAge;
 	QTime lastFrame;
+	QTime timer, timer_in_between, timer_total;
 
 	//Forms
 	std::vector<tuple3f> backtracedVelocity;
@@ -131,8 +132,11 @@ public:
 	// to the remaining t to go, pos is updated and the new actual triangle
 	// if the border of the triangle is reached.
 	// If the border of the mesh is reached -1 is returned.
+	// weight_buffer is a vector that is used for intern calculations as
+	// preallocated memory.
 	//////////////////////////////////////////////////////////////////////////
-	void walkPath(tuple3f * pos, int * triangle, float *  t, int dir =-1);
+	void walkPath(tuple3f * pos, int * triangle, float *  t, 
+		std::vector<float> & weight_buffer,int dir =-1);
 
 	float maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge );
 
@@ -141,9 +145,11 @@ public:
 	// Method to iterpolate the velocity field on curved manifolds. 
 	// The Velocities are projected locally along the
 	// curvature normal onto a plane, interpolated there and then projected 
-	// back
+	// back. The resulting velocity will be stored in result, weightbuffer
+	// needs to be a vector, used as a buffer for intern calculations.
 	//////////////////////////////////////////////////////////////////////////
-	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex, bool useHarmonicField = true);
+	void getVelocityFlattened(tuple3f & pos, int triangleIndex, tuple3f & result, 
+		std::vector<float> & weight_buffer,bool useHarmonicField = true);
 
 
 	void addForces2Vorticity(float timestep);
