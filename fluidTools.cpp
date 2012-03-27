@@ -85,11 +85,11 @@ float fluidTools::bariWeight( tuple3f & point ,int nr, int dualFace_id, std::vec
 float fluidTools::nonzeroDot( tuple3f & n, tuple3f & pos )
 {
 	float dot = n.dot(pos);
-	if(dot>=0){
+	if(dot>=0 ){
 		dot+= 10E-10;
 	}
 	else{
-		dot-= 10E-10;//0.0000001f;
+		dot-= 10E-10;
 	}
 	return dot;
 }

@@ -720,8 +720,8 @@ void fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, t
 					std::vector<float> & weights,bool useHarmonicField)
 {
 
+	result.set(0,0,0);
 	if(actualTriangle <0){
-		result.set(0,0,0);
 		return;
 		//return tuple3f();
 	}
@@ -750,14 +750,13 @@ void fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, t
 		assert(false);
 	}
 
-	//tuple3f result;
-	//std::vector<float> weights;
-	result.set(velocities[actualTriangle]); //TODO remove this  and the next line, just checking how time consuming... => Fucking time consuming!
-	return;
 
 	//determine weights;
-	//weights.clear();
 	fluidTools::bariCoords(pos,dualFace,dualVertices, weights, *myMesh);
+
+//	result.set(velocities[actualTriangle]); //TODO remove this  and the next line, just checking how time consuming... => Fucking time consuming!
+//	return;
+
 	// dualVertices of dualFace;
 	std::vector<int> & dualVertIDs = myMesh->getBasicMesh().getNeighborFaces()[dualFace];
 
