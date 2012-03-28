@@ -23,6 +23,10 @@ private:
 
 	int n, m;
 
+	bool reuseFactorization;
+	bool factorizationHandleValid;
+	int factorizationHandle;
+
 public:
 	pardisoMatrix(void);
 	//////////////////////////////////////////////////////////////////////////

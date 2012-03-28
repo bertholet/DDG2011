@@ -8,6 +8,7 @@
 #include "DDGMatrices.h"
 #include "colorMap.h"
 #include <QTime>
+#include "pardiso.h"
 
 
 class fluidSimulation:public colorMap
@@ -57,6 +58,10 @@ private:
 	pardisoMatrix star0;
 
 	pardisoMatrix star0_min_vhl;
+
+	//the solvers;
+	pardisoSolver * addDiffusionSolver;
+	pardisoSolver * vort2FluxSolver;
 
 	//the viscosity. surprise surprise...
 	float viscosity;

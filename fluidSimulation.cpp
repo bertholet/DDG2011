@@ -66,8 +66,9 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 
 
 	//matrix set up.
+	addDiffusionSolver = NULL;
+	vort2FluxSolver = NULL;
 	setupMatrices();
-
 
 	this->setStepSize(0);
 	this->setViscosity(0);
@@ -91,6 +92,13 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 
 fluidSimulation::~fluidSimulation(void)
 {
+	if(addDiffusionSolver != NULL){
+		delete addDiffusionSolver;
+	}
+
+	if(vort2FluxSolver != NULL){
+		delete vort2FluxSolver;
+	}
 }
 
 
@@ -129,7 +137,12 @@ void fluidSimulation::setupMatrices()
 			DDGMatrices::onesBorderEdges(*myMesh)* 100000)*
 			d0;
 	
-	
+		if(vort2FluxSolver != NULL){
+			delete vort2FluxSolver;
+		}
+		vort2FluxSolver = new pardisoSolver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,5);
+		vort2FluxSolver->setMatrix(L,1);
+
 //	L = dt_star1*d0;/*DDGMatrices::dual_d1(*myMesh) * DDGMatrices::star1(*myMesh) * d0;*/
 	//add stuff for 0 on border condition. Might be a bad idea.
 //	L = L + border;
@@ -164,6 +177,12 @@ void fluidSimulation::setViscosity( float visc )
 
 	//the final matrix
 	star0_min_vhl = star0 - star0_min_vhl; //was star0 not id0. WAS MINUS !!! Now IS minus because of star1 assumption
+
+	if(addDiffusionSolver != NULL){
+		delete addDiffusionSolver;
+	}
+	addDiffusionSolver = new pardisoSolver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,5);
+	addDiffusionSolver->setMatrix(star0_min_vhl,1);
 
 #ifdef printMat
 	star0_min_vhl.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/id0_min_vtL0.m");
@@ -682,23 +701,17 @@ void fluidSimulation::vorticity2Flux()
 
 void fluidSimulation::vorticity2Flux( nullForm & vort, oneForm & target )
 {
-	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
-	solver.setMatrix(L,1);
-//	star0_inv.mult((vorticity.getVals()),(tempNullForm.getVals()));
+//	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
+//	solver.setMatrix(L,1);
+
 	assert(vort.getVals()[vort.getVals().size()/2] < 10E10 &&
 		vort.getVals()[vort.getVals().size()/2] > -10E10 );
 
 
-	//zero border condition... thats stupid, the vorticity is not 0: the flux should be.
-	//and the vorticity being non zero on the boundary is what results in turbulence!!!
-	/*for(int i = 0; i < myMesh->getBorder().size(); i++){
-		vector<int> & brdr = myMesh->getBorder()[i];
-		for(int j = 0; j < brdr.size(); j++){
-			vorticity.getVals()[brdr[j]] = 0;
-		}
-	}*/
 
-	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vort.getVals()[0]));
+//	solver.solve(&(L_m1Vorticity.getVals()[0]), & (vort.getVals()[0]));
+	vort2FluxSolver->solve(&(L_m1Vorticity.getVals()[0]), & (vort.getVals()[0]));
+
 	d0.mult(L_m1Vorticity.getVals(),target.getVals());
 	assert(target.getVals()[target.getVals().size()/2] < 10E10 &&
 		target.getVals()[target.getVals().size()/2] > -10E10 );
@@ -894,19 +907,19 @@ void fluidSimulation::addForces2Vorticity(float timeStep)
 
 void fluidSimulation::addDiffusion2Vorticity()
 {
-	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
-	solver.setMatrix(star0_min_vhl,1);
-//	solver.setStoreResultInB(true);
+//	pardisoSolver solver(pardisoSolver::MT_ANY,pardisoSolver::SOLVER_DIRECT,3);
+//	solver.setMatrix(star0_min_vhl,1);
+
 
 #ifdef printMat
 	L.saveVector(vorticity.getVals(),"vort_before","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_before_diffusion.m");
 #endif
-	solver.solve(&(tempNullForm.getVals()[0]), & (vorticity.getVals()[0]));
+//	solver.solve(&(tempNullForm.getVals()[0]), & (vorticity.getVals()[0]));
+	addDiffusionSolver->solve(&(tempNullForm.getVals()[0]), & (vorticity.getVals()[0]));
 #ifdef printMat
 	L.saveVector(vorticity.getVals(),"vort_after","C:/Users/bertholet/Dropbox/To Delete/fluidsim dbg/vort_after_diffusion.m");
 #endif
 
-	//tempNullForm.add(vorticity,-1); //TODO remove this line.
 	star0.mult(tempNullForm.getVals(),vorticity.getVals());
 
 }
