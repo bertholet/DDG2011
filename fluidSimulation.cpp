@@ -799,6 +799,7 @@ void fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, t
 //maybe overly imprecise on curved surfaces because of taking euclidean distance
 // which is a CRUDE approx of the geodesic distance (which is implicitely
 // used in the dual edge edge ratios)
+// make sure backtraced velocities were updated.
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::backtracedVorticity()
 {
@@ -806,9 +807,10 @@ void fluidSimulation::backtracedVorticity()
 	std::vector<double> & vort = vorticity.getVals();
 	bool anyVertexOutside;
 
-	updateBacktracedVelocities();
+	//updateBacktracedVelocities();
 	double temp;
 	int start,sz, stop;
+#pragma omp parallel for private(temp,sz,start,stop,anyVertexOutside) num_threads(8)
 	for(int i = 0; i < vorticity.size();i++){ // < nrVerts.size
 		temp = 0;
 		anyVertexOutside= false;
@@ -848,6 +850,7 @@ void fluidSimulation::updateBacktracedVelocities()
 	std::vector<float> intern_mem;
 	intern_mem.reserve(20);
 
+#pragma omp parallel for private(intern_mem) num_threads(8)
 	for(int i = 0; i < backtracedVelocity.size(); i++){
 		//store velocity in backTracedVelocity[i] =...
 		getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i],backtracedVelocity[i], intern_mem, true); 
