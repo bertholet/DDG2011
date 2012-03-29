@@ -502,27 +502,23 @@ void fluidSimulation::oneStep()
 	timer.restart();
 	timer_total.restart();
 
-	pathTraceDualVertices(timeStep); //how it should be
-	//pathTraceDualVertices(0); //just for debugging
+	pathTraceDualVertices(timeStep); 
+
 	cout << "pathTracing" << timer.elapsed() << "\n";
 	timer.restart();
 
-	updateBacktracedVelocities();
+	updateBacktracedVelocities(); //is ok if isOnoutside border not denoted
 
 	cout << "velocity interpolation" << timer.elapsed() << "\n";
 	timer.restart();
 
-	//dbg only
-	//	flux2Vorticity();
-	//	std::vector<double> old_vorts_for_debug = vorticity.getVals();
-	//gbd
 
 	backtracedVorticity();
 
 	cout << "vorticity computation" << timer.elapsed() << "\n";
 	timer.restart();
 
-	addForces2Vorticity(timeStep);  //TODO comment in
+	addForces2Vorticity(timeStep); 
 
 	cout << "add forces" << timer.elapsed() << "\n";
 	timer.restart();
@@ -570,7 +566,7 @@ void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t,
 		*t = *t - max_t;
 		int temp = meshOperation::getNegFace(cut_edge, myMesh->getBasicMesh());
 		assert(temp!= *triangle);
-		*triangle = temp;
+		*triangle = temp; //if temp < 0 isOutside = true;
 	}
 }
 
@@ -666,6 +662,8 @@ void fluidSimulation::pathTraceDualVertices( float t )
 			changed_t = t/nrIterations;
 			//triangle = -1 => outside of mesh
 			while(changed_t > 0.0000001 && triangle!=-1){
+
+				//bool isOutside
 				walkPath(&(backtracedDualVertices[i]), &triangle,&changed_t, intern_memory);
 			}
 		}

@@ -30,6 +30,7 @@ pardisoSolver::pardisoSolver( int matrix_typ, int solver, int nr_refinement_step
 	pardisoinit(intern_memory, &matrix_type, &solver, int_params, double_params, &error);
 	checkError_init();
 
+	matrixWasSet = false;
 //	isInUse = true;
 	//keepMemory = false;
 }
@@ -69,6 +70,7 @@ pardisoSolver::~pardisoSolver( void )
 
 void pardisoSolver::setMatrix( pardisoMatrix & mat, int nr_righthandsides )
 {
+	assert(!matrixWasSet);
 	assert(mat.getn() == mat.getm());
 	matrix = &mat;
 	nrhs = nr_righthandsides;
@@ -100,6 +102,8 @@ void pardisoSolver::setMatrix( pardisoMatrix & mat, int nr_righthandsides )
 	if(error != 0){
 		throw std::runtime_error("Exception in pardiso solve-");
 	}
+
+	matrixWasSet = true;
 }
 
 void pardisoSolver::setPrintStatistics( bool print )
@@ -152,4 +156,23 @@ void pardisoSolver::checkMatrix( int matrix_type, pardisoMatrix & mat )
 
 		throw std::runtime_error("Pardiso::checkmatrix error");
 	}
+}
+
+void pardisoSolver::checkError_init()
+{
+	//error = 0;
+	if (error != 0) 
+	{
+		if (error == -10 )
+			printf("No license file found \n");
+		else if (error == -11 )
+			printf("License is expired \n");
+		else if (error == -12 )
+			printf("Wrong username or hostname \n");
+		else
+			printf("Error %d has occurred\n", error);
+
+	}
+	else
+		printf("[PARDISO]: License check was successful ... \n");
 }
