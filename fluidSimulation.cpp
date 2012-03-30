@@ -15,7 +15,7 @@
 #include <omp.h>
 
 
-#define DISPLAY_VORTS
+//#define DISPLAY_VORTS
 //#define printMat
 //#define printMat_harmonicFlux
 #define VARIANT_ONE
@@ -31,6 +31,7 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 
 	backtracedDualVertices = dualVertices; //this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
+	backtracedVelocity_noHarmonic = dualVertices; // same reason
 
 
 
@@ -59,6 +60,7 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 		triangle_btVel.push_back(-1);
 		velocities.push_back(tuple3f());
 		harmonicVelocities.push_back(tuple3f());
+		//velocitie.push_back(tuple3f());
 	}
 
 
@@ -76,6 +78,10 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 	//for display
 	maxVort = 1;
 	minVort = 0;
+	showStreamLines = false;
+	streamlineLength = 5;
+	doInterpolation = true;
+	showVortNotSpeed = true;
 
 //////////////////////////////////////////////////////////////////////////
 	//make sure everything is init for parallel loop..
@@ -513,7 +519,7 @@ void fluidSimulation::oneStep()
 	timer.restart();
 
 
-	backtracedVorticity();
+	backtracedVorticity(); //should be fine
 
 	cout << "vorticity computation" << timer.elapsed() << "\n";
 	timer.restart();
@@ -544,7 +550,7 @@ void fluidSimulation::oneStep()
 	Model::getModel()->setVectors(&dualVertices,&velocities, false);
 }
 
-void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t, 
+void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t, bool * hitBorder, 
 				std::vector<float> & weight_buffer, int direction )
 {
 	tuple3f dir;
@@ -566,7 +572,15 @@ void fluidSimulation::walkPath( tuple3f * pos, int * triangle, float * t,
 		*t = *t - max_t;
 		int temp = meshOperation::getNegFace(cut_edge, myMesh->getBasicMesh());
 		assert(temp!= *triangle);
-		*triangle = temp; //if temp < 0 isOutside = true;
+
+		//if temp < 0 isOutside = true;
+		if(temp < 0 ){
+			*hitBorder = true;
+		}
+		else{
+			*triangle = temp; 
+			*hitBorder = false;
+		}
 	}
 }
 
@@ -652,19 +666,20 @@ void fluidSimulation::pathTraceDualVertices( float t )
 	int nrIterations = t/0.05 + 1; // at least one iteration!!!
 	int end = backtracedDualVertices.size();
 	float changed_t;
+	bool hitBorder;
 	std::vector<float> intern_memory; //intern memory
 	
-#pragma omp parallel for private(triangle, changed_t, intern_memory) num_threads(8)
+#pragma omp parallel for private(triangle, changed_t, intern_memory, hitBorder) num_threads(8)
 	for(int i = 0; i < end; i++){
 		//cout <<"bazinga! thread " << omp_get_thread_num();
 		triangle = i;
+		hitBorder = false;
 		for(int j = 0; j < nrIterations;j++){
 			changed_t = t/nrIterations;
 			//triangle = -1 => outside of mesh
-			while(changed_t > 0.0000001 && triangle!=-1){
+			while(changed_t > 0.0000001 && !hitBorder/*triangle!=-1*/){
 
-				//bool isOutside
-				walkPath(&(backtracedDualVertices[i]), &triangle,&changed_t, intern_memory);
+				walkPath(&(backtracedDualVertices[i]), &triangle,&changed_t, &hitBorder,intern_memory);
 			}
 		}
 		triangle_btVel[i]=triangle;
@@ -737,6 +752,10 @@ void fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, t
 		//return tuple3f();
 	}
 
+	if(!doInterpolation){
+		result.set(velocities[actualTriangle]);
+		return;
+	}
 	
 	assert(actualTriangle >=0);
 	std::vector<tuple3f> & verts = myMesh->getBasicMesh().getVertices();
@@ -765,15 +784,13 @@ void fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, t
 	//determine weights;
 	fluidTools::bariCoords(pos,dualFace,dualVertices, weights, *myMesh);
 
-//	result.set(velocities[actualTriangle]); //TODO remove this  and the next line, just checking how time consuming... => Fucking time consuming!
-//	return;
-
 	// dualVertices of dualFace;
 	std::vector<int> & dualVertIDs = myMesh->getBasicMesh().getNeighborFaces()[dualFace];
 
 	if(myMesh->getBorder().size() != 0){
 		//on bordered meshs the stuff with the curv normal does not work.
 		//for now assum that meshes are flat if they have a border
+		assert(weights.size() == dualVertIDs.size());
 		for(int i = 0; i < weights.size(); i++){
 			assert(weights[i]== weights[i]);
 			result += (velocities[dualVertIDs[i]])*weights[i];
@@ -816,15 +833,16 @@ void fluidSimulation::backtracedVorticity()
 {
 	std::vector<std::vector<int>> & dualf2v = myMesh->getBasicMesh().getNeighborFaces();
 	std::vector<double> & vort = vorticity.getVals();
-	bool anyVertexOutside;
+	bool anyVertexOutside, useHarmonicField;
 
 	//updateBacktracedVelocities();
 	double temp;
 	int start,sz, stop;
-#pragma omp parallel for private(temp,sz,start,stop,anyVertexOutside) num_threads(8)
+#pragma omp parallel for private(temp,sz,start,stop,anyVertexOutside,useHarmonicField) num_threads(8)
 	for(int i = 0; i < vorticity.size();i++){ // < nrVerts.size
 		temp = 0;
 		anyVertexOutside= false;
+		useHarmonicField = false;
 
 		//the dual vertices surrounding the face.
 		std::vector<int> & dualV = dualf2v[i];
@@ -834,6 +852,7 @@ void fluidSimulation::backtracedVorticity()
 		if(viscosity != 0 && vertexOnBorder[i]){
 			//do not take the flow along border edge into account.
 			stop = sz-1;
+			useHarmonicField = true;
 		}
 		for(int j = start; j < stop; j++){
 
@@ -843,8 +862,14 @@ void fluidSimulation::backtracedVorticity()
 			}
 			// was += now -= because the dual edges are oriented in the oposite way of following the border of the
 			// one ring of vertex.!!!
-			temp -= 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
-				backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
+			if(useHarmonicField){
+				temp -= 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
+					backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
+			}
+			else{
+				temp -= 0.5* ((backtracedVelocity_noHarmonic[dualV[j]] + backtracedVelocity_noHarmonic[dualV[(j+1)%sz]]).dot(
+					backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
+			}
 		}
 		vort[i] =temp;
 
@@ -865,6 +890,7 @@ void fluidSimulation::updateBacktracedVelocities()
 	for(int i = 0; i < backtracedVelocity.size(); i++){
 		//store velocity in backTracedVelocity[i] =...
 		getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i],backtracedVelocity[i], intern_mem, true); 
+		getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i],backtracedVelocity_noHarmonic[i], intern_mem, false); 
 	}
 
 	//trying something
@@ -959,91 +985,95 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 	Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);
 }
 
+void fluidSimulation::setStreamlines( bool on )
+{
+	this->showStreamLines = on;
+}
+
+void fluidSimulation::setStreamlineLength( int length )
+{
+	this->streamlineLength = length;
+}
+
+void fluidSimulation::setInterpolation( bool on )
+{
+	this->doInterpolation = on;
+}
+
+
 void fluidSimulation::glDisplayField()
 {
 
 	actualizeFPS();
-#ifdef DISPLAY_ISOLINES
-	int nrPoints_2 = 10;//10
-	int nrPoints = 2*nrPoints_2;
-	
-	tuple3f newStart;
-	tuple3f temp;
-	tuple3f intern_tuple;
-	std::vector<float> intern_buff;
-	int tempTriangle;
-	float t;
-	float col;
-	int sz = myMesh->getBasicMesh().getFaces().size();
+	if(showStreamLines){
+		int nrPoints_2 = streamlineLength;//10
+		int nrPoints = 2*nrPoints_2;
+		
+		tuple3f newStart;
+		tuple3f temp;
+		tuple3f intern_tuple;
+		std::vector<float> intern_buff;
+		int tempTriangle;
+		float t;
+		float col;
+		int sz = myMesh->getBasicMesh().getFaces().size();
+		bool hitBorder;
 
-	glEnable(GL_TEXTURE_1D);
-	for(int i = 0; i < line_stripe_starts.size(); i++){
+		glEnable(GL_TEXTURE_1D);
+		for(int i = 0; i < line_stripe_starts.size(); i++){
 
-		temp = line_stripe_starts[i];
-		tempTriangle = line_strip_triangle[i];
-		//speed up: do not animate regions where nothing happens.
-		getVelocityFlattened(temp,tempTriangle, intern_tuple,intern_buff);
-		if(intern_tuple.norm() < 0.01){
-			continue;
-		}
-
-		glBegin(GL_LINE_STRIP);
-		glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//(0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
-		glVertex3fv( (GLfloat *) &temp);
-
-		for(int j = nrPoints_2+1; j < nrPoints; j++){
-			t=0.1;
-			while(t>0.0001 && tempTriangle >=0){
-				walkPath(&temp,&tempTriangle,&t,intern_buff,1);
-				glTexCoord1f(texPos(age[i]+ j, nrPoints));//(0.f + (j+age[i])%nrPoints) /(nrPoints+1));
-				glVertex3fv( (GLfloat *) &temp);
+			temp = line_stripe_starts[i];
+			tempTriangle = line_strip_triangle[i];
+			//speed up: do not animate regions where nothing happens.
+			getVelocityFlattened(temp,tempTriangle, intern_tuple,intern_buff);
+			if(intern_tuple.norm() < 0.01){
+				continue;
 			}
 
-		}
-		glEnd();
+			glBegin(GL_LINE_STRIP);
+			glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//(0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
+			glVertex3fv( (GLfloat *) &temp);
 
+			hitBorder = false;
+			for(int j = nrPoints_2+1; j < nrPoints; j++){
+				t=0.1;
+				while(t>0.0001 && !hitBorder/*tempTriangle >=0*/){
+					walkPath(&temp,&tempTriangle,&t,&hitBorder,intern_buff,1);
+					glTexCoord1f(texPos(age[i]+ j, nrPoints));//(0.f + (j+age[i])%nrPoints) /(nrPoints+1));
+					glVertex3fv( (GLfloat *) &temp);
+				}
 
-		temp = line_stripe_starts[i];
-		tempTriangle = line_strip_triangle[i];
-
-		glBegin(GL_LINE_STRIP);
-		glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//((0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
-		glVertex3fv( (GLfloat *) &temp);
-		for(int j = nrPoints_2 -1; j > 0; j--){
-			t=0.1;
-			while(t>0.0001 && tempTriangle >=0){
-				walkPath(&temp,&tempTriangle,&t,intern_buff,-1);
-				glTexCoord1f(texPos(age[i]+ j, nrPoints));//((0.f+(age[i] + j)%nrPoints)/(nrPoints+1));
-				glVertex3fv( (GLfloat *) &temp);
 			}
-		}
-		glEnd();
+			glEnd();
 
-	/*	age[i]--;
-		if(age[i]<0){
-			age[i] = maxAge;
-		}*/
+
+			temp = line_stripe_starts[i];
+			tempTriangle = line_strip_triangle[i];
+
+			glBegin(GL_LINE_STRIP);
+			glTexCoord1f(texPos(age[i] +nrPoints_2,nrPoints));//((0.f+(age[i] + nrPoints_2)%nrPoints)/(nrPoints+1));
+			glVertex3fv( (GLfloat *) &temp);
+			hitBorder = false;
+			for(int j = nrPoints_2 -1; j > 0; j--){
+				t=0.1;
+				while(t>0.0001 && !hitBorder){
+					walkPath(&temp,&tempTriangle,&t,&hitBorder,intern_buff,-1);
+					glTexCoord1f(texPos(age[i]+ j, nrPoints));//((0.f+(age[i] + j)%nrPoints)/(nrPoints+1));
+					glVertex3fv( (GLfloat *) &temp);
+				}
+			}
+			glEnd();
+
+		/*	age[i]--;
+			if(age[i]<0){
+				age[i] = maxAge;
+			}*/
+		}
+
+		//glDisable(GL_LINE_STIPPLE);
+		glDisable(GL_TEXTURE_1D);
 	}
-
-	//glDisable(GL_LINE_STIPPLE);
-	glDisable(GL_TEXTURE_1D);
-#endif //DISPLAY_ISOLINES
-
-	/*tuple3f temp;
-	int tempTriangle;
-	for(int i = 0; i < line_stripe_starts.size(); i++){
-
-		temp = line_stripe_starts[i];
-		tempTriangle = line_strip_triangle[i];
-		//speed up: do not animate regions where nothing happens.
-
-		glBegin(GL_LINE);
-		glVertex3fv( (GLfloat *) &temp);
-		temp = getVelocityFlattened(temp,tempTriangle);
-		glVertex3fv( (GLfloat *) &temp);
-		glEnd();
-
-	}*/
+//#endif //DISPLAY_ISOLINES
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1068,26 +1098,39 @@ tuple3f fluidSimulation::color( int vertexNr )
 {
 	assert(vertexNr < vorticity.size());
 	float sth = (vorticity.get(vertexNr,1)), sth2, sth3;
-#ifdef DISPLAY_VORTS
-	sth = abs(vorticity.get(vertexNr,1));//(vorticity.get(vertexNr,1)-minVort)/(maxVort-minVort);
-	sth = log(100*sth + 1) /(0.7*log(11.0)); // sth = 0 for sth = 0 else > 0, >0.7 for sth > 0.1
-	sth2 = (sth > 0.7? sth-0.7:0);
-	sth2 = log(10*sth2 + 1)/2; //>1 if sth2 >=1 i.e. sth>1.7 i.e sth > 1
-	sth3 = (sth2>0.7?sth2-0.7:0);
-	sth3 = log(sth3+1)/3;
-	if(vorticity.get(vertexNr,1) < 0){
-		sth = 0.3 + sth;///(2*minVort) ;
-		return tuple3f(0.3,0.3 + sth2,sth-sth3);
-	}
-	sth = 0.3+ sth;///(2*maxVort);
-	return tuple3f(sth-sth3,0.3+sth2,0.3);
-#endif // DISPLAY_VORTS
-#ifndef DISPLAY_VORTS
-	sth = (sth>0? sth: -sth);
-	sth = (sth<0.2?0.2:(sth>0.8?0.8:sth));
-	return tuple3f(0.2f,0.2f,sth);
-#endif
+	float scale = star0.geta()[0];
 
+	if(showVortNotSpeed){
+		sth = abs(vorticity.get(vertexNr,1))*scale/star0.geta()[vertexNr];//(vorticity.get(vertexNr,1)-minVort)/(maxVort-minVort);
+		sth = log(100*sth + 1) /(0.7*log(11.0)); // sth = 0 for sth = 0 else > 0, >0.7 for sth > 0.1
+		sth2 = (sth > 0.7? sth-0.7:0);
+		sth2 = log(10*sth2 + 1)/2; //>1 if sth2 >=1 i.e. sth>1.7 i.e sth > 1
+		sth3 = (sth2>0.7?sth2-0.7:0);
+		sth3 = log(sth3+1)/3;
+		if(vorticity.get(vertexNr,1) < 0){
+			sth = 0.3 + sth;///(2*minVort) ;
+			return tuple3f(0.3,0.3 + sth2,sth-sth3);
+		}
+		sth = 0.3+ sth;///(2*maxVort);
+		return tuple3f(sth-sth3,0.3+sth2,0.3);
+	}
+	else{
+		vector<int> & nbrs = myMesh->getBasicMesh().getNeighborFaces()[vertexNr];
+		sth = 0;
+		for(int i = 0; i < nbrs.size(); i++){
+			sth += velocities[nbrs[i]].norm();
+		}
+		sth/= nbrs.size();
+		sth = log(sth+1)/2;
+		//sth = sth/10; // sth = 0 for sth = 0 else > 0, >0.7 for sth > 0.1
+		sth2 = (sth > 1? sth-1:0);
+		sth = sth - sth2;
+		//sth2 /= 10; //>1 if sth2 >=1 i.e. sth>1.7 i.e sth > 1
+		sth3 = (sth2>1?sth2-1:0);
+		sth2 = sth2 - sth3;
+		//sth3/=10;
+		return tuple3f(sth2,sth-sth2, 1-sth);
+	}
 
 }
 
@@ -1257,6 +1300,15 @@ void fluidSimulation::adaptMatrices_zeroTotalBorderVort( vector<vector<int>> &br
 		star0inv.addLine(bla,bla2);
 	}
 }
+
+void fluidSimulation::showVorticity( bool param1 )
+{
+	this->showVortNotSpeed = param1;
+}
+
+
+
+
 
 
 

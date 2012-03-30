@@ -6,6 +6,7 @@
 #include "fluidTools.h"
 #include "oneForm.h"
 #include <QLabel>
+#include <QSpinBox>
 #include <string>
 #include <sstream>
 #include <math.h>
@@ -54,6 +55,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	forceAgeLabel = new QLabel("ForceAge (nr Iteratons): ");
 	forceStrengthLabel = new QLabel("Force Strength (): ");
 
+
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
 	stepSlider->setMaximum(1000);
@@ -96,6 +98,32 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	//vectorInput->setInputMask("#09.00 #09.00 #09.00");
 	connect(vectorInput,SIGNAL(textChanged( const QString& )), this, SLOT(borderDirInput(const QString & )));
 
+	//////////////////////////////////////////////////////////////////////////
+	//display settings
+	//////////////////////////////////////////////////////////////////////////
+	QCheckBox * showStreamLines;
+	QCheckBox * doInterpolation;
+	QCheckBox * showVortNotSpeed;
+	showStreamLines = new QCheckBox();
+	showStreamLines->setChecked(false);
+	connect(showStreamLines, SIGNAL(stateChanged(int)), this, SLOT(showStreamLn(int)));
+
+	doInterpolation = new QCheckBox();
+	doInterpolation->setChecked(true);
+	connect(doInterpolation, SIGNAL(stateChanged(int)), this, SLOT(doInterpl(int)));
+
+	showVortNotSpeed = new QCheckBox();
+	showVortNotSpeed->setChecked(true);
+	connect(showVortNotSpeed, SIGNAL(stateChanged(int)), this, SLOT(showVorticity(int)));
+
+	QLabel * streamLinesInterpolationLable = new QLabel("Lines/Interpol/Linelength/Vort");
+	QSpinBox * lineLength = new QSpinBox(this);
+	lineLength->setMinimum(1);
+	lineLength->setMaximum(50);
+	lineLength->setSingleStep(1);
+	connect(lineLength, SIGNAL(valueChanged(int)), this, SLOT(streamLineLengthChanged(int)));
+
+
 	QVBoxLayout * layout = new QVBoxLayout();
 
 	layout->addWidget(butt2);
@@ -118,6 +146,14 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(forceStrengthSlider);
 //	layout->addWidget(viscosityAndTimestep);
 	layout->addWidget(animationLabel);
+	layout->addWidget(streamLinesInterpolationLable);
+	
+	QHBoxLayout * hlayout = new QHBoxLayout();
+	hlayout->addWidget(showStreamLines);
+	hlayout->addWidget(doInterpolation);
+	hlayout->addWidget(lineLength);
+	hlayout->addWidget(showVortNotSpeed);
+	layout->addLayout(hlayout);
 	layout->addWidget(vectorInput);
 
 	this->setLayout(layout);
@@ -612,6 +648,34 @@ void fluidControlWidget::debugSome2()
 	star2d1.mult(harmonicFlux.getVals(),temp,true);
 		saveVector<double>(vort.getVals(), "trueVort","C:/Users/bertholet/Dropbox/To Delete/pathTracingTests/trueCalcedVort.m");
 
+}
+
+void fluidControlWidget::showStreamLn( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->setStreamlines(state != 0);
+	}
+}
+
+void fluidControlWidget::doInterpl( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->setInterpolation(state!= 0);
+	}
+}
+
+void fluidControlWidget::streamLineLengthChanged( int length )
+{
+	if(mySimulation != NULL){
+		mySimulation->setStreamlineLength(length);
+	}
+}
+
+void fluidControlWidget::showVorticity( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->showVorticity(state==0);
+	}
 }
 
 /*void fluidControlWidget::initToConstFlux( oneForm & constFlux, tuple3f & dir )

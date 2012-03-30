@@ -115,6 +115,12 @@ void fluidTools::bariCoords( tuple3f & point, int dualFace_id, std::vector<tuple
 		target[i]/=sum;
 	}
 
+	/*tmp =0;
+	for(int i = 0; i < nrFcs; i++){
+		tmp += target[i];
+	}
+	assert(tmp < 1.000001 && tmp >0.999999);*/
+
 }
 
 //////////////////////////////////////////////////////////////////////////

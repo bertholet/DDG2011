@@ -8,6 +8,7 @@
 #include "fluidSimulation.h"
 #include <QSlider>
 #include <QLabel>
+#include <QCheckBox>
 #include <qtimer.h>
 #include <QLineEdit>
 #include "curvVisualizingMesh.h"
@@ -40,6 +41,11 @@ public slots:
 
 	void updateViscosity();
 	void forceAgeChanged();
+
+	void showStreamLn(int state);
+	void showVorticity( int );
+	void streamLineLengthChanged( int );
+	void doInterpl(int state);
 	void startSim();
 	void doAnimation();
 	void forceStrengthChanged();

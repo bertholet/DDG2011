@@ -38,11 +38,12 @@ private:
 	vector<int> line_strip_triangle;
 	vector<int> age;
 	int maxAge;
+	bool showStreamLines, doInterpolation;
 	QTime lastFrame;
 	QTime timer, timer_in_between, timer_total;
 
 	//Forms
-	std::vector<tuple3f> backtracedVelocity;
+	std::vector<tuple3f> backtracedVelocity, backtracedVelocity_noHarmonic;
 	oneForm flux;
 	oneForm forceFlux;
 	oneForm harmonicFlux;
@@ -71,8 +72,8 @@ private:
 
 
 	double minVort, maxVort;
-
-
+	int streamlineLength;
+	bool showVortNotSpeed;
 public:
 
 	//////////////////////////////////////////////////////////////////////////
@@ -140,7 +141,7 @@ public:
 	// weight_buffer is a vector that is used for intern calculations as
 	// preallocated memory.
 	//////////////////////////////////////////////////////////////////////////
-	void walkPath(tuple3f * pos, int * triangle, float *  t, 
+	void walkPath(tuple3f * pos, int * triangle, float *  t, bool * hitBorder,
 		std::vector<float> & weight_buffer,int dir =-1);
 
 	float maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge );
@@ -215,6 +216,9 @@ public:
 /////////////////////////////////////////////////////////////////////////
 // display the field
 //////////////////////////////////////////////////////////////////////////
+	void setStreamlines(bool on);
+	void setStreamlineLength( int length );
+	void setInterpolation(bool on);
 	void glDisplayField();
 	float texPos( int j, int nrPoints );
 	float getFPS();
@@ -243,6 +247,6 @@ public:
 	vector<tuple3f> & getBacktracedVelocities();
 	nullForm & getVorticity();
 	std::vector<tuple3f> & getDualVertices();
-
+	void showVorticity( bool param1 );
 	
 };
