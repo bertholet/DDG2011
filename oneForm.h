@@ -21,4 +21,5 @@ public:
 	meshMetaInfo * getMesh(){return m;}
 	//sets form[edge] = val*orientation
 	void set( int edge, double val, int orientation );
+	void setZero();
 };

@@ -117,7 +117,7 @@ void OBIFileReader::parse(const char * file){
 			}
 			else{
 				cout <<"Undefined face specification!";
-				throw std::exception("Unimplemented face specification found while reading obj file");
+				throw std::runtime_error("Unimplemented face specification found while reading obj file");
 			}
 
 			//cout << tuplei.x << " " << tuplei.y << " " << tuplei.z << " is my tex\n";

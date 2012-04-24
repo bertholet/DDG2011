@@ -340,6 +340,9 @@ public:
 		for(int i = 0; i < neighbor_faces.size(); i++){
 			//i is the vertex number
 			vector<int> & nbrFcs = neighbor_faces[i];
+			if(nbrFcs.size() == 0){
+				continue;
+			}
 			
 			//first îs the index of the first vertex of the one ring
 			// the first is well defined if i is a border vertex. Else
@@ -411,12 +414,17 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	//border compatible version: if there is no next you will get the last
-	//index of the neighbor component
-	static int getPrevious_bc( int center_index, int v, mesh& m );
+	//index of the neighbor component. trueneighbor, if not null, will
+	// contain true if the returned vertex is a true neighbor of v 
+	// and false if it is another border index.
+	static int getPrevious_bc( int center_index, int v, mesh& m , bool * trueNeighbor = NULL);
 	//////////////////////////////////////////////////////////////////////////
 	//border compatible version: if there is no next you will get the first
 	//index of the neighbor component
-	static int getNext_bc( int center_index, int v, mesh& m );
+	// trueneighbor, if not null will
+	// contain true if the returned vertex is a true neighbor of v 
+	// and false if it is another border index.
+	static int getNext_bc( int center_index, int v, mesh& m, bool * trueNeighbor = NULL );
 
 	static int getFirst( int center_index, int v, mesh& m );
 	static int getLast( int center_index, int v, mesh& m );

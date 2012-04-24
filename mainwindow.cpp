@@ -6,7 +6,7 @@
 #include "curvVisualizingMesh.h"
 #include "generatemeshgui.h"
 #include "vectorfieldcontrolwidget.h"
-#include "fluidcontrolwidget.h"
+
 
 #define SLIDER_STEPSPERUNIT 20
 
@@ -57,6 +57,7 @@ void MainWindow::setupButtons()
 	comboBox->addItem("Border");
 	comboBox->addItem("Curvature");
 	comboBox->addItem("Selections");
+	comboBox->addItem("Border Selection");
 	comboBox->addItem("FluidSimulation");
 
 	cbox = new QCheckBox("Draw strokes",this);
@@ -88,8 +89,8 @@ void MainWindow::setupQTabs()
 	tab2Widget->setMainWindow(this);
 	tabs->addTab(tab2Widget, "Vector Fields");
 
-	fluidControlWidget * tab3Widget = new fluidControlWidget();
-	tabs->addTab(tab3Widget, "Fluid Simulation");
+	fluidcontWidget = new fluidControlWidget();
+	tabs->addTab(fluidcontWidget, "Fluid Simulation");
 }
 
 /************************************************************************/
@@ -202,18 +203,34 @@ void MainWindow::setDisplayMode( int mode )
 	}
 	else if(mode == 3){
 		Model & model = *Model::getModel();
-		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setColormap((colorMap *) new curvColormap(* Model::getModel()->getMesh()));
 		this->myGLDisp->setMode(COLORMAPMODE);
 	}
 	else if(mode == 4){
 		Model & model = *Model::getModel();
-		//model.getMeshInfo()->activateCurvNormals(true);
 		this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}
 	else if(mode == 5){
-		//model.getMeshInfo()->activateCurvNormals(true);
+		Model & model = *Model::getModel();
+		borderMarkupMap * mp = new borderMarkupMap(Model::getModel()->getMeshInfo()->getBorder());
+		mp->attach(this->fluidcontWidget);
+
+		this->myGLDisp->setColormap((colorMap *) mp);
+		this->myGLDisp->setMode(COLORMAPMODE);
+
+	}
+	else if(mode == 6){
 		this->myGLDisp->setMode(FLUIDSIMMODE);
+	}
+
+	if(mode == 5){
+		this->myGLDisp->setMouseMode(COLORMAPSCROLL);
+	}
+	else if (mode == 6){
+		this->myGLDisp->setMouseMode(INPUTMODE);
+	}
+	else{
+		this->myGLDisp->setMouseMode(TRACKBALLMODE);
 	}
 }
 
@@ -224,7 +241,7 @@ void MainWindow::setMouseMode( int state )
 	}
 	if(state == 2){//checked
 		this->myGLDisp->setMouseMode(INPUTMODE);
-		this->myGLDisp->setMode(MOUSEINPUTMODE);
+		//this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}
 }
 

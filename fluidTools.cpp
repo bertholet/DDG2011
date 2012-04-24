@@ -128,11 +128,14 @@ void fluidTools::dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, meshM
 	tuple3i fc,he;
 	tuple3f n_edge;
 	tuple2i edge;
+	float old_val;
 
 	//for dbg
 	tuple3f n;
 	tuple3f n_ab, n_bc, n_ca;
-	double temp;
+
+	//reset the oneForm
+	target.setZero();
 
 	for(int i = 0; i < fcs.size();i++){
 
@@ -150,30 +153,43 @@ void fluidTools::dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, meshM
 
 		fc = fcs[i];
 		he = f2e[i];
-		n_edge = ((verts[fc.a]+verts[fc.b])*0.5f - dualVert[i]);
+	/*	n_edge = ((verts[fc.a]+verts[fc.b])*0.5f - dualVert[i]);
 		n_edge.normalize();
-		n_edge *= ((verts[fc.b]-verts[fc.a]).norm());
-		target.set(he.a, n_edge.dot(dirs[i]) /** ((verts[fc.b]-verts[fc.a]).norm())*/, fc.orientation(edges[he.a]));
-
-		//test
-		temp = target.get(he.a,fc.orientation(edges[he.a])) - n_ab.dot(dirs[i]);
-		assert(temp < 0.0001 && temp > -0.0001);
-
-		n_edge = ((verts[fc.b]+verts[fc.c])*0.5f - dualVert[i]);
-		n_edge.normalize();
-		target.set(he.b, n_edge.dot(dirs[i]) * ((verts[fc.c]-verts[fc.b]).norm()), fc.orientation(edges[he.b]));
+		n_edge *= ((verts[fc.b]-verts[fc.a]).norm());*/
 		
-		//test
-		temp = target.get(he.b,fc.orientation(edges[he.b])) - n_bc.dot(dirs[i]);
-		assert(temp < 0.0001 && temp > -0.0001);
+		old_val = target.get(he.a,fc.orientation(edges[he.a]));
+		n_edge.set(n_ab);
+		if(old_val==0){
+			target.set(he.a, n_edge.dot(dirs[i]) /*((verts[fc.b]-verts[fc.a]).norm())*/ , fc.orientation(edges[he.a]));
+		}
+		else{
+			target.set(he.a, (n_edge.dot(dirs[i])/*((verts[fc.b]-verts[fc.a]).norm())*/ + old_val)/2, fc.orientation(edges[he.a]));
+		}
 
-		n_edge = ((verts[fc.a]+verts[fc.c])*0.5f - dualVert[i]);
-		n_edge.normalize();
-		target.set(he.c, n_edge.dot(dirs[i]) * ((verts[fc.c]-verts[fc.a]).norm()), fc.orientation(edges[he.c]));
 
-		//test
-		temp = target.get(he.c,fc.orientation(edges[he.c])) - n_ca.dot(dirs[i]);
-		assert(temp < 0.0001 && temp > -0.0001);
+/*		n_edge = ((verts[fc.b]+verts[fc.c])*0.5f - dualVert[i]);
+		n_edge.normalize();*/
+		n_edge.set(n_bc);
+		old_val = target.get(he.b,fc.orientation(edges[he.b]));
+		if(old_val==0){
+			target.set(he.b, n_edge.dot(dirs[i]) /* ((verts[fc.c]-verts[fc.b]).norm())*/, fc.orientation(edges[he.b]));
+		}
+		else{
+			target.set(he.b, (n_edge.dot(dirs[i]) /* ((verts[fc.c]-verts[fc.b]).norm())*/+old_val)/2, fc.orientation(edges[he.b]));
+		}
+	
+
+	/*	n_edge = ((verts[fc.a]+verts[fc.c])*0.5f - dualVert[i]);
+		n_edge.normalize();*/
+		n_edge.set(n_ca);
+		old_val = target.get(he.c,fc.orientation(edges[he.c]));
+		if(old_val==0){
+			target.set(he.c, n_edge.dot(dirs[i]) /* ((verts[fc.c]-verts[fc.a]).norm())*/, fc.orientation(edges[he.c]));
+		}
+		else{
+			target.set(he.c, (n_edge.dot(dirs[i]) /* ((verts[fc.c]-verts[fc.a]).norm())*/ + old_val)/2, fc.orientation(edges[he.c]));
+		}
+
 	}
 }
 

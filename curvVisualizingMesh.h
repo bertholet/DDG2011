@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "Observer.h"
+#include <iostream>
 
 class curvColormap : colorMap
 {
@@ -20,6 +22,7 @@ public:
 	tuple3f color(int vertexNr);
 	void setNormals(vector<tuple3f> & normals);
 	string additionalInfo(void);
+	void scrollAction( int what );
 };
 
 class gaussColormap:colorMap
@@ -33,6 +36,7 @@ public:
 	tuple3f color(float val);
 	tuple3f color(int vertexNr);
 	string additionalInfo(void);
+	void scrollAction( int what );
 };
 
 class borderMarkupMap:colorMap
@@ -40,11 +44,16 @@ class borderMarkupMap:colorMap
 private:
 	int *border;
 	int sz;
+	int nrBorders;
+	vector<Observer<borderMarkupMap*> *> obs;
 public:
+
 	int markedBorder;
 	borderMarkupMap(vector<vector<int>> & border_){
+
 		sz = max_(border_)+1;
 		markedBorder = 0;
+		nrBorders = border_.size();
 
 		border = new int[sz];
 
@@ -76,7 +85,11 @@ public:
 	}
 
 	tuple3f color(int vertexNr);
+	void scrollAction( int what );
 	string additionalInfo(void);
+
+	void attach(Observer<borderMarkupMap*> * obs);
+	void updateObserver();
 };
 
 class borderColorMap:colorMap
@@ -140,6 +153,7 @@ public:
 
 	tuple3f color(int vertexNr);
 	string additionalInfo(void);
+	void scrollAction( int what );
 	
 	int max_( vector<vector<int>> & border_ ){
 		int max = -1;
@@ -152,6 +166,7 @@ public:
 		}
 		return max;
 	}
+
 };
 
 class triangleMarkupMap:colorMap
@@ -182,6 +197,7 @@ public:
 
 	tuple3f color(int vertexNr);
 	string additionalInfo(void){return "";}
+	void scrollAction( int what );
 
 	void mark(tuple3i & face, int _mark);
 	void mark(int vertex, int _mark);

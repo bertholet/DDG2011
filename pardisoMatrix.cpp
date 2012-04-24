@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "pardisoMatrix.h"
 #include <assert.h>
+#include "idCreator.h"
 
 pardisoMatrix::pardisoMatrix(void)
 {
@@ -172,6 +173,16 @@ void pardisoMatrix::add( int i, int j, float val )
 	}
 }
 
+void pardisoMatrix::addLine(std::vector<int> & js, std::vector<double> & vals){
+	assert(js.size()  == vals.size());
+	for(int i = 0; i < js.size();i++){
+		a.push_back(vals[i]);
+		japush_back(js[i]+1);
+	}
+	iapush_back(a.size() +1);
+
+}
+
 pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 {
 	assert(B.getn() == this->getm());
@@ -223,7 +234,7 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 			val = 0;
 			for(int l=Aia_start,l2 = 0; l < Aia_stop; l++,l2++){
 				//"B(k,next_j)!=0" i.e. multiplicating row i with column j
-				if(B.ja[b_idx[l2]] == next_j && b_idx[l2] < b_stop[l2]){
+				if(b_idx[l2] < b_stop[l2]&&B.ja[b_idx[l2]] == next_j){
 					val+=this->a[l]*B.a[b_idx[l2]];
 					b_idx[l2]++;//this row is done. Advance to next non zero row
 				}
@@ -252,6 +263,7 @@ pardisoMatrix pardisoMatrix::operator*( pardisoMatrix & B )
 pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 {
 	assert(B.getm() == this->getm());
+	bool emptyLineFound = false;
 	pardisoMatrix AB;
 
 	AB.ia.reserve(this->dim());
@@ -306,8 +318,19 @@ pardisoMatrix pardisoMatrix::operator%( pardisoMatrix & B )
 			}
 		}
 
+
 		//adapt AB.ia
-		AB.iapush_back(AB.a.size()+1);
+		if(AB.ia.back() == AB.a.size()+1){
+			emptyLineFound = true;
+		}
+		else if( !emptyLineFound){
+			AB.iapush_back(AB.a.size()+1);
+		}
+		else{
+			//cout << "Matrix degenerated!in pardisoMatrix%";
+			assert(false);
+			throw std::runtime_error("Matrix degenerated in pardisoMatrix::%");
+		}
 
 
 	}
@@ -463,6 +486,37 @@ void pardisoMatrix::mult( std::vector<double> & x, std::vector<double> & target 
 			target[i] += x[ja[j]-1]*a[j];
 		}
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// set line line to 0.... 1 ... 0 where line is the line in 0 based notation
+//////////////////////////////////////////////////////////////////////////
+void pardisoMatrix::setLineToID( int line )
+{
+	bool diagElementExisted = false;
+	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
+		if(ja[j] -1 == line){
+			a[j] = 1;
+			diagElementExisted = true;
+		}
+		else{
+			a[j] = 0;
+		}
+	}
+
+	assert(diagElementExisted);
+	if(!diagElementExisted){
+		throw std::runtime_error( "Unimplemented Case in setLineToID(), curse the lazy programmer who preferred to write this error msg than to implement a better method");
+	}
+	//was lazy and did not yet implement this method if the diag element does not exist.
+
+}
+
+pardisoMatrix pardisoMatrix::transpose( pardisoMatrix & mat )
+{
+	pardisoMatrix id;
+	id.initMatrix(idCreator(),mat.m);
+	return id % mat;
 }
 
 

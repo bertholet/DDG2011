@@ -4,7 +4,7 @@
 
 fieldConstraintCollector::fieldConstraintCollector(void)
 {
-	this->what = NOTHING;
+	this->what = GUIDING_FIELD;
 }
 
 fieldConstraintCollector::~fieldConstraintCollector(void)

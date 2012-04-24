@@ -33,6 +33,7 @@ curvColormap::curvColormap(mesh &myMesh)
 		}
 	}	
 
+	cout << "max curv: " << max << ", min curv: " <<min;
 	min = log(min + 1);
 	max = log(max + 1);
 	/*stringstream ss;
@@ -75,6 +76,11 @@ void curvColormap::setNormals( vector<tuple3f> & normals )
 {
 	//theNormals = & normals;
 	throw new runtime_error("Deprecated Method");
+}
+
+void curvColormap::scrollAction( int what )
+{
+
 }
 
 
@@ -125,6 +131,11 @@ std::string gaussColormap::additionalInfo( void )
 	return info;
 }
 
+void gaussColormap::scrollAction( int what )
+{
+
+}
+
 std::string borderColorMap::additionalInfo( void )
 {
 	return info;
@@ -147,6 +158,11 @@ tuple3f borderColorMap::color( int vertexNr )
 	return col2;
 }
 
+void borderColorMap::scrollAction( int what )
+{
+	
+}
+
 
 tuple3f borderMarkupMap::color( int vertexNr )
 {
@@ -159,6 +175,29 @@ tuple3f borderMarkupMap::color( int vertexNr )
 std::string borderMarkupMap::additionalInfo( void )
 {
 	return "";
+}
+
+void borderMarkupMap::scrollAction( int wht )
+{
+	int what = (wht<0?-1:1);
+	this->markedBorder = (markedBorder + (nrBorders + what%nrBorders)%nrBorders)%nrBorders;
+	updateObserver();
+}
+
+void borderMarkupMap::attach( Observer<borderMarkupMap*> * obs_ )
+{
+	this->obs.push_back(obs_);
+	cout << "attached, now updating.... \n";
+
+	obs_->update(this,this);
+	cout << "updated\n";
+}
+
+void borderMarkupMap::updateObserver()
+{
+	for(int i = 0; i < obs.size(); i++){
+		obs[i]->update(this,this);
+	}
 }
 
 
@@ -202,4 +241,9 @@ void triangleMarkupMap::mark( int vertex, int _mark )
 		}
 	}
 	marks[vertex] = _mark;
+}
+
+void triangleMarkupMap::scrollAction( int what )
+{
+
 }

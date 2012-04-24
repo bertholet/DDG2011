@@ -7,14 +7,19 @@
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
 #include "colorMap.h"
+#include <QTime>
 
 class fluidSimulation:public colorMap
 {
 private:
 	meshMetaInfo * myMesh;
+
+	// the actual simulation time.
+	float simulationtime;
+
+	// Things needed for Pathtracing
 	std::vector<tuple3f> velocities;
 	std::vector<tuple3f> dualVertices;
-	
 	std::vector<tuple3f> backtracedDualVertices;
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
@@ -25,8 +30,9 @@ private:
 	vector<int> line_strip_triangle;
 	vector<int> age;
 	int maxAge;
-	float maxVorticity;
+	QTime lastFrame;
 
+	//Forms
 	std::vector<tuple3f> backtracedVelocity;
 	oneForm flux;
 	oneForm forceFlux;
@@ -35,17 +41,19 @@ private:
 	//L^-1 * Vorticity is stored here.
 	nullForm L_m1Vorticity;
 
-	//oneForm2oneForm Laplacian
+	//The Matrices needed
 	pardisoMatrix L;
 	pardisoMatrix d0;
 	pardisoMatrix dt_star1;
-	pardisoMatrix star0_,star0_inv;
+	pardisoMatrix star0;
+
 	pardisoMatrix star0_min_vhl;
 
 	//the viscosity. surprise surprise...
 	float viscosity;
 	//timeStep
 	float timeStep;
+	float fps;
 
 public:
 
@@ -126,7 +134,7 @@ public:
 	void pathTraceAndShow(float howmuch);
 	void showFlux2Vel();
 
-	void oneStep(float howmuuch);
+	void oneStep();
 
 	//////////////////////////////////////////////////////////////////////////
 	// helpmethod that interpolates the velocityfield defined on the dualvertex
@@ -151,13 +159,18 @@ public:
 //////////////////////////////////////////////////////////////////////////
 	void glDisplayField();
 	float texPos( int j, int nrPoints );
-
-
+	float getFPS();
+	float getSimTime();
+	//helper method that returns a randomly chosen point on the triangle
+	tuple3f randPoint( int triangle );
 //////////////////////////////////////////////////////////////////////////
 //colormap Methods
 //////////////////////////////////////////////////////////////////////////
 	virtual tuple3f color( int vertexNr );
 
 	virtual std::string additionalInfo( void );
+	void scrollAction(int what){};
+	void actualizeFPS();
+	void testFlux();
 
 };

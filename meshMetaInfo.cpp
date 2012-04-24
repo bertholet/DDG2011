@@ -1,6 +1,7 @@
 #include "meshMetaInfo.h"
 #include "Operator.h"
 #include "meshOperation.h"
+#include <algorithm>
 
 meshMetaInfo::meshMetaInfo(mesh * aMesh)
 {
@@ -93,4 +94,37 @@ vector<vector<int>> & meshMetaInfo::getBorder()
 		border_valid = true;
 	}
 	return border;
+}
+
+int meshMetaInfo::getHalfedgeId( int a, int b, tuple2i * target )
+{
+	vector<tuple2i> & he = * getHalfedges();
+	tuple2i toFind;
+	if(a < b){
+		toFind.set(a,b);
+	}
+	else if (b < a){
+		toFind.set(b,a);
+	}
+	else{assert(false);}
+
+	vector<tuple2i>::iterator found;
+	found =lower_bound(he.begin(), he.end(), toFind);
+	int index=-1;
+	if(found->a == toFind.a && found->b == toFind.b){
+		index = found - he.begin();
+	}
+	if(target != NULL){
+		if(index >-1){
+			target->set(toFind.a, toFind.b);
+		}
+		else{
+			target->set(-1,-1);
+		}
+	}
+
+	return index;
+
+
+
 }

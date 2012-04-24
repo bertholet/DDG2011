@@ -208,21 +208,27 @@ float Operator::aVornoi( int vertNr, mesh & m)
 	float Avornoi = 0;
 	int prev, next, nbr;
 	float cot_alpha1, cot_alpha2, tempcot1, tempcot2;
+	bool prevIsNeighbor,nextIsNeighbor;
 
 	vector<int> & neighbors_i = (m.getNeighbors()[vertNr]);
 	vector<tuple3f> & verts = m.getVertices();
 
 	for(int k = 0; k < neighbors_i.size(); k++){
 		nbr = neighbors_i[k];
-		prev = meshOperation::getPrevious_bc(vertNr, nbr, m);	
-		next = meshOperation::getNext_bc(vertNr,nbr, m);
+		prev = meshOperation::getPrevious_bc(vertNr, nbr, m, &prevIsNeighbor);	
+		next = meshOperation::getNext_bc(vertNr,nbr, m, &nextIsNeighbor);
 
 		tempcot1 = tuple3f::cotPoints(verts[nbr], verts[prev], verts[vertNr]);
 		tempcot1 = (tempcot1 >0 ? tempcot1: -tempcot1);
 		tempcot2 = tuple3f::cotPoints(verts[vertNr], verts[next], verts[nbr]);
 		tempcot2 = (tempcot2 >0 ? tempcot2: -tempcot2);
 
-		float dbg =  (verts[vertNr]-verts[nbr]).normSqr();
+		if(!prevIsNeighbor){
+			tempcot1 = 0;
+		}
+		if(!nextIsNeighbor){
+			tempcot2 = 0;
+		}
 
 		Avornoi += (tempcot1 +
 			tempcot2) *
@@ -237,17 +243,25 @@ float Operator::aVornoi( int vertNr, mesh & m)
 float Operator::dualEdge_edge_ratio( int i, int j, mesh & m )
 {
 
-	int prev = meshOperation::getPrevious(i, j, m);	
-	int next = meshOperation::getNext(i, j, m);
+	bool prevIsNeighbor, nextIsNeighbor;
+	int prev = meshOperation::getPrevious_bc(i, j, m, &prevIsNeighbor);	
+	int next = meshOperation::getNext_bc(i, j, m, &nextIsNeighbor);
+
 	vector<tuple3f> & verts = m.getVertices();
 
-	if(prev == -1 || next == -1){
+	/*if(prev == -1 || next == -1){
 		assert(false);
 		throw runtime_error("Error in Tutteweights::cotanweights_adiv");
-	}
+	}*/
 
-	float cot_alpha1 = tuple3f::cotPoints(verts[j], verts[prev], verts[i]);
-	float cot_alpha2 = tuple3f::cotPoints(verts[i], verts[next], verts[j]);
+	float cot_alpha1 = (prevIsNeighbor? 
+		tuple3f::cotPoints(verts[j], verts[prev], verts[i]):
+		0);
+	float cot_alpha2 = (nextIsNeighbor? 
+		tuple3f::cotPoints(verts[i], verts[next], verts[j]):
+		0);
+	cot_alpha1 = (cot_alpha1 >0? cot_alpha1: -cot_alpha1);
+	cot_alpha2 = (cot_alpha2 >0? cot_alpha2: -cot_alpha2);
 
 	return (cot_alpha1 + cot_alpha2)/2;
 }

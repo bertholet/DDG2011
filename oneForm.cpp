@@ -40,5 +40,12 @@ void oneForm::set( int edge, double val, int orientation )
 	form[edge] = val*orientation;
 }
 
+void oneForm::setZero()
+{
+	for(int i = 0; i < size(); i++){
+		form[i] =0;
+	}
+}
+
 
 

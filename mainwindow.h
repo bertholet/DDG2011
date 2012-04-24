@@ -5,6 +5,7 @@
 #include <QtGui>
 #include "displayer.h"
 #include <QSlider>
+#include "fluidcontrolwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,11 +26,15 @@ private:
 	QComboBox * comboBox;
 	QTabWidget * tabs;
 
+	fluidControlWidget * fluidcontWidget;
+
 	QCheckBox * cbox;
 	QPushButton * butt;
 	QCheckBox * cbox2;
 	QSlider * fieldSlider;
 	QSlider * linewidthSlider;
+
+
 	void setupQTabs();
 	void setupMenubar() ;
 	void setupButtons();

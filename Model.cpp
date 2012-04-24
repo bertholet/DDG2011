@@ -140,11 +140,14 @@ void Model::setPointCloud( std::vector<tuple3f> * points_ )
 	this->updateObserver(DISPLAY_CHANGED);
 }
 
-void Model::setVectors( std::vector<tuple3f>* dualVertices, std::vector<tuple3f>* velocities )
+void Model::setVectors( std::vector<tuple3f>* dualVertices, std::vector<tuple3f>* velocities, 
+					   bool updateObservers)
 {
 	this->positions = dualVertices;
 	this->dirs = velocities;
-	this->updateObserver(DISPLAY_CHANGED);
+	if (updateObservers){
+		this->updateObserver(DISPLAY_CHANGED);
+	}
 }
 
 void Model::setDisplayLength( float param1 )

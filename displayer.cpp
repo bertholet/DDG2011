@@ -114,9 +114,12 @@ void Displayer::paintGL()
 		}
 		else if(mode == FLUIDSIMMODE){
 			fluidSimulation * sim = Model::getModel()->getFluidSimulation();
-			theMesh->glDisplay(*sim);
 			if(sim != NULL){
+				theMesh->glDisplay(*sim);
 				sim->glDisplayField();
+			}
+			else{
+				theMesh->glDisplay();
 			}
 			glFlush();
 			return;
@@ -229,7 +232,12 @@ void Displayer::setLineWidth( float param1 )
 
 void Displayer::wheelEvent( QWheelEvent* ev )
 {
-	Model::getModel()->getMesh()->move((0.f + ev->delta())/800);
+	if(mode == COLORMAPMODE && mouseMode == COLORMAPSCROLL){
+		this->map->scrollAction(ev->delta());
+	}
+	else{
+		Model::getModel()->getMesh()->move((0.f + ev->delta())/800);
+	}
 	updateGL();
 }
 

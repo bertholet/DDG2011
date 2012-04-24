@@ -4,6 +4,8 @@
 #include "tuple3.h"
 #include "Operator.h"
 #include <algorithm>
+#include <limits>
+#include "idCreator.h"
 
 class d_0Creator: public pardisoMatCreator
 {
@@ -16,7 +18,7 @@ public:
 	}
 
 	float val(int i , int j){
-		// i is the row
+		// i is the row, j the vertex
 		tuple2i & edge =(*mesh->getHalfedges())[i];
 		return edge.orientation(j);
 	}
@@ -80,8 +82,14 @@ public:
 		if(i!= j){
 			return 0;
 		}
+
+
 		// i is the row
-		return Operator::aVornoi(i, mesh->getBasicMesh());
+		float temp =Operator::aVornoi(i, mesh->getBasicMesh());
+		assert(temp < numeric_limits<float>::infinity());
+		assert(temp > -numeric_limits<float>::infinity());
+
+		return temp;
 	}
 
 	// row: its the vertex number; 
@@ -146,25 +154,6 @@ public:
 };
 
 
-class idCreator: public pardisoMatCreator
-{
-
-public:
-
-	float val(int i , int j){
-		// i is the row
-		if(i==j){
-			return 1;
-		}
-		return 0;
-	}
-
-	// row: its the edge number; 
-	void indices(int row, std::vector<int> & target){
-		target.clear();
-		target.push_back(row);
-	}
-};
 
 DDGMatrices::DDGMatrices(void)
 {
@@ -191,6 +180,19 @@ pardisoMatrix DDGMatrices::d1( meshMetaInfo & aMesh )
 	int nrFaces = aMesh.getBasicMesh().getFaces().size();
 	d_1.initMatrix(d_1Creator(aMesh), nrFaces);
 	return d_1;
+}
+
+pardisoMatrix DDGMatrices::dual_d0( meshMetaInfo & aMesh )
+{
+	pardisoMatrix d1_=d1(aMesh);
+	return (id1(aMesh) % d1_);
+}
+
+pardisoMatrix DDGMatrices::dual_d1( meshMetaInfo & aMesh )
+{
+	pardisoMatrix d_0= d0(aMesh);
+	d_0*=(-1);//^1
+	return (id0(aMesh) % d_0);
 }
 
 //0 for surface meshes, as this is all for now. 
@@ -228,12 +230,14 @@ pardisoMatrix DDGMatrices::star2( meshMetaInfo & aMesh )
 pardisoMatrix DDGMatrices::delta1( meshMetaInfo & aMesh )
 {
 	pardisoMatrix star_1= star1(aMesh);
-	pardisoMatrix d_0 = d0(aMesh);
+	//pardisoMatrix d_0 = d0(aMesh);
+	pardisoMatrix duald1 = dual_d1(aMesh);
 
 	pardisoMatrix star_0_inv = star0(aMesh);
 	star_0_inv.elementWiseInv(0.00000001);
 
-	return (star_0_inv % d_0)* star_1;
+	return star_0_inv * duald1 * star_1;
+	//return (star_0_inv % d_0)* star_1;
 
 
 }
@@ -241,12 +245,14 @@ pardisoMatrix DDGMatrices::delta1( meshMetaInfo & aMesh )
 pardisoMatrix DDGMatrices::delta2( meshMetaInfo & aMesh )
 {
 	pardisoMatrix star_2= star2(aMesh);
-	pardisoMatrix d_1 = d1(aMesh);
+	//pardisoMatrix d_1 = d1(aMesh);
+	pardisoMatrix duald0 = dual_d0(aMesh);
 
 	pardisoMatrix star_1_inv = star1(aMesh);
 	star_1_inv.elementWiseInv(0.00000001);
 
-	return (star_1_inv % d_1)* star_2;
+	return star_1_inv * duald0 * star_2;
+	//return (star_1_inv % d_1)* star_2;
 }
 
 
@@ -270,5 +276,7 @@ pardisoMatrix DDGMatrices::id2( meshMetaInfo & aMesh )
 	id.initMatrix(idCreator(), aMesh.getBasicMesh().getFaces().size());
 	return id;
 }
+
+
 
 

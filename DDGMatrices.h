@@ -12,6 +12,9 @@ public:
 	static pardisoMatrix d1( meshMetaInfo & aMesh );
 	//static pardisoMatrix d2( meshMetaInfo & aMesh );
 
+	static pardisoMatrix dual_d0( meshMetaInfo & aMesh );
+	static pardisoMatrix dual_d1( meshMetaInfo & aMesh );
+
 	//vornoi Area / 1
 	static pardisoMatrix star0( meshMetaInfo & aMesh );
 	//dual edge / edge

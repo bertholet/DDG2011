@@ -162,6 +162,15 @@ public:
 		}
 	}
 
+	void setStoreResultInB(bool what){
+		if(what == true){
+			int_params[5] = 1;
+		}
+		else{
+			int_params[5] = 0;
+		}
+	}
+
 	void solve(double *x, double * b){
 		assert(matrix->getn() == matrix->getm());
 		int phase = 33;
