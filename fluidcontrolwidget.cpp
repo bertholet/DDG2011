@@ -104,6 +104,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	QCheckBox * showStreamLines;
 	QCheckBox * doInterpolation;
 	QCheckBox * showVortNotSpeed;
+	QCheckBox * texLine;
 	showStreamLines = new QCheckBox();
 	showStreamLines->setChecked(false);
 	connect(showStreamLines, SIGNAL(stateChanged(int)), this, SLOT(showStreamLn(int)));
@@ -116,12 +117,24 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	showVortNotSpeed->setChecked(true);
 	connect(showVortNotSpeed, SIGNAL(stateChanged(int)), this, SLOT(showVorticity(int)));
 
-	QLabel * streamLinesInterpolationLable = new QLabel("Lines/Interpol/Linelength/Vort");
+	texLine = new QCheckBox();
+	texLine->setChecked(true);
+	connect(texLine, SIGNAL(stateChanged(int)), this, SLOT(showTexLines(int)));
+
+	QLabel * streamLinesInterpolationLable = new QLabel("Lines/Interpol/Linelength/Vort/Tex/Color");
 	QSpinBox * lineLength = new QSpinBox(this);
 	lineLength->setMinimum(1);
 	lineLength->setMaximum(50);
 	lineLength->setSingleStep(1);
 	connect(lineLength, SIGNAL(valueChanged(int)), this, SLOT(streamLineLengthChanged(int)));
+
+	QSpinBox * colorScale = new QSpinBox(this);
+	colorScale->setMinimum(1);
+	colorScale->setMaximum(100);
+	colorScale->setSingleStep(1);
+	colorScale->setValue(50);
+	connect(colorScale, SIGNAL(valueChanged(int)), this, SLOT(colorScaleChanged(int)));
+
 
 
 	QVBoxLayout * layout = new QVBoxLayout();
@@ -153,6 +166,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	hlayout->addWidget(doInterpolation);
 	hlayout->addWidget(lineLength);
 	hlayout->addWidget(showVortNotSpeed);
+	hlayout->addWidget(texLine);
+	hlayout->addWidget(colorScale);
 	layout->addLayout(hlayout);
 	layout->addWidget(vectorInput);
 
@@ -674,7 +689,21 @@ void fluidControlWidget::streamLineLengthChanged( int length )
 void fluidControlWidget::showVorticity( int state )
 {
 	if(mySimulation != NULL){
-		mySimulation->showVorticity(state==0);
+		mySimulation->showVorticity(state!=0);
+	}
+}
+
+void fluidControlWidget::showTexLines( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->showTexLines(state!=0);
+	}
+}
+
+void fluidControlWidget::colorScaleChanged( int scale )
+{
+	if(mySimulation != NULL){
+		mySimulation->setColorScale(pow(10.f,(1.f*scale-50)/10));
 	}
 }
 

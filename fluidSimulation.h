@@ -74,6 +74,8 @@ private:
 	double minVort, maxVort;
 	int streamlineLength;
 	bool showVortNotSpeed;
+	bool boolTexLines;
+	float colorScale;
 public:
 
 	//////////////////////////////////////////////////////////////////////////
@@ -248,5 +250,6 @@ public:
 	nullForm & getVorticity();
 	std::vector<tuple3f> & getDualVertices();
 	void showVorticity( bool param1 );
-	
+	void showTexLines( bool what );
+	void setColorScale( float  scale );
 };

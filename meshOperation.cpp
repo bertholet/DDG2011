@@ -377,7 +377,11 @@ bool meshOperation::consistentlyOriented( mesh & m )
 					continue;
 			}
 			consistent = false;
+			break;
 
+		}
+		if(!consistent){
+			break;
 		}
 	}
 	return consistent;

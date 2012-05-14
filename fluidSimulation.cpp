@@ -23,6 +23,7 @@
 fluidSimulation::fluidSimulation( meshMetaInfo * mesh ):
 flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNullForm(*mesh), forceFlux(*mesh)
 {
+	int nrSimulationLines = 300;
 	myMesh = mesh;
 	simulationtime = 0;
 
@@ -43,7 +44,7 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 	int noFaces = myMesh->getBasicMesh().getFaces().size();
 	srand(0);
 
-	for(int j = 0; j < 100/*noFaces*/; j++){
+	for(int j = 0; j < nrSimulationLines/*noFaces*/; j++){
 
 		int i = (rand()%noFaces);
 		line_strip_triangle.push_back(i);//(rand()%noFaces);
@@ -79,10 +80,11 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 	maxVort = 1;
 	minVort = 0;
 	showStreamLines = false;
+	boolTexLines = false;
 	streamlineLength = 5;
 	doInterpolation = true;
 	showVortNotSpeed = true;
-
+	colorScale = 1;
 //////////////////////////////////////////////////////////////////////////
 	//make sure everything is init for parallel loop..
 	myMesh->getBorder();
@@ -1019,7 +1021,12 @@ void fluidSimulation::glDisplayField()
 		int sz = myMesh->getBasicMesh().getFaces().size();
 		bool hitBorder;
 
-		glEnable(GL_TEXTURE_1D);
+		if(boolTexLines){
+			glEnable(GL_TEXTURE_1D);
+		}
+		else{
+			glColor3f(0.1f,0.1f,0.2f);
+		}
 		for(int i = 0; i < line_stripe_starts.size(); i++){
 
 			temp = line_stripe_starts[i];
@@ -1064,10 +1071,10 @@ void fluidSimulation::glDisplayField()
 			}
 			glEnd();
 
-		/*	age[i]--;
+			age[i]--;
 			if(age[i]<0){
 				age[i] = maxAge;
-			}*/
+			}
 		}
 
 		//glDisable(GL_LINE_STIPPLE);
@@ -1098,7 +1105,7 @@ tuple3f fluidSimulation::color( int vertexNr )
 {
 	assert(vertexNr < vorticity.size());
 	float sth = (vorticity.get(vertexNr,1)), sth2, sth3;
-	float scale = star0.geta()[0];
+	float scale = star0.geta()[0] * colorScale;
 
 	if(showVortNotSpeed){
 		sth = abs(vorticity.get(vertexNr,1))*scale/star0.geta()[vertexNr];//(vorticity.get(vertexNr,1)-minVort)/(maxVort-minVort);
@@ -1304,6 +1311,16 @@ void fluidSimulation::adaptMatrices_zeroTotalBorderVort( vector<vector<int>> &br
 void fluidSimulation::showVorticity( bool param1 )
 {
 	this->showVortNotSpeed = param1;
+}
+
+void fluidSimulation::showTexLines( bool what )
+{
+	this->boolTexLines = what;
+}
+
+void fluidSimulation::setColorScale( float scale )
+{
+	this->colorScale = scale;
 }
 
 

@@ -6,6 +6,7 @@
 #include "curvVisualizingMesh.h"
 #include "generatemeshgui.h"
 #include "vectorfieldcontrolwidget.h"
+#include "smoothingWidget.h"
 
 
 #define SLIDER_STEPSPERUNIT 20
@@ -83,7 +84,7 @@ void MainWindow::setupButtons()
 void MainWindow::setupQTabs() 
 {
 	this->tabs = new QTabWidget(this);
-	QWidget * tab1Widget = new QWidget();
+	QWidget * tab1Widget = new smoothingWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
 	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
 	tab2Widget->setMainWindow(this);

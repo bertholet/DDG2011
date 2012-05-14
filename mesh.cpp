@@ -72,7 +72,7 @@ void mesh::init( const char* file, tuple3f & col, float scale )
 	lighTransform = matrixFactory::id();
 	color = col;
 
-	showOrientation = false;
+	showOrientation = true;
 
 	cout << " Max Area Ratio " << Operator::maxAreaRatio(*this) << "\n";
 	cout << " Checking Orientation... " ;
@@ -232,7 +232,7 @@ void mesh::glDisplayLines( void )
 
 	glLoadMatrixf((GLfloat *) &(rotation*position)); 
 
-	glColor3f(1.f,1.f,1.f);
+	glColor3f(0.6f,0.6f,0.6f);
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
 		glBegin(GL_LINE_LOOP);
@@ -390,6 +390,9 @@ tuple3f mesh::intensitiesFlat( unsigned int faceNr, tuple3f &direction )
 	float c = temp_normal.dot(direction);
 	if(!showOrientation)
 		c= ( c>0? c: -c);
+	else{
+		c = ( c>0? c: -0.1f* c);
+	}
 	return tuple3f(c,c,c);
 }
 

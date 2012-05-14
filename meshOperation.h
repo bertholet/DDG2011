@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "meshMetaInfo.h"
+#include <iostream>
 
 
 class meshOperation
@@ -362,10 +363,19 @@ public:
 			nr_nbr_fcs = nbrFcs.size();
 			//traverse one Ring.
 			for(int j = 0, actual = first; j <nr_nbr_fcs; j++, actual = getNext(i,actual, m)){
+				if(actual == -1){
+					std::cout<< "Dangling Triangle detected!! \n";
+					break;
+				}
 				anEdge.set(i,actual);
 				nextFace = getPosFace(anEdge,neighbor_faces,m);
-				assert(nextFace != -1);
-				switchElTo(nextFace,j, nbrFcs);
+				//assert(nextFace != -1);
+				if(nextFace != -1){
+					switchElTo(nextFace,j, nbrFcs);
+				}else{
+					std::cout<< "Dangling Triangle detected!! \n";
+					break;
+				}
 			}
 
 		}

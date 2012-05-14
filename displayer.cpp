@@ -50,9 +50,16 @@ void Displayer::initializeGL()
 
 	glEnable(GL_POINT_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
+	//antialias
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_POLYGON_SMOOTH);
+//	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+
+	//bg color
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 
 	//////////////////////////////////////////////////////////////////////////
 	// textures for fluid sim
@@ -71,8 +78,8 @@ void Displayer::initializeGL()
 
 	//	{ 0.f, 0.f, 0.f },
 		{ 0.1f, 0.1f, 0.1f },
-		{ 0.1f,0.1f,0.2f }, // Blue
-		{ 0.1f, 0.1f, 0.2f }, // Green
+		{ 0.8f,0.8f,0.8f }, // Blue
+		{ 0.8f, 0.8f, 0.8f }, // Green
 		{ 0.1f, 0.1f, 0.1f },
 	/*	{ 0.f, 0.f, 0.f },
 		{ 0.f, 0.f, 0.f },

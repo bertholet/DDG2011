@@ -52,6 +52,8 @@ public slots:
 	void borderDirInput( const QString & text );
 	void debugSome();
 	void debugSome2();
+	void showTexLines( int what );
+	void colorScaleChanged( int state );
 private:
 	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;

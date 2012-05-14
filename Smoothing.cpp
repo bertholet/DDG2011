@@ -5,6 +5,7 @@
 
 Smoothing::Smoothing(void)
 {
+	lambda= 1, dt= 0.0001f;
 }
 
 Smoothing::~Smoothing(void)
@@ -42,7 +43,6 @@ int Smoothing::contains(vector<int> , int face){
 
 void Smoothing::smootheMesh_explicitEuler( mesh& m )
 {
-	float lambda= 1, dt= 0.0001f;
 	float vol_old = Operator::volume(m), factor;
 	Operator::calcAllCurvNormals(m, normals);
 
@@ -57,5 +57,10 @@ void Smoothing::smootheMesh_explicitEuler( mesh& m )
 	for(unsigned int i = 0; i < vertices.size(); i++){
 		vertices[i] *= factor;
 	}
+}
+
+void Smoothing::setdt( float val )
+{
+	this->dt = val;
 }
 
