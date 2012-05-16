@@ -374,12 +374,14 @@ pardisoMatrix DDGMatrices::d1( meshMetaInfo & aMesh )
 	return d_1;
 }
 
+// this is d1 transformed
 pardisoMatrix DDGMatrices::dual_d0( meshMetaInfo & aMesh )
 {
 	pardisoMatrix d1_=d1(aMesh);
 	return (id1(aMesh) % d1_);
 }
 
+// this is d0 transformed
 pardisoMatrix DDGMatrices::dual_d1( meshMetaInfo & aMesh )
 {
 	pardisoMatrix d_0= d0(aMesh);

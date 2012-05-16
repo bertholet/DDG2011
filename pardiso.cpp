@@ -100,6 +100,7 @@ void pardisoSolver::setMatrix( pardisoMatrix & mat, int nr_righthandsides )
 			int_params, &print_stats, NULL, NULL, &error, double_params);
 	}
 	if(error != 0){
+		checkMatrix(this->matrix_type, mat);
 		throw std::runtime_error("Exception in pardiso solve-");
 	}
 

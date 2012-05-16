@@ -2,22 +2,37 @@
 #include "Model.h"
 #include "vectorFieldTools.h"
 #include <algorithm>
-//#define PRINTMAT
-#ifdef PRINTMAT
-#include "DDGMatrices.h"
-#endif
+
+#define PRINTMAT
 
 VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
 									 myStatusBar * statusBar)
 {
-	l = new oneFormLaplacian(&f2he,&edges,aMesh);
+
+	meshMetaInfo * msh = Model::getModel()->getMeshInfo();
 	mat = new pardisoMatrix();
-	mat->initMatrix(*l, edges.size(), statusBar);
+		
+	*mat =	DDGMatrices::dual_d0(*msh) * DDGMatrices::star2(*msh) * DDGMatrices::d1(*msh);
+	pardisoMatrix star0Inv = DDGMatrices::star0(*msh);
+	pardisoMatrix star1 = DDGMatrices::star1(*msh);
+	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*msh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
+	duald1_border = duald1_border  + DDGMatrices::dual_d1_borderdiff(*msh);
+
+	star0Inv.elementWiseInv(0);
+	*mat = *mat + (star1*pardisoMatrix::transpose(duald1_border) *star0Inv * (duald1_border) * star1);
+
+
+	//the following two lines DO work...
+	l = new oneFormLaplacian(&f2he,&edges,aMesh);
+	//mat = new pardisoMatrix();
+	//mat->initMatrix(*l, edges.size(), statusBar);
+
 	solver = new pardisoSolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE, 3);
 
 #ifdef PRINTMAT
 /////////////////////////// ID IE IB IU IG ///////////////////////////////
+/*
 	meshMetaInfo & m = * Model::getModel()->getMeshInfo();
 	pardisoMatrix d0 =  DDGMatrices::d0(m);
 	pardisoMatrix d1 =  DDGMatrices::d1(m);
@@ -37,7 +52,7 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	star0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_star0.m");
 	star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_star1.m");
 	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_star2.m");
-	mat2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_ddglap.m");
+	mat2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_ddglap.m");*/
 
 	mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_before.m");
 

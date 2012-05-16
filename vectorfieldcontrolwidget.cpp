@@ -2,6 +2,7 @@
 #include <Qt>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QFileDialog>
 #include <iostream>
 #include "Model.h"
 #include "mesh.h"
@@ -13,6 +14,7 @@
 
 #include <math.h>
 #include "mystatusbar.h"
+#include "ObjFileWriter.h"
 
 vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	: QWidget(parent)
@@ -28,6 +30,10 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 
 	QPushButton *butt2 = new QPushButton("Solve VField!");
 	connect(butt2, SIGNAL(released()), this, SLOT(solveVField()));
+
+	QPushButton *butt3 =new QPushButton("Store VField!");
+	connect(butt3, SIGNAL(released()), this, SLOT(storeField()));
+
 
 	QRadioButton * rbutt = new QRadioButton("Select Sources", this);
 	connect(rbutt, SIGNAL(toggled(bool)), this, SLOT(sourceSelection(bool)));
@@ -64,6 +70,9 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 
 	cBoxDirectional = new QCheckBox("Directional Constraint", this);
 
+	QCheckBox * cBoxBorderMatrix = new QCheckBox("Border Matrix", this);
+	connect(cBoxBorderMatrix, SIGNAL(stateChanged(int)), this, SLOT(useBorderMatrix(int)));
+
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
 	layout->addWidget(rbutt);
@@ -77,7 +86,9 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	layout->addWidget(gfLengthSlider);
 	layout->addWidget(butt);
 	layout->addWidget(butt2);
+	layout->addWidget(butt3);
 	layout->addWidget(cBoxDirectional);
+	layout->addWidget(cBoxBorderMatrix);
 
 	this->setLayout(layout);
 
@@ -228,4 +239,25 @@ void vectorFieldControlWidget::initSolver()
 	this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
 		*Model::getModel()->getMeshInfo()->getHalfedges(), 
 		*Model::getModel()->getMeshInfo()->getFace2Halfedges(), &bar);
+}
+
+void vectorFieldControlWidget::storeField()
+{
+
+	QString fileName = QFileDialog::getSaveFileName(this,
+		tr("Select Obj. File"), "/home/", tr("Obj Files (*.obj)"));
+
+	if(!fileName.endsWith("obj")){
+		QMessageBox msgBox;
+		msgBox.setText("Not an Obj file");
+		return;
+	}
+
+	ObjFileWriter writer;
+	writer.writeObjFile(fileName.toAscii(),*(Model::getModel()->getMesh()),*(Model::getModel()->getVField()));
+}
+
+void vectorFieldControlWidget::useBorderMatrix( int val )
+{
+	cout << "Aha.";
 }
