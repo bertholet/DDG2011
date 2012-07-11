@@ -27,6 +27,14 @@ public:
 		vector<int>&/*fc_i*/, 
 		vector<int>& /*border*/));
 
+	void calcTexturePos_multiBorder( mesh &m, 
+		double (*weights ) (int, int,
+		mesh &,
+		vector<int>& /*nbr_i*/,
+		vector<int>&/*fc_i*/,
+		vector<int>& /*border*/),
+		void (* borderFunc)( vector<tuple3f> & /*outerPos*/ , vector<int> & /*border*/, mesh &));
+
 	void calcTexturePos_multiBorder(mesh &m, 
 		vector<vector<tuple3f>> & pos,
 		vector<vector<int>> & border,

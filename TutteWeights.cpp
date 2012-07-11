@@ -258,7 +258,7 @@ void TutteWeights::circleBorder( vector<tuple3f> & outerPos , vector<int> & bord
 {
 	int sz = border.size();
 	for(int i = 0; i < sz;i++){
-		outerPos.push_back(tuple3f((sin(i*2* PI/sz)+1.f)/2.f,(cos(i*2* PI/sz)+1.f)/2.f,0.f));
+		outerPos.push_back(tuple3f((sin(-i*2* PI/sz)+1.f)/2.f,(cos(-i*2* PI/sz)+1.f)/2.f,0.f));
 	}
 
 }
@@ -269,7 +269,7 @@ void TutteWeights::distWeightCircBorder( vector<tuple3f> & outerPos , vector<int
 	float length = meshOperation::getLength(border, m);
 	float ln = 0;
 	for(int i = 0; i < sz;i++){
-		outerPos.push_back(tuple3f((sin(ln/length * 2* PI)+1.f)/2.f,(cos(ln/length * 2* PI)+1.f)/2.f,0.f));
+		outerPos.push_back(tuple3f((sin(-ln/length * 2* PI)+1.f)/2.f,(cos(-ln/length * 2* PI)+1.f)/2.f,0.f));
 		if(i < sz-1){
 			ln += (m.vertices[border[i+1]] - m.vertices[border[i]]).norm();
 		}

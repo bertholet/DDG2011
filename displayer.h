@@ -8,8 +8,9 @@
 #include "mouseStrokeListener.h"
 #include "Observer.h"
 #include "Model.h"
+#include "squareTexture.h"
 
-enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE};
+enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE, TEXMODE, TEXMODE2};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE, COLORMAPSCROLL};
 
 class Displayer : public QGLWidget,public Observer<Model::modelMsg>
@@ -50,6 +51,9 @@ private:
 	trackBallListener * tBallListener;
 	mouseStrokeListener * strokeListener;
 	bool displayVectors;
+	squareTexture * tex;
+
+	GLuint tex_id;
 	//for the trackball
 //	float lastx, lasty, lastz;
 };

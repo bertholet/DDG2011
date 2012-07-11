@@ -7,6 +7,7 @@
 #include "generatemeshgui.h"
 #include "vectorfieldcontrolwidget.h"
 #include "smoothingWidget.h"
+#include "meshParamWidget.h"
 
 
 #define SLIDER_STEPSPERUNIT 20
@@ -60,6 +61,8 @@ void MainWindow::setupButtons()
 	comboBox->addItem("Selections");
 	comboBox->addItem("Border Selection");
 	comboBox->addItem("FluidSimulation");
+	comboBox->addItem("Texture");
+	comboBox->addItem("TextureMap");
 
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Display Normed Field",this);
@@ -86,12 +89,18 @@ void MainWindow::setupQTabs()
 	this->tabs = new QTabWidget(this);
 	QWidget * tab1Widget = new smoothingWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
+
+	QWidget * paramWidget = new meshParamWidget();
+	tabs->addTab(paramWidget, "Mesh Parametrization");
+
 	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
 	tab2Widget->setMainWindow(this);
 	tabs->addTab(tab2Widget, "Vector Fields");
 
 	fluidcontWidget = new fluidControlWidget();
 	tabs->addTab(fluidcontWidget, "Fluid Simulation");
+
+
 }
 
 /************************************************************************/
@@ -222,6 +231,12 @@ void MainWindow::setDisplayMode( int mode )
 	}
 	else if(mode == 6){
 		this->myGLDisp->setMode(FLUIDSIMMODE);
+	}
+	else if(mode == 7){
+		this->myGLDisp->setMode(TEXMODE);
+	}
+	else if(mode == 8){
+		this->myGLDisp->setMode(TEXMODE2);
 	}
 
 	if(mode == 5){

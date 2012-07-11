@@ -90,6 +90,8 @@ public:
 	void glDisplay(void);
 	void glDisplay(colorMap & cMap);
 	void glTexDisplay(void);
+	void glTexMapDisplay(vector<vector<int>> & border);
+
 	void addUniformNoise(float sigma);
 	tuple3f intensities( unsigned int faceNr, tuple3f &direction );
 	tuple3f intensitiesFlat( unsigned int faceNr, tuple3f &direction );

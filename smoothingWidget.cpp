@@ -90,6 +90,10 @@ void smoothingWidget::startImplicitSmoothing()
 void smoothingWidget::doImplicitSmoothing()
 {
 	assert(implicitSmoother != NULL);
+	//hack
+delete implicitSmoother;
+implicitSmoother = new ImplicitEulerSmoothing(*(Model::getModel()->getMesh()),1,timeStep);
+	//kcah
 	implicitSmoother->smootheMesh(*(Model::getModel()->getMesh()));
 		Model::getModel()->updateObserver(Model::DISPLAY_CHANGED);
 }

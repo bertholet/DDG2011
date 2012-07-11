@@ -118,7 +118,8 @@ void TutteEmbedding::calcTexturePos_multiBorder( mesh &m,
 					mesh &,
 					vector<int>& /*nbr_i*/,
 					vector<int>&/*fc_i*/,
-					vector<int>& /*border*/) )
+					vector<int>& /*border*/),
+			void (* borderFunc)( vector<tuple3f> & /*outerPos*/ , vector<int> & /*border*/, mesh &))
 {
 
 	vector<vector<int>> border;
@@ -133,7 +134,8 @@ void TutteEmbedding::calcTexturePos_multiBorder( mesh &m,
 
 	meshOperation::getBorder(m, border);
 	int outBorder = outerBorder(border,m);
-	TutteWeights::angleApproxBorder(outerPos,border[outBorder],m);
+	//TutteWeights::angleApproxBorder(outerPos,border[outBorder],m);
+	borderFunc(outerPos,border[outBorder],m);
 
 	TutteWeights::angles_lambdas(angles,lambdas,border,outBorder,m);
 	setUp_multiBorder(mat,border,outerPos,outBorder,angles, lambdas, m,weights);
@@ -151,6 +153,49 @@ void TutteEmbedding::calcTexturePos_multiBorder( mesh &m,
 
 	m.setTextures_perVertex(xy);
 	delete[] xy;
+}
+
+void TutteEmbedding::calcTexturePos_multiBorder( mesh &m, 
+												double (*weights ) (int, int,
+												mesh &,
+												vector<int>& /*nbr_i*/,
+												vector<int>&/*fc_i*/,
+												vector<int>& /*border*/) 
+												)
+{
+
+	calcTexturePos_multiBorder(m,weights, TutteWeights::angleApproxBorder);
+
+	/*vector<vector<int>> border;
+	vector<tuple3f> outerPos;
+	vector<vector<float>> angles, lambdas;
+	vector<double> b;
+	pardisoMatrix mat;
+	double * xy = new double[2*m.getVertices().size()];
+	for(int i = 0; i < 2*m.getVertices().size();i++){
+		xy[i] = 0.0;
+	}
+
+	meshOperation::getBorder(m, border);
+	int outBorder = outerBorder(border,m);
+	TutteWeights::angleApproxBorder(outerPos,border[outBorder],m);
+
+	TutteWeights::angles_lambdas(angles,lambdas,border,outBorder,m);
+	setUp_multiBorder(mat,border,outerPos,outBorder,angles, lambdas, m,weights);
+
+	//	mat.saveMatrix("C:/Users/bertholet/Dropbox/matrix_multiBorder.m");
+
+	pardisoSolver s(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_ITERATIVE,2);
+
+	s.checkMatrix(pardisoSolver::MT_ANY,mat);
+	s.setMatrix(mat,1);
+	setUpXY_reflex(b, border[outBorder],outerPos, angles[outBorder], m.getVertices().size());
+
+	s.setPrintStatistics(true);
+	s.solve(xy,&(b[0]));
+
+	m.setTextures_perVertex(xy);
+	delete[] xy;*/
 }
 
 /************************************************************************/
