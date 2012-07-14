@@ -49,6 +49,7 @@ squareTexture::squareTexture(void)
 					}
 				}
 			}
+			checkboard[i*szy*4 + j*4+3] = 1.f;
 		}
 	}
 }

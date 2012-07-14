@@ -244,6 +244,7 @@ void meshOperation::getNbrFaces( tuple2i & edge, int * fc1, int * fc2,
 	vector<int> & fc_a = vertex2Face[edge.a];
 	vector<int> & fc_b = vertex2Face[edge.b];
 
+	//look for neighbor faces that are neighbors to both vertices of edge.
 	vector<int>::iterator it;
 	(*fc1) = -1;
 	(*fc2) = -1;
@@ -347,6 +348,61 @@ int meshOperation::getNegFace( tuple2i anEdge, mesh & m )
 		assert(orientation == 1);
 		assert(fc2 == -1 || m.getFaces()[fc2].orientation(anEdge)==-1);
 		return fc2;
+	}
+}
+
+bool meshOperation::consistentlyOriented( mesh & m )
+{
+	std::vector<tuple3i> & faces  = m.getFaces();
+	std::vector<std::vector<int>> & v2f = m.getNeighborFaces();
+	tuple3i fc_a,fc_b;
+
+	int nrVerts = v2f.size();
+
+	bool consistent = true;
+	for(int i = 0; i < nrVerts; i++){
+		std::vector<int> & fcs = v2f[i];
+		for(int j = 0; j < fcs.size() - 1; j++){
+			fc_a = faces[fcs[j]];
+			fc_b = faces[fcs[j+1]];
+			if((fc_a.a == fc_b.b && fc_a.b == fc_b.a)||
+				(fc_a.a == fc_b.c && fc_a.b == fc_b.b)||
+				(fc_a.a == fc_b.a && fc_a.b == fc_b.c)||
+				(fc_a.b == fc_b.b && fc_a.c == fc_b.a)||
+				(fc_a.b == fc_b.c && fc_a.c == fc_b.b)||
+				(fc_a.b == fc_b.a && fc_a.c == fc_b.c)||
+				(fc_a.c == fc_b.b && fc_a.a == fc_b.a)||
+				(fc_a.c == fc_b.c && fc_a.a == fc_b.b)||
+				(fc_a.c == fc_b.a && fc_a.a == fc_b.c)){
+					continue;
+			}
+			consistent = false;
+			break;
+
+		}
+		if(!consistent){
+			break;
+		}
+	}
+	return consistent;
+}
+
+void meshOperation::getBorderEdges( vector<int> & brdr, vector<int> & target, meshMetaInfo & mesh , vector<double> * orientations)
+{
+	target.clear();
+	target.reserve(mesh.getHalfedges()->size());
+	tuple2i edge;
+	int sz = brdr.size(),edgeId;
+	for(int j = 0; j < brdr.size();j++){
+		edgeId =mesh.getHalfedgeId(brdr[j%sz], brdr[(j+1)%sz],&edge);
+		target.push_back(edgeId);
+		if(orientations!= NULL){
+			//the second edge should be a '+1' for positive orientation
+			// i.e. this is just the orientation of the edge edge relative
+			// to the orientation of the border, given by
+			// (brdr[j],brdr[j+1]
+			orientations->push_back(edge.orientation( brdr[(j+1)%sz]));
+		}
 	}
 }
 

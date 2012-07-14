@@ -3,6 +3,8 @@
 #include "tuple3.h"
 #include <vector>
 #include <algorithm>
+#include "meshMetaInfo.h"
+#include <iostream>
 
 
 class meshOperation
@@ -12,6 +14,9 @@ public:
 	~meshOperation(void);
 
 	static void getHalf(mesh & m, mesh & target, tuple3f direction, float dist);
+
+	static bool consistentlyOriented(mesh & m);
+
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Detects dangling border positions, i.e. vertices that have more than 2 
@@ -273,6 +278,7 @@ public:
 
 	}
 
+	static void getBorderEdges(vector<int> & borderComponent, vector<int> & target, meshMetaInfo & mesh,vector<double> * orientations = NULL);
 	//////////////////////////////////////////////////////////////////////////
 	//Returns the neighbors by vertex nr, ordered in ascending order, each time.
 	//Stores them in "neighbors", a preallocated and preinitialized vector of sz
@@ -327,7 +333,6 @@ public:
 	// if a vertex is on a border the first and the last face will be well
 	// defined and be the border faces. Else no guaranty on what the
 	// first face will be is given.
-
 	//////////////////////////////////////////////////////////////////////////
 	static void sortV2F(vector<vector<int>> & neighbor_faces, mesh & m){
 
@@ -358,10 +363,19 @@ public:
 			nr_nbr_fcs = nbrFcs.size();
 			//traverse one Ring.
 			for(int j = 0, actual = first; j <nr_nbr_fcs; j++, actual = getNext(i,actual, m)){
+				if(actual == -1){
+					std::cout<< "Dangling Triangle detected!! \n";
+					break;
+				}
 				anEdge.set(i,actual);
 				nextFace = getPosFace(anEdge,neighbor_faces,m);
-				assert(nextFace != -1);
-				switchElTo(nextFace,j, nbrFcs);
+				//assert(nextFace != -1);
+				if(nextFace != -1){
+					switchElTo(nextFace,j, nbrFcs);
+				}else{
+					std::cout<< "Dangling Triangle detected!! \n";
+					break;
+				}
 			}
 
 		}
@@ -473,6 +487,49 @@ public:
 	static int getPosFace( tuple2i anEdge, mesh & m);
 	static int getNegFace( tuple2i anEdge, mesh & m);
 
+	//////////////////////////////////////////////////////////////////////////
+	//if all edges are part of two closed triangle paths involving vertex_nr
+	//this is not a border vertex
+	//////////////////////////////////////////////////////////////////////////
+	static bool isOnBorder(int vertex_nr, mesh &m){
+
+		vector<vector<int>> & neighbors = m.getNeighbors();
+		vector<vector<int>> & neighbor_faces = m.getNeighborFaces();
+		//is not on border exactly if it is in two faces
+		//or h
+		bool isBorder =false;
+		vector<int> & oneRing = neighbors[vertex_nr];
+
+		if(oneRing.size() == 2){
+			return true;
+		}
+
+		vector<int>::iterator nbr, nbr_fc_idx,nbr2,nbr3, end, end3;
+		tuple3i nbr_fc = (m.faces[0]);
+		int count = 0;
+
+		for(nbr = oneRing.begin(); nbr != oneRing.end(); nbr++){
+			nbr_fc_idx = neighbor_faces[vertex_nr].begin();
+			end = neighbor_faces[vertex_nr].end();
+			count = 0; // counts nr of faces shared
+			for(;nbr_fc_idx!= end; nbr_fc_idx++){
+				nbr_fc = m.faces[*nbr_fc_idx];
+				if(nbr_fc.a == *nbr || nbr_fc.b == *nbr || nbr_fc.c == *nbr ){
+					count ++;
+				}
+			}
+			if(count == 1){
+				return true;
+			}
+			if(count >2){
+				printf("meshOperation::isOnBorder: detected edge contained in %d faces!", count);
+			}
+
+		}
+
+		return false;
+	}
+
 private:
 	static void ifNotContainedInsert( vector<int> &v, int a )
 	{
@@ -538,48 +595,7 @@ private:
 
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	//if all edges are part of two closed triangle paths involving vertex_nr
-	//this is not a border vertex
-	//////////////////////////////////////////////////////////////////////////
-	static bool isOnBorder(int vertex_nr, mesh &m){
 
-		vector<vector<int>> & neighbors = m.getNeighbors();
-		vector<vector<int>> & neighbor_faces = m.getNeighborFaces();
-		//is not on border exactly if it is in two faces
-		//or h
-		bool isBorder =false;
-		vector<int> & oneRing = neighbors[vertex_nr];
-
-		if(oneRing.size() == 2){
-			return true;
-		}
-
-		vector<int>::iterator nbr, nbr_fc_idx,nbr2,nbr3, end, end3;
-		tuple3i nbr_fc = (m.faces[0]);
-		int count = 0;
-
-		for(nbr = oneRing.begin(); nbr != oneRing.end(); nbr++){
-			nbr_fc_idx = neighbor_faces[vertex_nr].begin();
-			end = neighbor_faces[vertex_nr].end();
-			count = 0; // counts nr of faces shared
-			for(;nbr_fc_idx!= end; nbr_fc_idx++){
-				nbr_fc = m.faces[*nbr_fc_idx];
-				if(nbr_fc.a == *nbr || nbr_fc.b == *nbr || nbr_fc.c == *nbr ){
-					count ++;
-				}
-			}
-			if(count == 1){
-				return true;
-			}
-			if(count >2){
-				printf("meshOperation::isOnBorder: detected edge contained in %d faces!", count);
-			}
-
-		}
-
-		return false;
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 	//counts nr of occurences of (a,b) as positively oriented edge

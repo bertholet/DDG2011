@@ -13,6 +13,8 @@ Displayer::Displayer(QWidget *parent)
 	mode = EDGEMODE;
 	mouseMode = TRACKBALLMODE;
 
+	this->tex = new squareTexture();
+
 	this->map = NULL;
 	this->tmmap = new triangleMarkupMap();
 	this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -35,6 +37,7 @@ Displayer::~Displayer()
 	delete tBallListener;
 	delete strokeListener;
 	delete tmmap;
+	delete tex;
 }
 
 void Displayer::initializeGL()
@@ -50,9 +53,16 @@ void Displayer::initializeGL()
 
 	glEnable(GL_POINT_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
+	//antialias
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_POLYGON_SMOOTH);
+//	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+
+	//bg color
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 
 	//////////////////////////////////////////////////////////////////////////
 	// textures for fluid sim
@@ -71,8 +81,8 @@ void Displayer::initializeGL()
 
 	//	{ 0.f, 0.f, 0.f },
 		{ 0.1f, 0.1f, 0.1f },
-		{ 0.9f,0.9f,0.9f }, // Blue
-		{ 0.9f, 0.9f, 0.9f }, // Green
+		{ 0.8f,0.8f,0.8f }, // Blue
+		{ 0.8f, 0.8f, 0.8f }, // Green
 		{ 0.1f, 0.1f, 0.1f },
 	/*	{ 0.f, 0.f, 0.f },
 		{ 0.f, 0.f, 0.f },
@@ -86,6 +96,20 @@ void Displayer::initializeGL()
 
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 4 ,0,GL_RGB, GL_FLOAT, 
 		Texture4);
+
+	//Load 2dTexture 
+	//GLuint tex_id;
+	glTexEnvf(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glGenTextures(1, &tex_id);
+	glBindTexture(GL_TEXTURE_2D, tex_id);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->szx,tex->szy,0,GL_RGBA, GL_FLOAT, 
+		&(tex->checkboard[0]));
+	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+
 	//glEnable(GL_TEXTURE_1D);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -123,6 +147,20 @@ void Displayer::paintGL()
 			}
 			glFlush();
 			return;
+		}
+		else if(mode == TEXMODE && theMesh->getTexCoords().size()>0 ){
+			glEnable(GL_TEXTURE_2D);
+			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
+			theMesh->glTexDisplay();
+			glDisable(GL_TEXTURE_2D);
+		}
+		else if(mode == TEXMODE2 && theMesh->getTexCoords().size()>0 ){
+			glEnable(GL_TEXTURE_2D);
+			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
+			theMesh->glTexMapDisplay(Model::getModel()->getMeshInfo()->getBorder());
+			glDisable(GL_TEXTURE_2D);
 		}
 		else{
 			theMesh->glDisplay();

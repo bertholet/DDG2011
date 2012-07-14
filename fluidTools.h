@@ -36,7 +36,7 @@ public:
 	//convert vectors perface to fluxes per edge
 	//////////////////////////////////////////////////////////////////////////
 	static void dirs2Flux( std::vector<tuple3f> & dirs, oneForm & target, 
-		meshMetaInfo & mesh , vector<tuple3f> & dualVert);
+		meshMetaInfo & mesh /*, vector<tuple3f> & dualVert*/);
 
 	//////////////////////////////////////////////////////////////////////////
 	// generalized baricentric coordinates for convex polytopes. Will be store

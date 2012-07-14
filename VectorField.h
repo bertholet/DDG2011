@@ -31,6 +31,8 @@ public:
 	void setOneForm(int halfedge, int orientation, float val);
 //	void setDisplayLength( double param1 );
 
+	tuple3f oneForm2Vec(int faceNr, float bara, float barb, float barc);
+
 private:
 	//oneForm[i] is the value on the edge i
 	vector<float> oneForm;
@@ -47,7 +49,7 @@ private:
 	//Here the negative of the stored value is returned
 	float getOneForm(int halfedge, int orientation);
 
-	tuple3f oneForm2Vec(int faceNr, float bara, float barb, float barc);
+
 /*	int abs(int a){
 		return (a >=0?a:-a);
 	}

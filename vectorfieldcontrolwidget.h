@@ -38,7 +38,8 @@ private slots:
 	void fieldSelection( bool active );
 
 	virtual void update( void * src, Model::modelMsg msg );
-
+	void storeField();
+	void useBorderMatrix(int val);
 };
 
 #endif // VECTORFIELDCONTROLWIDGET_H

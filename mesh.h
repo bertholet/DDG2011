@@ -76,11 +76,12 @@ public:
 
 	vector<tuple3f>& getVertices(void){return vertices;}
 	vector<tuple3i>& getFaces(){return faces;}
+	vector<tuple3f> & getFaceNormals();
 	// nbrs[i] is a vector with the indices of the neighbors
 	//the vertices neighboring vertex i.
 	vector<vector<int>> & getNeighbors() { return nbrs;}
 	// nbrs[i] is a vector with the indices of the neighbors
-	//the faces neighboring vertex i.
+	//the faces neighboring vertex i. Sorted by orientation
 	vector<vector<int>> & getNeighborFaces(){return nbr_fcs;}
 	vector<tuple3f> & getTexCoords(){return tex;}
 	
@@ -89,6 +90,8 @@ public:
 	void glDisplay(void);
 	void glDisplay(colorMap & cMap);
 	void glTexDisplay(void);
+	void glTexMapDisplay(vector<vector<int>> & border);
+
 	void addUniformNoise(float sigma);
 	tuple3f intensities( unsigned int faceNr, tuple3f &direction );
 	tuple3f intensitiesFlat( unsigned int faceNr, tuple3f &direction );

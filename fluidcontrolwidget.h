@@ -8,6 +8,7 @@
 #include "fluidSimulation.h"
 #include <QSlider>
 #include <QLabel>
+#include <QCheckBox>
 #include <qtimer.h>
 #include <QLineEdit>
 #include "curvVisualizingMesh.h"
@@ -26,7 +27,7 @@ public:
 	float getViscosity();
 	float getForceStrength();
 	float getTimestep();
-	void updateViscTimeLabel();
+	//void updateViscTimeLabel();
 	void updateAnimationLabel(float time, float fps);
 
 public slots:
@@ -40,11 +41,19 @@ public slots:
 
 	void updateViscosity();
 	void forceAgeChanged();
+
+	void showStreamLn(int state);
+	void showVorticity( int );
+	void streamLineLengthChanged( int );
+	void doInterpl(int state);
 	void startSim();
 	void doAnimation();
 	void forceStrengthChanged();
 	void borderDirInput( const QString & text );
 	void debugSome();
+	void debugSome2();
+	void showTexLines( int what );
+	void colorScaleChanged( int state );
 private:
 	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;
@@ -54,7 +63,8 @@ private:
 	QSlider * forceStrengthSlider;
 	float stepSize;
 	QTimer * animationTimer;
-	QLabel * viscosityAndTimestep;
+	QLabel * viscosityLabel;
+	QLabel * stepSliderLabel;
 	QLabel * animationLabel;
 	QLabel * forceAgeLabel;
 	QLabel * forceStrengthLabel;
@@ -68,9 +78,11 @@ private:
 	//border constraints.
 	int selectedBorder;
 	std::vector<tuple3f> borderConstrDirs;
+
+	std::vector<tuple3f> debugVectors;
 	//tuple3f borderConstrDir;
 
-	void initToConstFlux( oneForm & constFlux, tuple3f & borderConstrDirs );
+	//void initToConstFlux( oneForm & constFlux, tuple3f & borderConstrDirs );
 };
 
 #endif // FLUIDCONTROLWIDGET_H

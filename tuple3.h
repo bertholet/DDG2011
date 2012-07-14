@@ -58,7 +58,12 @@ public:
 
 	static float cot(tuple3f &a, tuple3f &b){
 		float t = crossNorm(a,b);
-		return a.dot(b)/(t>0.0001f? t: 0.0001f);
+		float temp = a.dot(b) /crossNorm(a,b);
+		if(temp < -10E15 || temp > 10E15 || temp*0!=0){
+			std::cout << "***warning*** : numerical stability in tuple3f::cot val = "<<temp <<"\n";
+		}
+		return temp;
+		//return a.dot(b)/(t>0.0001f? t: 0.0001f);
 	}
 
 		//cot at b of the triangle a, b,c
@@ -218,6 +223,11 @@ public:
 	bool contains(tuple2i & tuple){
 		return 	(tuple.a == a || tuple.a == b || tuple.a == c)&&
 			(tuple.b == a || tuple.b == b || tuple.b == c);
+	}
+
+	bool contains(int what)
+	{
+		return 	(a == what || what == b || what == c);
 	}
 
 	int orientation(tuple2i & edge){

@@ -10,7 +10,10 @@ public:
 	Smoothing(void);
 	~Smoothing(void);
 
+	void setdt(float dt);
 	void initNeighbors(mesh& m);
 	int contains(vector<int> , int face);
 	void smootheMesh_explicitEuler(mesh& m);
+private:
+	float dt,lambda;
 };

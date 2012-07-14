@@ -8,38 +8,23 @@
 
 #include "matrixf.h"
 
+#include "TutteDemo.h"
+#include "TutteWeights.h"
+
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 	MainWindow window;
 
 
-	/*mesh * bunny= new mesh("C:/Users/bertholet/Dropbox/workspace/RA/objfiles/bunny5k.obj", tuple3f(1.f,0.f,0.f), 2);
+/*	mesh * bunny= new mesh("C:/Users/bertholet/Dropbox/workspace/RA/objfiles/bunny5k.obj", tuple3f(1.f,0.f,0.f), 2);
 	bunny->normalize();//
 	
 	TutteDemo demo;
 	demo.run_multiBorder(*bunny, TutteWeights::cotan_weights_divAvor);
 
 	delete bunny;
-	return 0;*/
-
-/*	int ia[] = {1,2,3,4,5,6};
-	int ja[] = {1,2,3,4,5};
-	double a[] = {2,3,1,4,1};
-	pardisoMatrix A(ia,ja,a,6,5);
-	std::vector<double> vec1, vec2;
-	for(int i = 0; i < 5; i++){
-		vec1.push_back(a[i]);
-		vec2.push_back(0);
-	}
-	A.mult(vec1,vec2);
-	int ia2[] = {1,3,4,5,7,8,9};
-	int ja2[] = {1,2,2,3,3,4,5,2};
-	double a2[] = {3,1,1,4,3,2,1,2};
-	pardisoMatrix A2(ia2,ja2,a2,7,8);
-	vec2.push_back(0);
-	A2.mult(vec1,vec2);
-	//pardisoMatrix C = A%A2;*/
+	return 0;//*/
 
 
 	return app.exec();

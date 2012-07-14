@@ -23,6 +23,10 @@ private:
 
 	int n, m;
 
+	bool reuseFactorization;
+	bool factorizationHandleValid;
+	int factorizationHandle;
+
 public:
 	pardisoMatrix(void);
 	//////////////////////////////////////////////////////////////////////////
@@ -103,6 +107,8 @@ public:
 	void saveMatrix(std::string file);
 	void saveVector(std::vector<double> & vctor, std::string  name, 
 		std::string  file );
+	void saveVector(std::vector<int> & vctor, std::string  name, 
+		std::string  file );
 
 	//////////////////////////////////////////////////////////////////////////
 	// Stores the indices i in target, such that a[i] is a value on the diagonal
@@ -121,6 +127,8 @@ public:
 	// set line line to 0.... 1 ... 0 where line is the line in 0 based notation
 	//////////////////////////////////////////////////////////////////////////
 	void setLineToID( int line );
+
+	void setLineToZero( int line );
 
 	//////////////////////////////////////////////////////////////////////////
 	// This method will replace all values in this Matrix by 1/val, if the
@@ -144,6 +152,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void operator *=(float  other);
 
+	// multiply matrix with scalar value
+	//////////////////////////////////////////////////////////////////////////
+	pardisoMatrix operator *(float  other);
+
 	//////////////////////////////////////////////////////////////////////////
 	// Matrix multiplication with transposed matrix. Returned by value, so
 	// mediocrely efficient. Use for onetime construction of reused matrix
@@ -165,7 +177,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// multiplication with vector
 	//////////////////////////////////////////////////////////////////////////
-	void mult(std::vector<double> & x, std::vector<double> & target);
+	void mult(std::vector<double> & x, std::vector<double> & target, bool adaptTargetSize = false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Adds a row at the end of the matrix. js are the column indices of the
@@ -173,4 +185,6 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void addLine(std::vector<int> & js, std::vector<double> & vals);
 	static pardisoMatrix  transpose(pardisoMatrix & mat);
+	void forceNrColumns( int nrColumns );
+	void getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals );
 };

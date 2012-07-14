@@ -6,6 +6,7 @@
 #include "fluidTools.h"
 #include "oneForm.h"
 #include <QLabel>
+#include <QSpinBox>
 #include <string>
 #include <sstream>
 #include <math.h>
@@ -15,6 +16,8 @@
 #include "pardisoMatrix.h"
 #include "DDGMatrices.h"
 #include "pardiso.h"
+
+#include "matlabOutput.h"
 /*#include "mesh.h"
 #include "Operator.h"*/
 
@@ -41,19 +44,23 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	connect(butt_startSim , SIGNAL(released()), this, SLOT(startSim()));
 
 
-	QPushButton * debug = new QPushButton("Debug!");
+	QPushButton * debug = new QPushButton("Debug (harmonic flow)!");
 	connect(debug , SIGNAL(released()), this, SLOT(debugSome()));
 
-	QLabel * stepSliderLabel = new QLabel("Timestep Size [0,2]");
-	QLabel * viscosityLabel = new QLabel("Viscosity [0,10]");
+	QPushButton * debug2 = new QPushButton("Debug (pathtracing/vorts)!");
+	connect(debug2 , SIGNAL(released()), this, SLOT(debugSome2()));
+
+	stepSliderLabel = new QLabel("Timestep Size ()");
+	viscosityLabel = new QLabel("Viscosity [0,10]");
 	forceAgeLabel = new QLabel("ForceAge (nr Iteratons): ");
 	forceStrengthLabel = new QLabel("Force Strength (): ");
+
 
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
 	stepSlider->setMaximum(1000);
 	stepSlider->setTickPosition(QSlider::TicksAbove);
-	stepSlider->setValue(10);
+	stepSlider->setValue(0);
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(updateTimeStep()));
 
 
@@ -82,14 +89,53 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	forceStrengthChanged();
 
 
-	viscosityAndTimestep = new QLabel("");
-	updateViscTimeLabel();
+//	viscosityAndTimestep = new QLabel("");
+//	updateViscTimeLabel();
 	animationLabel = new QLabel("");
 
 	vectorInput = new QLineEdit();
 	vectorInput->setText("");
 	//vectorInput->setInputMask("#09.00 #09.00 #09.00");
 	connect(vectorInput,SIGNAL(textChanged( const QString& )), this, SLOT(borderDirInput(const QString & )));
+
+	//////////////////////////////////////////////////////////////////////////
+	//display settings
+	//////////////////////////////////////////////////////////////////////////
+	QCheckBox * showStreamLines;
+	QCheckBox * doInterpolation;
+	QCheckBox * showVortNotSpeed;
+	QCheckBox * texLine;
+	showStreamLines = new QCheckBox();
+	showStreamLines->setChecked(false);
+	connect(showStreamLines, SIGNAL(stateChanged(int)), this, SLOT(showStreamLn(int)));
+
+	doInterpolation = new QCheckBox();
+	doInterpolation->setChecked(true);
+	connect(doInterpolation, SIGNAL(stateChanged(int)), this, SLOT(doInterpl(int)));
+
+	showVortNotSpeed = new QCheckBox();
+	showVortNotSpeed->setChecked(true);
+	connect(showVortNotSpeed, SIGNAL(stateChanged(int)), this, SLOT(showVorticity(int)));
+
+	texLine = new QCheckBox();
+	texLine->setChecked(true);
+	connect(texLine, SIGNAL(stateChanged(int)), this, SLOT(showTexLines(int)));
+
+	QLabel * streamLinesInterpolationLable = new QLabel("Lines/Interpol/Linelength/Vort/Tex/Color");
+	QSpinBox * lineLength = new QSpinBox(this);
+	lineLength->setMinimum(1);
+	lineLength->setMaximum(50);
+	lineLength->setSingleStep(1);
+	connect(lineLength, SIGNAL(valueChanged(int)), this, SLOT(streamLineLengthChanged(int)));
+
+	QSpinBox * colorScale = new QSpinBox(this);
+	colorScale->setMinimum(1);
+	colorScale->setMaximum(100);
+	colorScale->setSingleStep(1);
+	colorScale->setValue(50);
+	connect(colorScale, SIGNAL(valueChanged(int)), this, SLOT(colorScaleChanged(int)));
+
+
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
@@ -99,7 +145,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(butt_simStep);
 	layout->addWidget(butt_startSim);
 
-layout->addWidget(debug);
+	layout->addWidget(debug);
+	layout->addWidget(debug2);
 
 
 	layout->addWidget(stepSliderLabel);
@@ -110,8 +157,18 @@ layout->addWidget(debug);
 	layout->addWidget(forceAgeSlider);
 	layout->addWidget(forceStrengthLabel);
 	layout->addWidget(forceStrengthSlider);
-	layout->addWidget(viscosityAndTimestep);
+//	layout->addWidget(viscosityAndTimestep);
 	layout->addWidget(animationLabel);
+	layout->addWidget(streamLinesInterpolationLable);
+	
+	QHBoxLayout * hlayout = new QHBoxLayout();
+	hlayout->addWidget(showStreamLines);
+	hlayout->addWidget(doInterpolation);
+	hlayout->addWidget(lineLength);
+	hlayout->addWidget(showVortNotSpeed);
+	hlayout->addWidget(texLine);
+	hlayout->addWidget(colorScale);
+	layout->addLayout(hlayout);
 	layout->addWidget(vectorInput);
 
 	this->setLayout(layout);
@@ -152,14 +209,15 @@ void fluidControlWidget::initSimulation()
 
 float fluidControlWidget::getTimestep()
 {
-	return 2*(0.f +this->stepSlider->value())/this->stepSlider->maximum();
+	return pow(10.f,-4 + 4*(0.f +this->stepSlider->value())/this->stepSlider->maximum())-pow(10.f,-4);
 }
 
 float fluidControlWidget::getViscosity()
 {
+
 	float temp = this->viscositySlider->value()*6 - 3*this->viscositySlider->maximum();
 	temp/= this->viscositySlider->maximum();
-	temp = pow(10,temp)- 0.00001;
+	temp = pow(10,temp)- 0.001;
 	temp = temp < 0.000001?
 		0:
 		temp;
@@ -178,18 +236,18 @@ float fluidControlWidget::getForceStrength()
 }
 
 
-void fluidControlWidget::updateViscTimeLabel()
+/*void fluidControlWidget::updateViscTimeLabel()
 {
 	stringstream ss;
-	ss << "Timestep: " << getTimestep() <<", Viscosity: " << getViscosity();
+	ss << "Timestep: " << floor(getTimestep()*100000)/100000 <<", Viscosity: " << floor(getViscosity()*100000)/100000;
 	this->viscosityAndTimestep->setText(ss.str().c_str());
-}
+}*/
 
 
 void fluidControlWidget::updateAnimationLabel(float time, float fps)
 {
 	stringstream ss;
-	ss << "Time: " <<time <<", Fps: " << fps;
+	ss << "Time: " <<time <<",\n Fps: " << fps;
 	this->animationLabel->setText(ss.str().c_str());
 }
 
@@ -200,16 +258,17 @@ void fluidControlWidget::flux2vort2flux()
 	if(mySimulation == NULL){
 		initSimulation();
 	}
-	mySimulation->flux2Vorticity();
+
+	//mySimulation->flux2Vorticity();
 
 	updateViscosity();
 	updateTimeStep();
 	
-	mySimulation->addDiffusion2Vorticity();
+//	mySimulation->addDiffusion2Vorticity();
 
-
-	mySimulation->vorticity2Flux();
-	mySimulation->showFlux2Vel();
+	
+//	mySimulation->vorticity2Flux();
+//	mySimulation->showFlux2Vel();
 
 
 /*	mesh & m = * Model::getModel()->getMesh();
@@ -219,6 +278,19 @@ void fluidControlWidget::flux2vort2flux()
 	}
 	
 	cout << "Overall Area: " << temp << "\n";*/
+
+	meshMetaInfo & mesh = *Model::getModel()->getMeshInfo();
+	pardisoMatrix dtstar1 = DDGMatrices::dual_d1(mesh) * DDGMatrices::star1(mesh) + DDGMatrices::dual_d1star1_borderdiff(mesh);
+	nullForm harmonicVort(mesh);
+	oneForm & flux = mySimulation->getHarmonicFlux();
+	oneForm f2v2f(mesh);
+	fluidTools::flux2Vorticity(flux, harmonicVort, mesh, dtstar1);
+
+	mySimulation->vorticity2Flux(harmonicVort,f2v2f);
+	
+	fluidTools::flux2Velocity(f2v2f, debugVectors,mesh);
+
+	Model::getModel()->setVectors(& mySimulation->getDualVertices(),&debugVectors);
 
 }
 
@@ -256,25 +328,32 @@ void fluidControlWidget::getCollectedFlux()
 
 void fluidControlWidget::update( void * src, Model::modelMsg msg )
 {
-	if(msg == Model::NEW_MESH_CREATED && mySimulation != NULL){
-		delete mySimulation;
-		mySimulation = NULL;
+
+	if(msg== Model::NEW_MESH_CREATED ){
+		if(mySimulation != NULL){
+			delete mySimulation;
+			mySimulation = NULL;
+		}
 		dirs.clear();
 		borderConstrDirs.clear();
 		this->selectedBorder = 0;
 
+		this->selectedBorder = 0;
+		borderConstrDirs.clear();
+		for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
+			borderConstrDirs.push_back(tuple3f());
+		}
 	}
 
-	this->selectedBorder = 0;
-	borderConstrDirs.clear();
-	for(int i = 0; i < Model::getModel()->getMeshInfo()->getBorder().size(); i++){
-		borderConstrDirs.push_back(tuple3f());
-	}
+
 }
 
 void fluidControlWidget::update( void * src, borderMarkupMap * msg )
 {
 	this->selectedBorder = msg->markedBorder;
+	if(borderConstrDirs.size()==0){
+		return;
+	}
 	stringstream ss;
 
 	ss << borderConstrDirs[selectedBorder].x << " ";
@@ -304,9 +383,13 @@ void fluidControlWidget::updateTimeStep()
 		initSimulation();
 	}
 	stepSize = getTimestep();
-	updateViscTimeLabel();
+
+	stringstream ss;
+	ss << "Timestep Size (" << stepSize << ")";
+	this->stepSliderLabel->setText(ss.str().c_str());
+
 	this->mySimulation->setStepSize(stepSize);
-	this->mySimulation->pathTraceAndShow(stepSize);
+//	this->mySimulation->pathTraceAndShow(stepSize);
 }
 
 void fluidControlWidget::setForceFlux()
@@ -333,8 +416,12 @@ void fluidControlWidget::updateViscosity()
 		initSimulation();
 	}
 
-	updateViscTimeLabel();
 	float viscy = getViscosity();
+
+	stringstream ss;
+	ss << "Viscosity (" << viscy<< ")";
+	this->viscosityLabel->setText(ss.str().c_str());
+
 	mySimulation->setViscosity(viscy);
 }
 
@@ -423,155 +510,214 @@ void fluidControlWidget::borderDirInput( const QString & text )
 void fluidControlWidget::debugSome()
 {
 	meshMetaInfo * mesh = Model::getModel()->getMeshInfo();
-	pardisoMatrix star0 = DDGMatrices::star0(*mesh);
-	star0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star0.m");
+	pardisoMatrix star0inv = DDGMatrices::star0(*mesh);
+	star0inv.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star0.m");
+	star0inv.elementWiseInv(0.000);
 
 	pardisoMatrix star1 = DDGMatrices::star1(*mesh);
-	star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star1.m");
+	star1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star1.m");
 
 	pardisoMatrix star2 = DDGMatrices::star2(*mesh);
-	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/star2.m");
+	star2.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star2.m");
 
 	pardisoMatrix d0 = DDGMatrices::d0(*mesh);
-	d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d0.m");
+	d0.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/d0.m");
 
 	pardisoMatrix d1 = DDGMatrices::d1(*mesh);
-	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/d1.m");
+	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/d1.m");
 
 	pardisoMatrix delta1 = DDGMatrices::delta1(*mesh);
-	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta1.m");
+	delta1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/delta1.m");
 
-	pardisoMatrix delta2 = DDGMatrices::delta2(*mesh);
-	d1.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/delta2.m");
+	//pardisoMatrix borderDiff = DDGMatrices::dual_d1_borderdiff(*mesh);
+	//borderDiff.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/borderDiff.m");
 
-	pardisoMatrix Lflux = delta2*d1 + d0*delta1;
-	//Lflux = (DDGMatrices::id1(*mesh)%Lflux) * Lflux;
+	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*mesh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
+	duald1_border = duald1_border  + DDGMatrices::dual_d1_borderdiff(*mesh);
 
-//	Lflux.setLineToID(3);
-//	Lflux.setLineToID(5);
+	duald1_border.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/dualD1Border.m");
+	pardisoMatrix Lflux = pardisoMatrix::transpose(d1)*star2*d1 + star1*pardisoMatrix::transpose(duald1_border)*star0inv*duald1_border*star1;
 
-//	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
 	//set matrix to id on border
-	vector<vector<int>> & brdr = mesh->getBorder();
-	int sz;
-	tuple2i edge;
+	/*tuple2i edge;
 	int edgeId;
 	oneForm fluxConstraint(*mesh);
 
 	vector<double> & fluxConstr = fluxConstraint.getVals();
 	vector<tuple3f> & verts = mesh->getBasicMesh().getVertices();
-	vector<double> buff = fluxConstr;
 	vector<tuple2i> & edgs = * mesh->getHalfedges();
-	vector<int> temp_indx;
-	vector<double> temp_vals;
-
+	vector<double> buff = fluxConstr;
 	oneForm constFlux(*mesh);
 	vector<double> ddelta_constFlux = constFlux.getVals();
 
 
 
-	float weight = 1;
+	// setting flux constraints
+	vector<vector<int>> & brdr = mesh->getBorder();
+	int sz;
+	float weight = 10000;
 	for(int i = 0; i < brdr.size(); i++){
 		sz =brdr[i].size();
 		initToConstFlux(constFlux, borderConstrDirs[i]);
-		(d0*delta1).mult(constFlux.getVals(), ddelta_constFlux);
-
-		for(int j = 0; j < sz;j++){
-			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
-			assert(edgeId >=0);
-			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
-					(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
-			//Lflux.setLineToID(edgeId);
-			// i have to make sure there is no rot on the border and no divergence!!!!!!!!
-
-			temp_indx.clear();
-			temp_indx.push_back(edgeId);
-			temp_vals.clear();
-			temp_vals.push_back(weight);
-			
-			Lflux.addLine(temp_indx, temp_vals);
-			buff.push_back( weight*borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]));
-			
-			buff[edgeId] =  ddelta_constFlux[edgeId];
-
-			//Lflux.add(edgeId,edgeId,1);
-			//fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
-
-		}
-	}
-
-
-	Lflux.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/Lflux.m");
-	Lflux.saveVector(fluxConstr, "fluxConstraint", "C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxConstr.m");
-
-	pardisoMatrix temp = pardisoMatrix::transpose(Lflux);
-
-	temp.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/debugSome/LfluxTransposed.m");
-	Lflux = (temp) * Lflux;
-	temp.mult(buff, fluxConstr);
-
-	/*pardisoMatrix d0delta1 = d0*delta1;
-	d0delta1.mult(fluxConstr,buff);
-
-	//////////////////////////////////////////////////////////////////////////
-	// inefficient way to make fluxConstr = what it has to be on the border plus something
-	// on corners etc
-	fluxConstr = buff;
-	for(int i = 0; i < brdr.size(); i++){
-		sz =brdr[i].size();
+		Lflux.mult(constFlux.getVals(), ddelta_constFlux);
 		for(int j = 0; j < sz;j++){
 			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
 			assert(edgeId >=0);
 			assert((edgs[edgeId].a == brdr[i][j%sz] && edgs[edgeId].b == brdr[i][(j+1)%sz] )||
 				(edgs[edgeId].b == brdr[i][j%sz] && edgs[edgeId].a == brdr[i][(j+1)%sz]));
-			Lflux.setLineToID(edgeId);
 
-			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
+
+			Lflux.add(edgeId,edgeId,weight);
+			fluxConstr[edgeId] = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]) * weight + ddelta_constFlux[edgeId];
 
 		}
-	}*/
+	}
+
+
 
 	pardisoSolver solver(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_DIRECT,3);
 	solver.setMatrix(Lflux,1);
 	solver.setStoreResultInB(true);
-	solver.solve(& (buff[0]), & (fluxConstr[0]));
+	solver.solve(& (buff[0]), & (fluxConstr[0]));*/
+
+
 
 	if(mySimulation ==  NULL){
 		initSimulation();
 	}
-	mySimulation->setFlux(fluxConstraint);
-	mySimulation->showFlux2Vel();
+	
+	oneForm harmonicFlux = mySimulation->setHarmonicFlow(borderConstrDirs);
+	mySimulation->showHarmonicField();
 
-	/*Lflux.mult(fluxConstr,buff);
 
-	float temp;
-	for(int i = 0; i < brdr.size(); i++){
-		sz =brdr[i].size();
-		for(int j = 0; j < sz;j++){
-			edgeId =mesh->getHalfedgeId(brdr[i][j%sz], brdr[i][(j+1)%sz],&edge);
+	std::vector<double> buff;
+	d1.saveVector(harmonicFlux.getVals(),"harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/harmonic.m");
+	d1.mult(harmonicFlux.getVals(), buff, true);
+	d1.saveVector(buff,"d1_harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/d1_harmonic.m");
+	if(mesh->getBorder().size() > 1){
+		d1.saveVector(mesh->getBorder()[0],"border_0","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border0.m");
+		d1.saveVector(mesh->getBorder()[1],"border_1","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/border1.m");
+	}
+	//(duald1_border*star1).mult(harmonicFlux.getVals(), buff,true);
+	(DDGMatrices::dual_d1(*mesh)*star1).mult(harmonicFlux.getVals(), buff,true);
+	d1.saveVector(buff,"d1star_harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/duald1star_harmonic.m");
 
-			temp = borderConstrDirs[i].dot(verts[edge.b] -verts[edge.a]);
-			assert(temp -buff[edgeId] < 0.0001 && temp -buff[edgeId] > -0.0001);
+	Lflux.mult(harmonicFlux.getVals(), buff,true);
+	d1.saveVector(buff,"l_harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/laplace_harmonic.m");
+	//mySimulation->setFlux(mySimulation->getVelocities());
+	/*mySimulation->setFlux(fluxConstraint);
+	mySimulation->showFlux2Vel();*/
 
-			buff[edgeId] = 0;
 
-		}
+
+	
+}
+
+void fluidControlWidget::debugSome2()
+{
+	if(borderConstrDirs.size()!=2){
+		return;
+	}
+	if(mySimulation == NULL){
+		initSimulation();
 	}
 
-	for(int i = 0; i < buff.size(); i++){
-			assert(buff[edgeId] < 0.0001 && buff[edgeId] > -0.0001);
-	}*/
+	meshMetaInfo * mesh = Model::getModel()->getMeshInfo();
+	
+	//set up a harmonic field
+	borderConstrDirs[0].set(0,0.1,0);
+	borderConstrDirs[1].set(0,0,0);
+	oneForm harmonicFlux = mySimulation->setHarmonicFlow(borderConstrDirs);
+	mySimulation->showHarmonicField();
+	mySimulation->updateVelocities();
+
+	//compute the actual fluxes of the vel field.
+	harmonicFlux.add(mySimulation->getFlux());
+	vector<tuple3f> & vels = mySimulation->getVelocities();
+
+	//pathtrace 0 and calc pathtraced velocities.
+	mySimulation->pathTraceDualVertices(0);
+	mySimulation->updateBacktracedVelocities();
+
+	//velocity difference of timestep 0 backtraced velocity and velocity-
+	vector<tuple3f> & backtracedVels = mySimulation->getBacktracedVelocities();
+	vector<double> temp;
+	for(int i = 0; i < backtracedVels.size(); i++){
+		temp.push_back((backtracedVels[i]- vels[i]).norm());
+	}
+	saveVector<double>(temp, "velDiff","C:/Users/bertholet/Dropbox/To Delete/pathTracingTests/time0backtracedVelvsVel.m");
+
+	temp.clear();
+	for(int i = 0; i < backtracedVels.size(); i++){
+		temp.push_back((vels[i]).norm());
+	}
+	saveVector<double>(temp, "velNorm","C:/Users/bertholet/Dropbox/To Delete/pathTracingTests/velocityNorms.m");
+
+	//calc backtraced vorticities
+	mySimulation->backtracedVorticity();
+	nullForm & vort = mySimulation->getVorticity();
+
+	saveVector<double>(vort.getVals(), "tracedVort","C:/Users/bertholet/Dropbox/To Delete/pathTracingTests/time0backtracedVort.m");
+	pardisoMatrix star2d1 = DDGMatrices::star2(*mesh)* DDGMatrices::d1(*mesh);
+	
+	//calc "true" vorticity
+	star2d1.mult(harmonicFlux.getVals(),temp,true);
+		saveVector<double>(vort.getVals(), "trueVort","C:/Users/bertholet/Dropbox/To Delete/pathTracingTests/trueCalcedVort.m");
 
 }
 
-void fluidControlWidget::initToConstFlux( oneForm & constFlux, tuple3f & dir )
+void fluidControlWidget::showStreamLn( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->setStreamlines(state != 0);
+	}
+}
+
+void fluidControlWidget::doInterpl( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->setInterpolation(state!= 0);
+	}
+}
+
+void fluidControlWidget::streamLineLengthChanged( int length )
+{
+	if(mySimulation != NULL){
+		mySimulation->setStreamlineLength(length);
+	}
+}
+
+void fluidControlWidget::showVorticity( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->showVorticity(state!=0);
+	}
+}
+
+void fluidControlWidget::showTexLines( int state )
+{
+	if(mySimulation != NULL){
+		mySimulation->showTexLines(state!=0);
+	}
+}
+
+void fluidControlWidget::colorScaleChanged( int scale )
+{
+	if(mySimulation != NULL){
+		mySimulation->setColorScale(pow(10.f,(1.f*scale-50)/10));
+	}
+}
+
+/*void fluidControlWidget::initToConstFlux( oneForm & constFlux, tuple3f & dir )
 {
 	vector<tuple2i> & he = * constFlux.getMesh()->getHalfedges();
 	vector<tuple3f> & verts = constFlux.getMesh()->getBasicMesh().getVertices();
 	for(int i = 0; i < he.size(); i++){
 		constFlux.set(i,(verts[he[i].b] -verts[he[i].a]).dot(dir),1);
 	}
-}
+}*/
+
+
 
 
 

@@ -5,6 +5,7 @@
 #include "DirectionalLight.h"
 #include "Operator.h"
 #include "meshOperation.h"
+#include <iostream>
 
 
 
@@ -71,7 +72,11 @@ void mesh::init( const char* file, tuple3f & col, float scale )
 	lighTransform = matrixFactory::id();
 	color = col;
 
-	showOrientation = false;
+	showOrientation = true;
+
+	cout << " Max Area Ratio " << Operator::maxAreaRatio(*this) << "\n";
+	cout << " Checking Orientation... " ;
+	cout << " Consistent = " << (meshOperation::consistentlyOriented(*this)? "yes" : "no") << "\n";
 }
 
 void mesh::reset( vector<tuple3f> & _vertices, vector<tuple3i> &_faces )
@@ -134,7 +139,7 @@ void mesh::initFaceNormals()
 	tuple3f temp_normal;
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-		temp_normal = tuple3f::cross(vertices[faces[i].a] - vertices[faces[i].b], vertices[faces[i].c] - vertices[faces[i].b]);
+		temp_normal = tuple3f::cross(vertices[faces[i].b] - vertices[faces[i].a], vertices[faces[i].c] - vertices[faces[i].a]);
 		temp_normal.normalize();
 		face_normals.push_back(temp_normal);
 	}
@@ -227,7 +232,7 @@ void mesh::glDisplayLines( void )
 
 	glLoadMatrixf((GLfloat *) &(rotation*position)); 
 
-	glColor3f(1.f,1.f,1.f);
+	glColor3f(0.6f,0.6f,0.6f);
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
 		glBegin(GL_LINE_LOOP);
@@ -366,6 +371,79 @@ void mesh::glTexDisplay(void){
 	glEnd();
 }
 
+void mesh::glTexMapDisplay( std::vector<std::vector<int>> & bordr )
+{
+	glColor3f(1.f,1.f,1.f);
+	glLoadMatrixf((GLfloat *) &(rotation*position)); 
+	glBegin(GL_TRIANGLES);
+	for (unsigned int i = 0; i < faces.size(); i++){
+		glTexCoord2fv((GLfloat *) &(tex)[(faces)[i].a]);
+		(tex)[(faces)[i].a].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].a].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].a]);
+		(tex)[(faces)[i].a].x+= 0.5f;
+		(tex)[(faces)[i].a].y+= 0.5f;
+
+		glTexCoord2fv((GLfloat *) &(tex)[(faces)[i].b]);
+		(tex)[(faces)[i].b].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].b].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].b]);
+		(tex)[(faces)[i].b].x+= 0.5f;
+		(tex)[(faces)[i].b].y+= 0.5f;
+
+		glTexCoord2fv((GLfloat *) &(tex)[(faces)[i].c]);
+		(tex)[(faces)[i].c].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].c].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].c]);
+		(tex)[(faces)[i].c].x+= 0.5f;
+		(tex)[(faces)[i].c].y+= 0.5f;
+	}
+	glEnd();
+
+	glColor3f(1.f,0.f,0.f);
+	glDisable(GL_TEXTURE_2D);
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		glBegin(GL_LINE_LOOP);
+		//glVertex3fv( (GLfloat *) & vertices[i]);
+
+		(tex)[(faces)[i].a].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].a].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].a]);
+		(tex)[(faces)[i].a].x+= 0.5f;
+		(tex)[(faces)[i].a].y+= 0.5f;
+
+
+		(tex)[(faces)[i].b].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].b].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].b]);
+		(tex)[(faces)[i].b].x+= 0.5f;
+		(tex)[(faces)[i].b].y+= 0.5f;
+
+		(tex)[(faces)[i].c].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].c].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].c]);
+		(tex)[(faces)[i].c].x+= 0.5f;
+		(tex)[(faces)[i].c].y+= 0.5f;
+		glEnd();
+	}
+
+	for(unsigned int i =0; i < bordr.size(); i++){
+		glColor3f(0.f,0.f+i%2,(0.f+(i)%3)/2);
+		glBegin(GL_LINE_LOOP);
+		for(unsigned j = 0; j < bordr[i].size(); j++){
+			(tex)[bordr[i][j]].x-= 0.5f; //Hack it!
+			(tex)[bordr[i][j]].y-= 0.5f;
+			glVertex3fv( (GLfloat *) & (tex)[bordr[i][j]]);
+			(tex)[bordr[i][j]].x+= 0.5f;
+			(tex)[bordr[i][j]].y+= 0.5f;
+		}
+		glEnd();
+	}
+
+	//glEnable(GL_TEXTURE_2D);
+}
+
 tuple3f mesh::intensities( unsigned int faceNr, tuple3f &direction )
 {
 	float t1= normals[face_normals_perVertex[faceNr].a].dot(direction), 
@@ -385,6 +463,9 @@ tuple3f mesh::intensitiesFlat( unsigned int faceNr, tuple3f &direction )
 	float c = temp_normal.dot(direction);
 	if(!showOrientation)
 		c= ( c>0? c: -c);
+	else{
+		c = ( c>0? c: -0.1f* c);
+	}
 	return tuple3f(c,c,c);
 }
 
@@ -588,6 +669,13 @@ void mesh::move( float dz )
 {
 	this->position = this->position * matrixFactory::translate(0,0,dz);
 }
+
+vector<tuple3f> & mesh::getFaceNormals()
+{
+	return this->face_normals;
+}
+
+
 
 
 

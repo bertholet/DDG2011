@@ -8,6 +8,8 @@
 #pragma once
 #include "pardisoMatrix.h"
 #include <assert.h>
+//#include <vector>
+//#include "pardisoConfig.h"
 
 
 extern "C" __declspec(dllimport) void pardisoinit (void   *, int    *,   int *, int *, double *, int *);
@@ -30,34 +32,21 @@ class pardisoSolver{
 private: 
 	int int_params[128];
 	double double_params[128];
-	void *intern_memory[128];
+	void* intern_memory[128];
 
 	int matrix_type;
 	int print_stats;
 	int error;
 	int nrhs;
+	//static vector<pardisoConfig> configs;
 
-	static bool isInUse;
+
+	bool matrixWasSet;
+//	static bool isInUse;
+	//static bool keepMemory;
 
 	void init_intParams(int nrRefinementSteps);
-	void checkError_init() 
-	{
-		//error = 0;
-		if (error != 0) 
-		{
-			if (error == -10 )
-				printf("No license file found \n");
-			else if (error == -11 )
-				printf("License is expired \n");
-			else if (error == -12 )
-				printf("Wrong username or hostname \n");
-			else
-				printf("Error %d has occurred\n", error);
-
-		}
-		else
-			printf("[PARDISO]: License check was successful ... \n");
-	}
+	void checkError_init();
 
 
 
@@ -70,137 +59,26 @@ public:
 
 	pardisoSolver(
 			int  matrix_typ, int solver,
-			int nr_refinement_steps){
-
-		assert(!isInUse);
-		error = 0;
-		matrix = NULL; 
-		matrix_type = matrix_typ;
-		print_stats = 0;
-		init_intParams(nr_refinement_steps);
-		pardisoinit(intern_memory, &matrix_type, &solver, int_params, double_params, &error);
-		checkError_init();
-
-		isInUse = true;
-
-	}
+			int nr_refinement_steps);
 
 
-	~pardisoSolver(void){
-		int phase = -1;
-		int maxfct =1; /*max nr of factorizations*/
-		int mnum =1; /* Which factorization to use. */
-		int n = matrix->dim();
-
-		if(matrix->geta().size() > 0){
-			int idumm;
-			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &matrix->geta()[0], &matrix->getia()[0], &matrix->getja()[0], &idumm, &nrhs,
-				int_params, &print_stats, NULL, NULL, &error, double_params);
-
-		}
-		else{
-			double ddumm;
-			int idumm;
-			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &ddumm, &matrix->getia()[0], &idumm, &idumm, &nrhs,
-				int_params, &print_stats, &ddumm, &ddumm, &error, double_params);
-		}
-		isInUse = false;
-
-		if(error != 0){
-			throw std::runtime_error("Exception in pardiso solve-");
-		}
-
-	}
+	~pardisoSolver(void);
 
 	/************************************************************************/
-	/* nr_righthandsides is the number of rows of b in Ax = b.                                                                     */
+	/* nr_righthandsides is the number of rows of b in Ax = b.   
+	/* Note: setMatrix will factorize the matrix, you are allowed to set a Matrix
+	/* only once per Solver. If the matrix is changed you need a new solver.
 	/************************************************************************/
-	void setMatrix(pardisoMatrix & mat, int nr_righthandsides)
-	{
-		assert(mat.getn() == mat.getm());
-		matrix = &mat;
-		nrhs = nr_righthandsides;
-		if(mat.geta().size() > 0){
-			checkMatrix(matrix_type, mat);
-
-			//factorization: symbolic and numerical
-			int phase = 12;
-			int maxfct =1; /*max nr of factorizations*/
-			int mnum =1; /* Which factorization to use. */
-			int n = mat.dim();
-
-			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &mat.geta()[0], &mat.getia()[0], &mat.getja()[0], NULL, &nr_righthandsides,
-				int_params, &print_stats, NULL, NULL, &error, double_params);
-		}
-		else{
-			//factorization: symbolic and numerical
-			int phase = 12;
-			int maxfct =1; /*max nr of factorizations*/
-			int mnum =1; /* Which factorization to use. */
-			int n = mat.dim();
-			double ddumm;
-			int idumm;
-			pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-				&n, &ddumm, &mat.getia()[0], &idumm, NULL, &nr_righthandsides,
-				int_params, &print_stats, NULL, NULL, &error, double_params);
-		}
-		if(error != 0){
-			throw std::runtime_error("Exception in pardiso solve-");
-		}
-	}
+	void setMatrix(pardisoMatrix & mat, int nr_righthandsides);
 
 
-	void setPrintStatistics(bool print){
-		if(print){
-			print_stats = 1;
-		}
-		else{
-			print_stats =0;
-		}
-	}
+	void setPrintStatistics(bool print);
 
-	void setStoreResultInB(bool what){
-		if(what == true){
-			int_params[5] = 1;
-		}
-		else{
-			int_params[5] = 0;
-		}
-	}
+	void setStoreResultInB(bool what);
 
-	void solve(double *x, double * b){
-		assert(matrix->getn() == matrix->getm());
-		int phase = 33;
-		int maxfct =1; /*max nr of factorizations*/
-		int mnum =1; /* Which factorization to use. */
-		int n = matrix->dim();
+	void solve(double *x, double * b);
 
-		error = 0;
-		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &matrix->geta()[0], &matrix->getia()[0], &matrix->getja()[0], NULL, &nrhs,
-			int_params, &print_stats, b, x, &error, double_params);
-
-		if(error != 0){
-			throw std::runtime_error("Exception in pardiso solve-");
-		}
-	}
-
-	static void checkMatrix( int matrix_type, pardisoMatrix & mat ) 
-	{
-		int n = mat.dim();
-		int err;
-		pardiso_chkmatrix  (&matrix_type, &n, & mat.geta()[0], & mat.getia()[0], 
-			& mat.getja()[0], &err);
-
-		if (err != 0) {
-			printf("\nERROR in consistency of matrix: %d", err);
-
-			throw std::runtime_error("Pardiso::checkmatrix error");
-		}
-	}
+	static void checkMatrix( int matrix_type, pardisoMatrix & mat );
 
 
 };

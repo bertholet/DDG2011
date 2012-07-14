@@ -8,6 +8,8 @@
 #include "DDGMatrices.h"
 #include "colorMap.h"
 #include <QTime>
+#include "pardiso.h"
+
 
 class fluidSimulation:public colorMap
 {
@@ -21,8 +23,14 @@ private:
 	std::vector<tuple3f> velocities;
 	std::vector<tuple3f> dualVertices;
 	std::vector<tuple3f> backtracedDualVertices;
+
 	//the triangle the backtraced dual vertex lies in.
 	std::vector<int> triangle_btVel;
+	//for fast borderdecision during pathtracing
+	std::vector<bool> vertexOnBorder;
+
+	//the harmonic field as velocities (in case of bordered meshs and constraints.
+	std::vector<tuple3f> harmonicVelocities;
 
 	//for visualisation: line stripes start at some position and wander
 	//around
@@ -30,12 +38,15 @@ private:
 	vector<int> line_strip_triangle;
 	vector<int> age;
 	int maxAge;
+	bool showStreamLines, doInterpolation;
 	QTime lastFrame;
+	QTime timer, timer_in_between, timer_total;
 
 	//Forms
-	std::vector<tuple3f> backtracedVelocity;
+	std::vector<tuple3f> backtracedVelocity, backtracedVelocity_noHarmonic;
 	oneForm flux;
 	oneForm forceFlux;
+	oneForm harmonicFlux;
 	nullForm vorticity;
 	nullForm tempNullForm;
 	//L^-1 * Vorticity is stored here.
@@ -49,12 +60,22 @@ private:
 
 	pardisoMatrix star0_min_vhl;
 
+	//the solvers;
+	pardisoSolver * addDiffusionSolver;
+	pardisoSolver * vort2FluxSolver;
+
 	//the viscosity. surprise surprise...
 	float viscosity;
 	//timeStep
 	float timeStep;
 	float fps;
 
+
+	double minVort, maxVort;
+	int streamlineLength;
+	bool showVortNotSpeed;
+	bool boolTexLines;
+	float colorScale;
 public:
 
 	//////////////////////////////////////////////////////////////////////////
@@ -62,10 +83,15 @@ public:
 	// or destroyed.
 	//////////////////////////////////////////////////////////////////////////
 	fluidSimulation(meshMetaInfo * mesh);
+
+	void initVertexOnBorder();
+
+	void setupMatrices();
+
 	~fluidSimulation(void);
 
 	//////////////////////////////////////////////////////////////////////////
-	// setter. Note if mesh does not coincide an assertion fails
+	// setter. Note if mesh does not coincide with the oneform's an assertion fails
 	//////////////////////////////////////////////////////////////////////////
 	void setFlux( oneForm & f );
 	void setFlux( vector<tuple3f> & dirs );
@@ -73,6 +99,15 @@ public:
 	void setForce(vector<tuple3f> & dirs);
 
 	void setViscosity(float visc);
+
+	void setStepSize( float stepSize );
+	
+
+	//////////////////////////////////////////////////////////////////////////
+	// the actual Fluidsimulation algorithm
+	//////////////////////////////////////////////////////////////////////////
+	void oneStep();
+
 	//////////////////////////////////////////////////////////////////////////
 	// Pathtrace all dualvertices
 	//
@@ -91,7 +126,7 @@ public:
 	// Vorticity 2 Flux
 	//////////////////////////////////////////////////////////////////////////
 	void vorticity2Flux();
-
+	void vorticity2Flux(nullForm & vort, oneForm & target);
 	void flux2Vorticity();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -105,8 +140,11 @@ public:
 	// to the remaining t to go, pos is updated and the new actual triangle
 	// if the border of the triangle is reached.
 	// If the border of the mesh is reached -1 is returned.
+	// weight_buffer is a vector that is used for intern calculations as
+	// preallocated memory.
 	//////////////////////////////////////////////////////////////////////////
-	void walkPath(tuple3f * pos, int * triangle, float *  t, int dir =-1);
+	void walkPath(tuple3f * pos, int * triangle, float *  t, bool * hitBorder,
+		std::vector<float> & weight_buffer,int dir =-1);
 
 	float maxt( tuple3f & pos, int triangle, tuple3f & dir, tuple3f & cutpos, tuple2i & edge );
 
@@ -115,17 +153,42 @@ public:
 	// Method to iterpolate the velocity field on curved manifolds. 
 	// The Velocities are projected locally along the
 	// curvature normal onto a plane, interpolated there and then projected 
-	// back
+	// back. The resulting velocity will be stored in result, weightbuffer
+	// needs to be a vector, used as a buffer for intern calculations.
 	//////////////////////////////////////////////////////////////////////////
-	tuple3f getVelocityFlattened(tuple3f & pos, int triangleIndex );
+	void getVelocityFlattened(tuple3f & pos, int triangleIndex, tuple3f & result, 
+		std::vector<float> & weight_buffer,bool useHarmonicField = true);
 
 
+	void addForces2Vorticity(float timestep);
+
+	void addDiffusion2Vorticity();
+
+	//////////////////////////////////////////////////////////////////////////
+	// calculate the harmonic flow for a bordered mesh, where
+	// the constraints on the border are given by borderconstraints.
+	// The constraints have to be understood as that the flow on the border
+	// component i is constrained to be borderConstraints[i].
+	// this will be added to the velocity field when pathtracing.
+	//////////////////////////////////////////////////////////////////////////
+	oneForm setHarmonicFlow(vector<tuple3f> & borderConstraints);
+
+	//////////////////////////////////////////////////////////////////////////
+	void adaptMatrices_zeroTotalBorderVort( vector<vector<int>> &brdr, pardisoMatrix &star0inv,pardisoMatrix &duald1 );
+
+	oneForm & getHarmonicFlux();
+
+	void updateVelocities();
+	oneForm & getFlux();
+	
 //////////////////////////////////////////////////////////////////////////
 	// ID IE IB IU IG   IS IT IU IF IF 
 	//////////////////////////////////////////////////////////////////////////
 	// Debug-Display Dual vertices
 	//////////////////////////////////////////////////////////////////////////
 	void showDualPositions();
+
+	void showHarmonicField();
 
 	//////////////////////////////////////////////////////////////////////////
 	// pathtrace and display pathtracedPositions
@@ -134,8 +197,7 @@ public:
 	void pathTraceAndShow(float howmuch);
 	void showFlux2Vel();
 
-	void oneStep();
-
+	
 	//////////////////////////////////////////////////////////////////////////
 	// helpmethod that interpolates the velocityfield defined on the dualvertex
 	// positions. triangleIndex is the index of the triangle containing pos.
@@ -148,15 +210,17 @@ public:
 	// borders, between neiighboring triangles.
 	//////////////////////////////////////////////////////////////////////////
 	tuple3f project( tuple3f& velocity, int actualTriangle );
-	void updateVelocities();
-	oneForm & getFlux();
-	void addForces2Vorticity(float timestep);
-	void setStepSize( float stepSize );
-	void addDiffusion2Vorticity();
+
+	bool checkAllDualVerticesInside();
+
+
 
 /////////////////////////////////////////////////////////////////////////
 // display the field
 //////////////////////////////////////////////////////////////////////////
+	void setStreamlines(bool on);
+	void setStreamlineLength( int length );
+	void setInterpolation(bool on);
 	void glDisplayField();
 	float texPos( int j, int nrPoints );
 	float getFPS();
@@ -171,6 +235,21 @@ public:
 	virtual std::string additionalInfo( void );
 	void scrollAction(int what){};
 	void actualizeFPS();
+
+
+//////////////////////////////////////////////////////////////////////////
+// debug/quality check
+//////////////////////////////////////////////////////////////////////////
 	void testFlux();
 
+	//////////////////////////////////////////////////////////////////////////
+	// Intern variable. Methods for debug/quality check.
+	//////////////////////////////////////////////////////////////////////////
+	vector<tuple3f> & getVelocities();
+	vector<tuple3f> & getBacktracedVelocities();
+	nullForm & getVorticity();
+	std::vector<tuple3f> & getDualVertices();
+	void showVorticity( bool param1 );
+	void showTexLines( bool what );
+	void setColorScale( float  scale );
 };

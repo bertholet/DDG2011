@@ -47,5 +47,23 @@ void oneForm::setZero()
 	}
 }
 
+void oneForm::initToConstFlux( tuple3f& dir )
+{
+	vector<tuple2i> & he = * m->getHalfedges();
+	vector<tuple3f> & verts = m->getBasicMesh().getVertices();
+	for(int i = 0; i < he.size(); i++){
+		this->set(i,(verts[he[i].b] -verts[he[i].a]).dot(dir),1);
+	}
+
+}
+
+void oneForm::add( oneForm & other ,float scale)
+{
+	assert(other.m == this->m);
+	for(int i = 0; i < form.size(); i++){
+		form[i]+= other.form[i]*scale;
+	}
+}
+
 
 
