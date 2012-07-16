@@ -607,6 +607,32 @@ void pardisoMatrix::getLine( int line, std::vector<int> & target_ind, std::vecto
 	}
 }
 
+void pardisoMatrix::diagAppend( pardisoMatrix & mat )
+{
+	assert(&mat != this);
+	int newm = m + mat.m;
+	int newn = n + mat.n;
+	int oldm = m;
+	int oldn = n;
+	int oldszA = a.size();
+
+	//the values...
+	for(int i = 0; i < mat.a.size(); i++){
+		this->apush_back(mat.a[i]);
+	}
+	//the indices
+	for(int i = 1; i < mat.ia.size(); i++){
+		this->iapush_back(mat.ia[i] + oldszA);
+	}
+	//the j indices
+	for(int i = 0; i < mat.ja.size(); i++){
+		this->japush_back(mat.ja[i] + oldm);
+	}
+	assert(this->n = newn);
+	assert(this->m = newm);
+
+}
+
 
 
 
