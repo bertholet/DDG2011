@@ -295,6 +295,7 @@ void TutteWeights::angles_lambdas( vector<float> &angles, vector<float> &lambdas
 
 		angle = meshOperation::sumAnglesWheel(border[prev], 
 			border[bdr], border[next], m);
+
 		sum+= angle;
 		angles.push_back(angle); //was pi -angle...
 
@@ -304,10 +305,17 @@ void TutteWeights::angles_lambdas( vector<float> &angles, vector<float> &lambdas
 
 	}
 
+	//this works fine
 	scale_factor = total / sum;
 	for(int bdr =0; bdr < loopsz; bdr++){
 		angles[bdr] = PI - (angles[bdr] * scale_factor);
 	}
+
+	//this minimizes the square difference between target and origin angles
+	/*scale_factor = (total -sum)/border.size();
+	for(int bdr =0; bdr < loopsz; bdr++){
+		angles[bdr] = PI - (angles[bdr] - scale_factor);
+	}*/
 }
 
 /************************************************************************/
