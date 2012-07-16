@@ -265,10 +265,12 @@ void TutteEmbedding::calcTexturePos_NaturalBorder( meshMetaInfo & m )
 	b[0] = 1;*/
 
 	vector<int> & brdr =  m.getBorder()[0];
-	for(int i = 0; i <2;i++){
-		mat.add(brdr[i],brdr[i],100);
-		mat.add(brdr[i]+nrVerts,brdr[i]+nrVerts,100);
-		b[brdr[i]]= (i==0? 100:0);//cos(2*PI/brdr.size() * i);
+	int ind;
+	for(int i = 1; i <3;i++){
+		ind = (brdr.size()-1)/i;
+		mat.add(brdr[ind],brdr[ind],100);
+		mat.add(brdr[ind]+nrVerts,brdr[ind]+nrVerts,100);
+		b[brdr[ind]]= (i==1? 100:0);//cos(2*PI/brdr.size() * i);
 		//b[brdr[i]+ nrVerts]= sin(2*PI/brdr.size() * i);
 	}
 	
@@ -672,7 +674,17 @@ void TutteEmbedding::setUp_naturalBorder(pardisoMatrix & mat, meshMetaInfo & m){
 
 	temp = star0;
 	star0.diagAppend(temp);
-	mat = mat - (star0*rot90);
+	mat = mat + ((star0*rot90)*0.5f);
+
+	vector<vector<int>> & brdrs = m.getBorder();
+	int nrVerts = m.getBasicMesh().getVertices().size();
+	float weight = 50;
+	for(int i = 0; i < brdrs.size(); i++){
+		for(int j = 0; j < brdrs[i].size(); j++){
+			mat.scaleLine(brdrs[i][j], 50);
+			mat.scaleLine(brdrs[i][j] + nrVerts, 50);
+		}
+	}
 	//rot90.saveMatrix("C:/Users/Petje/Documents/blarot90.m");
 	//mat.saveMatrix("C:/Users/Petje/Documents/blatotal.m");
 }

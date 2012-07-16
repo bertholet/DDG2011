@@ -577,6 +577,13 @@ void pardisoMatrix::setLineToZero( int line )
 	}
 }
 
+void pardisoMatrix::scaleLine( int line, float scale )
+{
+	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
+		a[j] *= scale;
+	}
+}
+
 pardisoMatrix pardisoMatrix::transpose( pardisoMatrix & mat )
 {
 	pardisoMatrix id;
@@ -632,6 +639,8 @@ void pardisoMatrix::diagAppend( pardisoMatrix & mat )
 	assert(this->m = newm);
 
 }
+
+
 
 
 

@@ -189,4 +189,5 @@ public:
 	void getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals );
 	//appends the matrix mat at the right bottom corner of this matrix
 	void diagAppend( pardisoMatrix & mat );
+	void scaleLine( int line, float scale );
 };
