@@ -349,6 +349,7 @@ void mesh::glTexDisplay(void){
 	tuple3f color(0.8f,0.8f,0.8f);
 //	tuple3i temp;
 	glLoadMatrixf((GLfloat *) &(rotation*position)); 
+	glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 	glBegin(GL_TRIANGLES);
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
