@@ -6,6 +6,8 @@
 #include <math.h>
 #include "pardiso.h"
 #include "tutteWeights.h"
+#include "DDGMatrices.h"
+#include "rot90creator.h"
 
 
 TutteEmbedding::TutteEmbedding(void)
@@ -234,6 +236,56 @@ void TutteEmbedding::calcTexturePos_multiBorder( mesh &m,
 	m.setTextures_perVertex(xy);
 	delete[] xy;
 }
+
+//Multiple Borders with Desbrun et Als Border constraint
+void TutteEmbedding::calcTexturePos_NaturalBorder( meshMetaInfo & m )
+{
+	vector<double> b;
+	pardisoMatrix mat;
+	int nrVerts = m.getBasicMesh().getVertices().size();
+	double * xy = new double[2*nrVerts];
+	for(int i = 0; i < 2*nrVerts;i++){
+		xy[i] = 0.0;
+		b.push_back(0);
+	}
+
+	setUp_naturalBorder(mat,m);
+
+
+	//Adapt to fix two border vertices
+	/*mat.add(0,0,1);
+	mat.add(1,1,1);
+	mat.add(nrVerts,nrVerts,1);
+	mat.add(nrVerts+1,nrVerts+1,1);*/
+
+/*	mat.setLineToID(0);
+	mat.setLineToID(1);
+	mat.setLineToID(nrVerts);
+	mat.setLineToID(nrVerts +1);
+	b[0] = 1;*/
+
+	vector<int> & brdr =  m.getBorder()[0];
+	for(int i = 0; i <2;i++){
+		mat.add(brdr[i],brdr[i],100);
+		mat.add(brdr[i]+nrVerts,brdr[i]+nrVerts,100);
+		b[brdr[i]]= (i==0? 100:0);//cos(2*PI/brdr.size() * i);
+		//b[brdr[i]+ nrVerts]= sin(2*PI/brdr.size() * i);
+	}
+	
+	pardisoSolver s(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_ITERATIVE,2);
+
+	s.checkMatrix(pardisoSolver::MT_ANY,mat);
+	s.setMatrix(mat,1);
+	
+
+	s.setPrintStatistics(true);
+	s.solve(xy,&(b[0]));
+
+	m.getBasicMesh().setTextures_perVertex(xy);
+	meshOperation::normalizeTexture(m.getBasicMesh().getTexCoords());
+	delete[] xy;
+}
+
 
 /************************************************************************/
 /* Set up Matrix for a single border                                                                    */
@@ -603,6 +655,26 @@ void TutteEmbedding::setUp_multiBorder( pardisoMatrix &mat, vector<vector<int>> 
 		throw std::runtime_error("Assertion failed, matrix malformed");
 	}
 
+}
+
+//Desbrun et Al. border constraint
+void TutteEmbedding::setUp_naturalBorder(pardisoMatrix & mat, meshMetaInfo & m){
+	
+	pardisoMatrix & star0 = DDGMatrices::star0(m);
+	star0.elementWiseInv(0);
+
+	mat = star0* DDGMatrices::dual_d1(m) * DDGMatrices::star1(m) * DDGMatrices::d0(m);
+	pardisoMatrix temp = mat;
+	mat.diagAppend(temp);
+
+	pardisoMatrix rot90;
+	rot90.initMatrix(rot90Creator(m),m.getBasicMesh().getVertices().size()*2);
+
+	temp = star0;
+	star0.diagAppend(temp);
+	mat = mat - (star0*rot90);
+	//rot90.saveMatrix("C:/Users/Petje/Documents/blarot90.m");
+	//mat.saveMatrix("C:/Users/Petje/Documents/blatotal.m");
 }
 
 int TutteEmbedding::outerBorder( vector<vector<int>> &border, mesh & m )

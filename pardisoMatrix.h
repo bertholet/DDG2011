@@ -187,4 +187,6 @@ public:
 	static pardisoMatrix  transpose(pardisoMatrix & mat);
 	void forceNrColumns( int nrColumns );
 	void getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals );
+	//appends the matrix mat at the right bottom corner of this matrix
+	void diagAppend( pardisoMatrix & mat );
 };

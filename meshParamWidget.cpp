@@ -54,12 +54,16 @@ void meshParamWidget::circleBorder( void )
 {
 	TutteEmbedding embedding;
 
-	mesh * myMesh = Model::getModel()->getMesh();
+	//embedding.setUp_naturalBorder(*Model::getModel()->getMeshInfo());
+
+
+	embedding.calcTexturePos_NaturalBorder(*Model::getModel()->getMeshInfo());
+	/*mesh * myMesh = Model::getModel()->getMesh();
 	int nrBorders = Model::getModel()->getMeshInfo()->getBorder().size();
 
 	if(myMesh != NULL && nrBorders == 1){
 		embedding.calcTexturePos(*myMesh);
-	}
+	}*/
 }
 
 void meshParamWidget::conformalBorder( void )

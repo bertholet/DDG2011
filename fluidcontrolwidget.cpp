@@ -309,6 +309,7 @@ void fluidControlWidget::getCollectedFlux()
 	vector<int> & constr_fcs = Model::getModel()->getInputCollector().getFaces();
 
 	for(int i = 0; i < mesh.getBasicMesh().getFaces().size(); i++){
+		
 
 		dirs.push_back(tuple3f());
 	}

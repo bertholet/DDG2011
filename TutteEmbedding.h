@@ -1,5 +1,6 @@
 #pragma once
 #include "mesh.h"
+#include "meshMetaInfo.h"
 #include <vector>
 #include <algorithm>
 #include "pardisoMatrix.h"
@@ -43,6 +44,9 @@ public:
 		vector<int>&/*fc_i*/, 
 		vector<int>& /*border*/));
 
+	void calcTexturePos_NaturalBorder(meshMetaInfo & mesh);
+		
+
 /*	void getBorderPos( vector<tuple3f> & outerPos, int sz);
 	void getBorderPos( vector<tuple3f> & outerPos , vector<int> & border, mesh & m);*/
 	void setUp( pardisoMatrix &mat, vector<int> &border, 
@@ -63,6 +67,8 @@ public:
 		double (*weights ) (int /*i*/, int /*j*/, mesh & , 
 		vector<int>& /*neighbors_i*/,vector<int>& /*neighbor_faces_i*/,
 		vector<int>& /*border*/));
+
+	void setUp_naturalBorder( pardisoMatrix & mat , meshMetaInfo & m);
 
 	void setUpX( vector<double>& b, vector<int> & border, vector<tuple3f> & outerPos, int sz );
 	void setUpY( vector<double>& b, vector<int> & border, vector<tuple3f> & outerPos, int sz );
