@@ -31,6 +31,7 @@ private:
 	QCheckBox * cbox;
 	QPushButton * butt;
 	QCheckBox * cbox2;
+	QCheckBox * cBoxArrow;
 	QSlider * fieldSlider;
 	QSlider * linewidthSlider;
 
@@ -52,6 +53,7 @@ private slots:
 	void setVFieldMode( int );
 	void lineWidthChanged();
 	void fieldLengthChanged();
+	void showArrows( int );
 };
 
 #endif // MAINWINDOW_H

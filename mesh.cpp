@@ -23,7 +23,7 @@ mesh::mesh(void)
 
 mesh::mesh( const char* file )
 {
-	init(file, tuple3f(0,0,1.f), 1.f);
+	init(file, tuple3f(.9f,.9f,.9f), 1.f);
 }
 
 mesh::mesh( const char* file, tuple3f col )
@@ -402,6 +402,58 @@ void mesh::glTexMapDisplay( std::vector<std::vector<int>> & bordr )
 	glEnd();
 
 	glColor3f(1.f,0.f,0.f);
+	glDisable(GL_TEXTURE_2D);
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		glBegin(GL_LINE_LOOP);
+		//glVertex3fv( (GLfloat *) & vertices[i]);
+
+		(tex)[(faces)[i].a].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].a].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].a]);
+		(tex)[(faces)[i].a].x+= 0.5f;
+		(tex)[(faces)[i].a].y+= 0.5f;
+
+
+		(tex)[(faces)[i].b].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].b].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].b]);
+		(tex)[(faces)[i].b].x+= 0.5f;
+		(tex)[(faces)[i].b].y+= 0.5f;
+
+		(tex)[(faces)[i].c].x-= 0.5f; //Hack it!
+		(tex)[(faces)[i].c].y-= 0.5f;
+		glVertex3fv( (GLfloat *) & (tex)[(faces)[i].c]);
+		(tex)[(faces)[i].c].x+= 0.5f;
+		(tex)[(faces)[i].c].y+= 0.5f;
+		glEnd();
+	}
+
+	glColor3f(0.f,0.f,1.f);
+
+	for(unsigned int i =0; i < bordr.size(); i++){
+		//glColor3f(0.f,0.f+i%2,(0.f+(i)%3)/2);
+		glBegin(GL_LINE_LOOP);
+		for(unsigned j = 0; j < bordr[i].size(); j++){
+			tex[bordr[i][j]].z=0.0001;
+			(tex)[bordr[i][j]].x-= 0.5f; //Hack it!
+			(tex)[bordr[i][j]].y-= 0.5f;
+			glVertex3fv( (GLfloat *) & (tex)[bordr[i][j]]);
+			(tex)[bordr[i][j]].x+= 0.5f;
+			(tex)[bordr[i][j]].y+= 0.5f;
+			tex[bordr[i][j]].z=0.f;
+		}
+		glEnd();
+	}
+	glColor3f(1.f,0.f,0.f);
+
+	//glEnable(GL_TEXTURE_2D);
+}
+
+void mesh::glTexEmbedDisplay( std::vector<std::vector<int>> & bordr )
+{
+	glColor3f(0.6f,0.6f,0.6f);
+	glLoadMatrixf((GLfloat *) &(rotation*position)); 
 	glDisable(GL_TEXTURE_2D);
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{

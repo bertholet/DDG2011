@@ -71,7 +71,13 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	cBoxDirectional = new QCheckBox("Directional Constraint", this);
 
 	QCheckBox * cBoxBorderMatrix = new QCheckBox("Border Matrix", this);
+	cBoxBorderMatrix->setChecked(true);
+	useBorderMat = true;
 	connect(cBoxBorderMatrix, SIGNAL(stateChanged(int)), this, SLOT(useBorderMatrix(int)));
+
+//	QCheckBox * cBoxArrow = new QCheckBox("Show Arrows", this);
+//	cBoxArrow->setChecked(false);
+//	connect(cBoxArrow, SIGNAL(stateChanged(int)), this, SLOT(showArrows(int)));
 
 	QVBoxLayout * layout = new QVBoxLayout();
 //	layout->addWidget(cbox);
@@ -89,7 +95,7 @@ vectorFieldControlWidget::vectorFieldControlWidget(QWidget *parent)
 	layout->addWidget(butt3);
 	layout->addWidget(cBoxDirectional);
 	layout->addWidget(cBoxBorderMatrix);
-
+	//layout->addWidget(cBoxArrow);
 	this->setLayout(layout);
 
 //	this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
@@ -259,5 +265,6 @@ void vectorFieldControlWidget::storeField()
 
 void vectorFieldControlWidget::useBorderMatrix( int val )
 {
-	cout << "Aha.";
+	useBorderMat = (val == 2);
 }
+

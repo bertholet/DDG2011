@@ -63,10 +63,13 @@ void MainWindow::setupButtons()
 	comboBox->addItem("FluidSimulation");
 	comboBox->addItem("Texture");
 	comboBox->addItem("TextureMap");
+	comboBox->addItem("Embedding");
 
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Display Normed Field",this);
 	butt = new QPushButton("Reset", this);
+	cBoxArrow = new QCheckBox("Show Arrows", this);
+	cBoxArrow->setChecked(false);
 
 	fieldSlider = new QSlider(Qt::Horizontal, this);
 	fieldSlider->setMinimum(0);
@@ -118,6 +121,7 @@ void MainWindow::addAction()
 
 	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
 	connect(fieldSlider, SIGNAL(sliderReleased()), this, SLOT(fieldLengthChanged()));
+	connect(cBoxArrow, SIGNAL(stateChanged(int)), this, SLOT(showArrows(int)));
 }
 
 /************************************************************************/
@@ -133,7 +137,10 @@ void MainWindow::layoutGui()
 	sublayout->addWidget(cbox);
 	sublayout->addWidget(butt);
 	rightLayout->addLayout(sublayout);
-	rightLayout->addWidget(cbox2);
+	sublayout = new QHBoxLayout();
+	sublayout->addWidget(cbox2);
+	sublayout->addWidget(cBoxArrow);
+	rightLayout->addLayout(sublayout);
 	rightLayout->addWidget(fieldSlider);
 	rightLayout->addWidget(linewidthSlider);	
 
@@ -238,6 +245,9 @@ void MainWindow::setDisplayMode( int mode )
 	else if(mode == 8){
 		this->myGLDisp->setMode(TEXMODE2);
 	}
+	else if(mode == 9){
+		this->myGLDisp->setMode(TEXMODE3);
+	}
 
 	if(mode == 5){
 		this->myGLDisp->setMouseMode(COLORMAPSCROLL);
@@ -290,4 +300,10 @@ void MainWindow::fieldLengthChanged()
 	this->update();
 }
 
-
+void MainWindow::showArrows( int val)
+{
+	Model::getModel()->setShowArrows(val==2);
+	/*if(Model::getModel()->getVField() != NULL){
+		Model::getModel()->getVField()->setShowArrows(val==2);
+	}*/
+}

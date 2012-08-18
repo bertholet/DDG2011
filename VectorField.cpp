@@ -20,6 +20,7 @@ VectorField::VectorField( mesh * aMesh, tuple3f & dir)
 	faces = &(aMesh->getFaces());
 	vertices = &(aMesh->getVertices());
 	myMesh = aMesh;
+	showArrows = false;
 
 
 	oneForm.reserve(edges->size());
@@ -42,6 +43,7 @@ VectorField::VectorField( mesh * aMesh )
 	faces = &(aMesh->getFaces());
 	vertices = &(aMesh->getVertices());
 	myMesh = aMesh;
+	showArrows = false;
 
 	oneForm.reserve(edges->size());
 	for(int i = 0; i < edges->size(); i++){
@@ -190,14 +192,17 @@ tuple3f VectorField::oneForm2Vec(int faceNr, float bara, float barb, float barc)
 }
 
 void VectorField::glOutputField(bool normed, float displayLength){
-	vector<tuple3i> & faces = *(this->faces);
-	vector<tuple3f> & vertices = *(this->vertices);
-
 	if(edges == NULL || this->oneForm.size() != edges->size()){
 		return;
 	}
+	vector<tuple3i> & faces = *(this->faces);
+	vector<tuple3f> & vertices = *(this->vertices);
+	vector<tuple3f> & fcnormals = (this->myMesh->getFaceNormals());
+
+
 	tuple3f pos ;
 	tuple3f dir;
+	tuple3f point;
 
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
@@ -219,9 +224,28 @@ void VectorField::glOutputField(bool normed, float displayLength){
 		glColor3f(0,1,0);
 		glVertex3fv((GLfloat *) & pos);
 		glEnd();
+		
+		if(showArrows){
+			glBegin(GL_TRIANGLES);
+			glColor3f(0,0.5f,0);
+			glVertex3fv((GLfloat *) & pos) ;
+			point = fcnormals[i].cross(dir) *(0.15f*displayLength) ;
+			pos = pos - dir*(displayLength *0.3f);
+			pos = pos + point;
+			glVertex3fv((GLfloat *) & pos) ;
+			pos = pos + point *(-2.f);
+			glVertex3fv((GLfloat *) & pos) ;
+			glEnd();
+		}
 
 	}
 }
+
+void VectorField::setShowArrows( bool param1 )
+{
+	showArrows = param1;
+}
+
 /*
 void VectorField::setDisplayLength( double param1 )
 {

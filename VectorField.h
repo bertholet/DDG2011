@@ -11,6 +11,7 @@ public:
 		faces = NULL;
 		vertices = NULL;
 		edges = NULL;
+		showArrows = false;
 	}
 	VectorField(mesh * aMesh);
 	VectorField(mesh * aMesh, tuple3f & dir);
@@ -33,6 +34,8 @@ public:
 
 	tuple3f oneForm2Vec(int faceNr, float bara, float barb, float barc);
 
+	void setShowArrows( bool param1 );
+
 private:
 	//oneForm[i] is the value on the edge i
 	vector<float> oneForm;
@@ -48,6 +51,7 @@ private:
 	//means that the oposingly oriented halfedge is meant.
 	//Here the negative of the stored value is returned
 	float getOneForm(int halfedge, int orientation);
+	bool showArrows;
 
 
 /*	int abs(int a){

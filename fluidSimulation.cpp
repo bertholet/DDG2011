@@ -263,25 +263,6 @@ oneForm fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
 	star0inv.elementWiseInv(0);
 	//adapting duald1 to consider inner border(s).
 	pardisoMatrix duald1 = DDGMatrices::dual_d1(*myMesh);
-	/*{
-		pardisoMatrix borderVerticesT;
-		vector<double> vals;
-		for(int i = 1; i < brdr.size(); i++){
-			vector<int> indices = brdr[i];
-			sort(indices.begin(), indices.end());
-
-			vals.reserve(brdr[i].size());
-			for(int j = 0; j < brdr[i].size(); j++){
-				vals.push_back(1);
-			}
-			borderVerticesT.addLine(indices, vals);
-			borderVerticesT.forceNrColumns(myMesh->getBasicMesh().getVertices().size());
-
-			(borderVerticesT * duald1).getLine(0,indices,vals);
-			duald1.addLine(indices,vals);
-		}
-		
-	}*/
 
 	adaptMatrices_zeroTotalBorderVort(brdr, star0inv, duald1);
 	
@@ -506,46 +487,46 @@ oneForm & fluidSimulation::getFlux()
 //////////////////////////////////////////////////////////////////////////
 void fluidSimulation::oneStep()
 {
-	cout << "time since last step: " << timer_in_between.elapsed();
+	/*cout << "time since last step: " << timer_in_between.elapsed();
 	timer.restart();
-	timer_total.restart();
+	timer_total.restart();*/
 
 	pathTraceDualVertices(timeStep); 
 
-	cout << "pathTracing" << timer.elapsed() << "\n";
-	timer.restart();
+	/*cout << "pathTracing" << timer.elapsed() << "\n";
+	timer.restart();*/
 
 	updateBacktracedVelocities(); //is ok if isOnoutside border not denoted
 
-	cout << "velocity interpolation" << timer.elapsed() << "\n";
-	timer.restart();
+	/*cout << "velocity interpolation" << timer.elapsed() << "\n";
+	timer.restart();*/
 
 
 	backtracedVorticity(); //should be fine
 
-	cout << "vorticity computation" << timer.elapsed() << "\n";
-	timer.restart();
+	/*cout << "vorticity computation" << timer.elapsed() << "\n";
+	timer.restart();*/
 
 	addForces2Vorticity(timeStep); 
 
-	cout << "add forces" << timer.elapsed() << "\n";
-	timer.restart();
+	/*cout << "add forces" << timer.elapsed() << "\n";
+	timer.restart();*/
 
 	addDiffusion2Vorticity();
 
-	cout << "adding diffusion" << timer.elapsed() << "\n";
-	timer.restart();
+	/*cout << "adding diffusion" << timer.elapsed() << "\n";
+	timer.restart();*/
 
 	vorticity2Flux();
 
-	cout << "vort 2 flux" << timer.elapsed() << "\n";
+	/*cout << "vort 2 flux" << timer.elapsed() << "\n";
 	timer.restart();
 
-	cout << "Total: " << timer_total.elapsed();
+	cout << "Total: " << timer_total.elapsed();*/
 
 //testFlux();
 
-	timer_in_between.restart();
+	//timer_in_between.restart();
 	updateVelocities();
 	simulationtime += timeStep;
 
@@ -791,7 +772,7 @@ void fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, t
 
 	if(myMesh->getBorder().size() != 0){
 		//on bordered meshs the stuff with the curv normal does not work.
-		//for now assum that meshes are flat if they have a border
+		//assume that meshes are flat if they have a border
 		assert(weights.size() == dualVertIDs.size());
 		for(int i = 0; i < weights.size(); i++){
 			assert(weights[i]== weights[i]);

@@ -162,6 +162,11 @@ void Displayer::paintGL()
 			theMesh->glTexMapDisplay(Model::getModel()->getMeshInfo()->getBorder());
 			glDisable(GL_TEXTURE_2D);
 		}
+		else if(mode == TEXMODE3 && theMesh->getTexCoords().size()>0 ){
+			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
+			theMesh->glTexEmbedDisplay(Model::getModel()->getMeshInfo()->getBorder());
+		}
 		else{
 			theMesh->glDisplay();
 		}
@@ -182,7 +187,10 @@ void Displayer::paintGL()
 		if(displayVectors && Model::getModel()->getPos() != NULL){
 			std::vector<tuple3f> & pos= * Model::getModel()->getPos();
 			std::vector<tuple3f> & dirs= * Model::getModel()->getDirs();
-			tuple3f normeddir;
+			std::vector<tuple3f> & fcnormals=  Model::getModel()->getMesh()->getFaceNormals();
+			bool showArrows = Model::getModel()->getShowArrows();
+
+			tuple3f normeddir, point, position;
 			for(int i =0; i< pos.size(); i++){
 				glBegin(GL_LINE_LOOP);		
 				glColor3f(0,0,0);
@@ -195,6 +203,21 @@ void Displayer::paintGL()
 				glColor3f(1,0,0);
 				glVertex3f(pos[i].x+ normeddir.x,pos[i].y+ normeddir.y,pos[i].z+ normeddir.z);
 				glEnd();
+
+				if(showArrows){
+					glBegin(GL_TRIANGLES);
+					glColor3f(0.5f,0,0);
+
+					position = pos[i] + normeddir + fcnormals[i]*0.001;
+					glVertex3fv((GLfloat *) & position) ;
+					point = fcnormals[i].cross(normeddir) *(0.15f) ;
+					position = position - normeddir *0.3f;
+					position = position + point;
+					glVertex3fv((GLfloat *) & position) ;
+					position = position + point *(-2.f);
+					glVertex3fv((GLfloat *) & position) ;
+					glEnd();
+				}
 			}
 		}
 		glFlush();

@@ -70,7 +70,8 @@ public:
 	void attach(Observer<modelMsg> * obs);
 	void detatch(Observer<modelMsg> * obs);
 	void updateObserver(modelMsg msg);
-
+	void setShowArrows( bool show );
+	bool getShowArrows(void);
 private:
 	static Model* instance;
 	mesh * myMesh;
@@ -92,4 +93,5 @@ private:
 	bool vFieldValid;
 	float displayLength;
 	fluidSimulation * fluidSim;
+	bool showArrows;
 };

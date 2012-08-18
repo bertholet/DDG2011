@@ -91,6 +91,7 @@ public:
 	void glDisplay(colorMap & cMap);
 	void glTexDisplay(void);
 	void glTexMapDisplay(vector<vector<int>> & border);
+	void glTexEmbedDisplay(vector<vector<int>> & border);
 
 	void addUniformNoise(float sigma);
 	tuple3f intensities( unsigned int faceNr, tuple3f &direction );

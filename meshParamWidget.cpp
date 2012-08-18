@@ -15,6 +15,8 @@ meshParamWidget::meshParamWidget(QWidget *parent)
 	weightMode = 0;
 	QPushButton * butt = new QPushButton("One Circle Border");
 	connect(butt, SIGNAL(released()), this, SLOT(circleBorder()));
+	QPushButton * butt_neuman = new QPushButton("Neumann Borders");
+	connect(butt_neuman, SIGNAL(released()), this, SLOT(neumannBorder()));
 	QPushButton * butt2 = new QPushButton("Conformal Borders");
 	connect(butt2, SIGNAL(released()), this, SLOT(conformalBorder()));
 	QLabel * label1 = new QLabel("Outer Border: ");
@@ -37,11 +39,12 @@ meshParamWidget::meshParamWidget(QWidget *parent)
 	connect(comboBox2, SIGNAL(currentIndexChanged(int)), this, SLOT(setWeightMode(int)));
 
 	QVBoxLayout * layout = new QVBoxLayout();
+	layout->addWidget(butt);
+	layout->addWidget(butt_neuman);
 	layout->addWidget(label1);
 	layout->addWidget(comboBox);
 	layout->addWidget(label2);
 	layout->addWidget(comboBox2);
-	layout->addWidget(butt);
 	layout->addWidget(butt2);
 	this->setLayout(layout);
 }
@@ -54,16 +57,19 @@ void meshParamWidget::circleBorder( void )
 {
 	TutteEmbedding embedding;
 
-	//embedding.setUp_naturalBorder(*Model::getModel()->getMeshInfo());
 
-
-	embedding.calcTexturePos_NaturalBorder(*Model::getModel()->getMeshInfo());
-	/*mesh * myMesh = Model::getModel()->getMesh();
+	mesh * myMesh = Model::getModel()->getMesh();
 	int nrBorders = Model::getModel()->getMeshInfo()->getBorder().size();
 
 	if(myMesh != NULL && nrBorders == 1){
 		embedding.calcTexturePos(*myMesh);
-	}*/
+	}
+}
+
+void meshParamWidget::neumannBorder( void )
+{
+	TutteEmbedding embedding;
+	embedding.calcTexturePos_NaturalBorder(*Model::getModel()->getMeshInfo());
 }
 
 void meshParamWidget::conformalBorder( void )

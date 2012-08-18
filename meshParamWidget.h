@@ -13,6 +13,7 @@ public:
 
 public slots:
 	void conformalBorder(void);
+	void neumannBorder( void );
 	void circleBorder(void);
 	void setBorderMode( int mode );
 	void setWeightMode( int mode );

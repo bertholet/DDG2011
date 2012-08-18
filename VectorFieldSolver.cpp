@@ -3,7 +3,7 @@
 #include "vectorFieldTools.h"
 #include <algorithm>
 
-#define PRINTMAT
+//#define PRINTMAT
 
 VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vector<tuple3i> & f2he,
 									 myStatusBar * statusBar)
@@ -16,6 +16,8 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 	pardisoMatrix star0Inv = DDGMatrices::star0(*msh);
 	pardisoMatrix star1 = DDGMatrices::star1(*msh);
 	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*msh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
+
+	//comment for 'incorrect' border handling.
 	duald1_border = duald1_border  + DDGMatrices::dual_d1_borderdiff(*msh);
 
 	star0Inv.elementWiseInv(0);

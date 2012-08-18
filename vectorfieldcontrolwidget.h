@@ -29,6 +29,7 @@ private:
 	QSlider * gfLengthSlider;
 	int lengthStep;
 	int weightMax;
+	bool useBorderMat;
 	void initSolver();
 private slots:
 	void genAxisAllignedField();

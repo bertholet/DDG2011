@@ -21,6 +21,8 @@
 /*#include "mesh.h"
 #include "Operator.h"*/
 
+//#define PRINTMAT
+
 fluidControlWidget::fluidControlWidget(QWidget *parent)
 	: QWidget(parent)
 {
@@ -44,7 +46,7 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	connect(butt_startSim , SIGNAL(released()), this, SLOT(startSim()));
 
 
-	QPushButton * debug = new QPushButton("Debug (harmonic flow)!");
+	QPushButton * debug = new QPushButton("Define Border Constraints");//"Debug (harmonic flow)!");
 	connect(debug , SIGNAL(released()), this, SLOT(debugSome()));
 
 	QPushButton * debug2 = new QPushButton("Debug (pathtracing/vorts)!");
@@ -509,6 +511,7 @@ void fluidControlWidget::borderDirInput( const QString & text )
 
 void fluidControlWidget::debugSome()
 {
+#ifdef PRINTMAT
 	meshMetaInfo * mesh = Model::getModel()->getMeshInfo();
 	pardisoMatrix star0inv = DDGMatrices::star0(*mesh);
 	star0inv.saveMatrix("C:/Users/bertholet/Dropbox/To Delete/ddgmatrixTests/star0.m");
@@ -579,7 +582,7 @@ void fluidControlWidget::debugSome()
 	solver.setMatrix(Lflux,1);
 	solver.setStoreResultInB(true);
 	solver.solve(& (buff[0]), & (fluxConstr[0]));*/
-
+#endif
 
 
 	if(mySimulation ==  NULL){
@@ -589,7 +592,7 @@ void fluidControlWidget::debugSome()
 	oneForm harmonicFlux = mySimulation->setHarmonicFlow(borderConstrDirs);
 	mySimulation->showHarmonicField();
 
-
+#ifdef PRINTMAT
 	std::vector<double> buff;
 	d1.saveVector(harmonicFlux.getVals(),"harmo","C:/Users/bertholet/Dropbox/To Delete/harmonicFlowTest/harmonic.m");
 	d1.mult(harmonicFlux.getVals(), buff, true);
@@ -608,7 +611,7 @@ void fluidControlWidget::debugSome()
 	/*mySimulation->setFlux(fluxConstraint);
 	mySimulation->showFlux2Vel();*/
 
-
+#endif
 
 	
 }

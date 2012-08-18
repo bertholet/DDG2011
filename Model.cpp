@@ -15,6 +15,7 @@ Model::Model(void)
 	dirs = NULL;
 	fluidSim = NULL;
 	displayLength = 1.f;
+	showArrows = false;
 }
 
 Model::~Model(void)
@@ -82,6 +83,7 @@ void Model::setVField( VectorField * field )
 		delete vField;
 	}
 	vField = field;
+	vField->setShowArrows(showArrows);
 
 	updateObserver(DISPLAY_CHANGED);
 }
@@ -90,6 +92,7 @@ VectorField * Model::getVField()
 {
 	if(vField == NULL){
 		initVectorField();
+		this->vField->setShowArrows(showArrows);
 	}
 	return this->vField;
 }
@@ -173,4 +176,20 @@ fluidSimulation * Model::getFluidSimulation()
 void Model::setFluidSim( fluidSimulation * sim )
 {
 	fluidSim = sim;
+}
+
+void Model::setShowArrows( bool show )
+{
+	showArrows = show;
+	if(this->vField != NULL){
+		this->vField->setShowArrows(show);
+	}
+
+	this->updateObserver(DISPLAY_CHANGED);
+
+}
+
+bool Model::getShowArrows( void )
+{
+	return showArrows;
 }

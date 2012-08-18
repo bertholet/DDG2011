@@ -10,7 +10,7 @@
 #include "Model.h"
 #include "squareTexture.h"
 
-enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE, TEXMODE, TEXMODE2};
+enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE, TEXMODE, TEXMODE2,TEXMODE3};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE, COLORMAPSCROLL};
 
 class Displayer : public QGLWidget,public Observer<Model::modelMsg>
