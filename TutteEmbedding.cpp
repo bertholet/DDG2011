@@ -519,16 +519,18 @@ void TutteEmbedding::setUp_multiBorder( pardisoMatrix &mat, vector<vector<int>> 
 		offset = (i<nrVertices?0:nrVertices);
 	
 		//not on boder or a reflex angle
-		if (myBorder < 0 || ((angles[myBorder][borderIndex] < 0) && myBorder == outBorder) 
+		if (myBorder < 0 || ((angles[myBorder][borderIndex] <= 10e-10) && myBorder == outBorder) 
 			//orientation of inner circles will be swapped
-			||((angles[myBorder][borderIndex] < 0) && myBorder != outBorder)){
+			||((angles[myBorder][borderIndex] <= 10e-10 ) && myBorder != outBorder)){
 
 			a_ii_added = false;
 			//calculate normation factor
 			factor = 0;
 			for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
 				factor += weights(i%nrVertices,*j,m,nbrs_i,nbr_fc_i,NULLBORDER);
+	
 			}
+
 
 			for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
 				if(i< *j + offset &&! a_ii_added){

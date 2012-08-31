@@ -32,7 +32,7 @@ public:
 
 public slots:
 	void flux2vort2flux();
-	void getCollectedFlux();
+	void resetToCollectedFlux();
 	void singleSimulationStep();
 	void updateTimeStep();
 	void setForceFlux();

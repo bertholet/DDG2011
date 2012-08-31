@@ -270,7 +270,7 @@ void mesh::glDisplay( void )
 			//normal.normalize();
 			//cout << "faces[i] :" << vertices[faces[i].x].x<< "," << vertices[faces[i].x].y << "," << vertices[faces[i].x].z << "\n";
 			//glVertex3f( vertices[faces[i].x].x, vertices[faces[i].x].y, vertices[faces[i].x].z);
-			//c= intensities(i, l.direction);
+			//c= intensities(i, localLightDir);
 			//c= intensitiesFlat(i, l.direction);
 			c= intensitiesFlat(i, localLightDir);
 			
@@ -317,16 +317,16 @@ void mesh::glDisplay( colorMap & cMap )
 	glBegin(GL_TRIANGLES);
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-//		c= intensitiesFlat(i, l.direction);
-		c= intensitiesFlat(i, localLightDir);
+//		c= intensitiesFlat(i, localLightDir);
+c= intensities(i, localLightDir);
 		color = cMap.color(faces[i].a);
 		glColor3f(c.x*color.x,c.x*color.y,c.x*color.z);
 		glVertex3fv( (GLfloat *) & vertices[faces[i].a]);
-
+c= intensities(i, localLightDir);
 		color = cMap.color(faces[i].b);
 		glColor3f(c.y*color.x,c.y*color.y,c.y*color.z);
 		glVertex3fv((GLfloat *) & vertices[faces[i].b]);
-
+c= intensities(i, localLightDir);
 		color = cMap.color(faces[i].c);
 		glColor3f(c.z*color.x,c.z*color.y,c.z*color.z);
 		glVertex3fv((GLfloat *) & vertices[faces[i].c]);
@@ -356,15 +356,18 @@ void mesh::glTexDisplay(void){
 //		temp = face_tex[i];
 
 		c= intensitiesFlat(i, localLightDir);
-		glColor3fv((GLfloat *) &c);
+c= intensities(i, localLightDir);
+		glColor3f(c.x,c.x,c.x);
 		glTexCoord2fv((GLfloat *) &tex[face_tex[i].a]);
 		glVertex3fv( (GLfloat *) & vertices[faces[i].a]);
 
-		glColor3fv((GLfloat *) &c);
+c= intensities(i, localLightDir);
+		glColor3f(c.y,c.y,c.y);
 		glTexCoord2fv((GLfloat *) &tex[face_tex[i].b]);
 		glVertex3fv((GLfloat *) & vertices[faces[i].b]);
 
-		glColor3fv((GLfloat *) &c);
+c= intensities(i, localLightDir);
+		glColor3f(c.z,c.z,c.z);
 		glTexCoord2fv((GLfloat *) &tex[face_tex[i].c]);
 		glVertex3fv((GLfloat *) & vertices[faces[i].c]);
 

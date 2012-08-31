@@ -34,12 +34,13 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	//setUp Gui
 
-	QPushButton * butt = new QPushButton("Flux 2 Vorticity 2 Flux!");
-	connect(butt, SIGNAL(released()), this, SLOT(flux2vort2flux()));
-	QPushButton * butt2 = new QPushButton("Define Flux!");
-	connect(butt2, SIGNAL(released()), this, SLOT(getCollectedFlux()));
-	QPushButton * butt_defForce = new QPushButton("Define Force!");
-	connect(butt_defForce, SIGNAL(released()), this, SLOT(setForceFlux()));
+	QPushButton * butt2 = new QPushButton("Reset Flux!");
+	connect(butt2, SIGNAL(released()), this, SLOT(resetToCollectedFlux()));
+	//QPushButton * butt_defForce = new QPushButton("Define Force!");
+	//connect(butt_defForce, SIGNAL(released()), this, SLOT(setForceFlux()));
+	//QPushButton * butt = new QPushButton("Flux 2 Vorticity 2 Flux!");
+	//connect(butt, SIGNAL(released()), this, SLOT(flux2vort2flux()));
+
 	QPushButton * butt_simStep = new QPushButton("Do 1 Timestep");
 	connect(butt_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
 	QPushButton * butt_startSim = new QPushButton("Start/Stop Simulation");
@@ -142,8 +143,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	QVBoxLayout * layout = new QVBoxLayout();
 
 	layout->addWidget(butt2);
-	layout->addWidget(butt);
-	layout->addWidget(butt_defForce);
+	//layout->addWidget(butt);
+	//layout->addWidget(butt_defForce);
 	layout->addWidget(butt_simStep);
 	layout->addWidget(butt_startSim);
 
@@ -296,7 +297,7 @@ void fluidControlWidget::flux2vort2flux()
 
 }
 
-void fluidControlWidget::getCollectedFlux()
+void fluidControlWidget::resetToCollectedFlux()
 {
 
 	if(mySimulation == NULL){

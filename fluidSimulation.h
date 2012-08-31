@@ -197,6 +197,7 @@ public:
 	void pathTraceAndShow(float howmuch);
 	void showFlux2Vel();
 
+	void showTracedFaces();
 	
 	//////////////////////////////////////////////////////////////////////////
 	// helpmethod that interpolates the velocityfield defined on the dualvertex
@@ -252,4 +253,5 @@ public:
 	void showVorticity( bool param1 );
 	void showTexLines( bool what );
 	void setColorScale( float  scale );
+
 };

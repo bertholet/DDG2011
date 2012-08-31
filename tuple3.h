@@ -74,7 +74,9 @@ public:
 		float y = (a.z-b.z)*(c.x - b.x) - (a.x-b.x)*(c.z - b.z);
 		float z = (a.x-b.x)*(c.y - b.y) - (a.y-b.y)*(c.x - b.x);
 		float norm_sqr_a_bXc_b = x*x + y*y + z*z;
-		return a_bDotc_b/pow(norm_sqr_a_bXc_b, 0.5f);
+		float cotanis = a_bDotc_b/pow(norm_sqr_a_bXc_b, 0.5f);
+		cotanis = (cotanis*0!= 0? 10e10:cotanis);
+		return cotanis;
 	}	
 
 	float norm(void){

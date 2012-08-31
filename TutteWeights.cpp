@@ -75,6 +75,9 @@ double TutteWeights::unnormed_meanvalue_weights( int i, int j, mesh & m, vector<
 			//tuple3f::sinPoints(verts[next], verts[i], verts[j]);
 			tuple3f::sinPoints(verts[j], verts[i], verts[next]);
 
+		tan_alpha1_2 = (tan_alpha1_2*0!=0? 10e10:tan_alpha1_2);
+		tan_alpha2_2 = (tan_alpha2_2*0!=0? 10e10:tan_alpha2_2);
+
 		return (tan_alpha1_2 + tan_alpha2_2)/(verts[i]-verts[j]).norm(); //norm
 		
 	}
@@ -157,6 +160,13 @@ double TutteWeights::cotan_weights_divAvor( int i, int j, mesh & m,
 		cot_alpha1 = tuple3f::cotPoints(verts[j], verts[prev], verts[i]);
 		cot_alpha2 = tuple3f::cotPoints(verts[i], verts[next], verts[j]);
 
+		/*if(cot_alpha1 *0 != 0){
+			cot_alpha1 = 10e5;
+		}
+		if(cot_alpha2 *0 != 0){
+			cot_alpha2 = 10e5;
+		}*/
+
 		float Avornoi = 0;
 		for(int k = 0; k < neighbors_i.size(); k++){
 
@@ -166,8 +176,12 @@ double TutteWeights::cotan_weights_divAvor( int i, int j, mesh & m,
 
 			tempcot1 = tuple3f::cotPoints(verts[nbr], verts[prev], verts[i]);
 			tempcot1 = (tempcot1 >0 ? tempcot1: -tempcot1);
+		//	tempcot1 = (tempcot1 <10e5 ? tempcot1: 10e5);
+
 			tempcot2 = tuple3f::cotPoints(verts[i], verts[next], verts[nbr]);
 			tempcot2 = (tempcot2 >0 ? tempcot2: -tempcot2);
+		//	tempcot2 = (tempcot2 <10e5 ? tempcot1: 10e5);
+
 			Avornoi += (tempcot1 +
 				tempcot2) *
 				(verts[i]-verts[nbr]).normSqr();
