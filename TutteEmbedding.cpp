@@ -37,7 +37,7 @@ void TutteEmbedding::calcTexturePos( mesh &m )
 	pardisoSolver parsolver(pardisoSolver::MT_STRUCTURALLY_SYMMETRIC,
 		pardisoSolver::SOLVER_ITERATIVE,
 		2);
-	setUp(mat, border[0], m, TutteWeights::uniform_weights);
+	setUp(mat, border[0], m, TutteWeights::cotan_weights_divAmix);
 	parsolver.setMatrix(mat, 1);
 
 	TutteWeights::circleBorder(outerPos, border[0], m);
@@ -266,12 +266,14 @@ void TutteEmbedding::calcTexturePos_NaturalBorder( meshMetaInfo & m )
 
 	vector<int> & brdr =  m.getBorder()[0];
 	int ind;
-	for(int i = 1; i <3;i++){
-		ind = (brdr.size()-1)/i;
+	int nr = 2;
+	for(int i = 0; i <nr;i++){
+		ind = (0.f+ brdr.size()-1)/nr * i;
 		mat.add(brdr[ind],brdr[ind],100);
 		mat.add(brdr[ind]+nrVerts,brdr[ind]+nrVerts,100);
-		b[brdr[ind]]= (i==1? 100:0);//cos(2*PI/brdr.size() * i);
-		//b[brdr[i]+ nrVerts]= sin(2*PI/brdr.size() * i);
+		//b[brdr[ind]]= (i==1? 100:0);
+		b[brdr[ind]] = cos(2*PI/nr * i);
+		b[brdr[ind]+ nrVerts]= sin(2*PI/nr * i);
 	}
 	
 	pardisoSolver s(pardisoSolver::MT_ANY, pardisoSolver::SOLVER_ITERATIVE,2);
@@ -667,7 +669,8 @@ void TutteEmbedding::setUp_naturalBorder(pardisoMatrix & mat, meshMetaInfo & m){
 	pardisoMatrix & star0 = DDGMatrices::star0(m);
 	star0.elementWiseInv(0);
 
-	mat = star0* DDGMatrices::dual_d1(m) * DDGMatrices::star1(m) * DDGMatrices::d0(m);
+	//mat = star0* DDGMatrices::dual_d1(m) * DDGMatrices::star1(m) * DDGMatrices::d0(m);
+	mat = (star0% DDGMatrices::d0(m)) * DDGMatrices::star1(m) * DDGMatrices::d0(m);
 	pardisoMatrix temp = mat;
 	mat.diagAppend(temp);
 

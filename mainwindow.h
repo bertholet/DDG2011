@@ -31,6 +31,7 @@ private:
 	QCheckBox * cbox;
 	QPushButton * butt;
 	QCheckBox * cbox2;
+	QCheckBox * cbox3;
 	QCheckBox * cBoxArrow;
 	QSlider * fieldSlider;
 	QSlider * linewidthSlider;
@@ -54,6 +55,7 @@ private slots:
 	void lineWidthChanged();
 	void fieldLengthChanged();
 	void showArrows( int );
+	void setSmoothMode( int what );
 };
 
 #endif // MAINWINDOW_H

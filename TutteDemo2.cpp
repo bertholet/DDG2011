@@ -153,7 +153,7 @@ void TutteDemo2::loop()
 	}
 	else{
 		glDisable(GL_TEXTURE_2D);
-		bunny->glDisplay((colorMap&)*cmap);
+		bunny->glDisplay((colorMap&)*cmap,false);
 		glEnable(GL_TEXTURE_2D);
 	}
 	glFlush();

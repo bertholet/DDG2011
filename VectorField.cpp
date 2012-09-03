@@ -228,6 +228,7 @@ void VectorField::glOutputField(bool normed, float displayLength){
 		if(showArrows){
 			glBegin(GL_TRIANGLES);
 			glColor3f(0,0.5f,0);
+			pos +=  fcnormals[i] *0.001;
 			glVertex3fv((GLfloat *) & pos) ;
 			point = fcnormals[i].cross(dir) *(0.15f*displayLength) ;
 			pos = pos - dir*(displayLength *0.3f);

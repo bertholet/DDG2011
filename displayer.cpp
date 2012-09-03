@@ -130,16 +130,16 @@ void Displayer::paintGL()
 			theMesh->glDisplay();
 		}
 		else if(mode == COLORMAPMODE && map != NULL){
-			theMesh->glDisplay(*map);
+			theMesh->glDisplay(*map, smoothShading);
 		}
 		else if(mode == MOUSEINPUTMODE && tmmap != NULL){
-			theMesh->glDisplay((colorMap &) *tmmap);
+			theMesh->glDisplay((colorMap &) *tmmap, smoothShading);
 			Model::getModel()->getInputCollector().glOutputConstraints(theMesh);
 		}
 		else if(mode == FLUIDSIMMODE){
 			fluidSimulation * sim = Model::getModel()->getFluidSimulation();
 			if(sim != NULL){
-				theMesh->glDisplay(*sim);
+				theMesh->glDisplay(*sim, smoothShading);
 				sim->glDisplayField();
 			}
 			else{
@@ -318,4 +318,9 @@ void Displayer::setVectorDisplay( bool )
 {
 	this->displayVectors = true;
 	updateGL();
+}
+
+void Displayer::setSmooth( bool param1 )
+{
+	this->smoothShading = param1;
 }

@@ -94,7 +94,7 @@ void implicitSmoothing(void){
 	}
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	bunny->glDisplay((colorMap&) *cMap);
+	bunny->glDisplay((colorMap&) *cMap, false);
 	//bunny.glDisplay();
 	glFlush();
 
@@ -210,7 +210,7 @@ void renderScene5(void){
 	//LOLglShadeModel(GL_FLAT);
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	bunny->glDisplay((colorMap&) *cMap);
+	bunny->glDisplay((colorMap&) *cMap,false);
 	glFlush();
 
 	//glEnable(GL_DEPTH_TEST);
@@ -236,7 +236,7 @@ void smoothing(void){
 
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	bunny->glDisplay((colorMap&)*cMap);
+	bunny->glDisplay((colorMap&)*cMap, false);
 	glFlush();
 
 	cout << "Volume is : " << Operator::volume(*bunny) <<"\n";

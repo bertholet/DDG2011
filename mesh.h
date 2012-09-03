@@ -88,7 +88,7 @@ public:
 	void glDisplayVertices(void);
 	void glDisplayLines(void);
 	void glDisplay(void);
-	void glDisplay(colorMap & cMap);
+	void glDisplay(colorMap & cMap, bool smooth);
 	void glTexDisplay(void);
 	void glTexMapDisplay(vector<vector<int>> & border);
 	void glTexEmbedDisplay(vector<vector<int>> & border);

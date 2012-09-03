@@ -18,7 +18,7 @@ mesh::mesh(void)
 
 //	nbrs = NULL;
 //	nbr_fcs = NULL;
-	color.set(1.f,1.f,1.f);
+	color.set(0.95f,0.95f,0.95f);
 }
 
 mesh::mesh( const char* file )
@@ -297,7 +297,7 @@ void mesh::glDisplay( void )
 	glEnd();*/
 }
 
-void mesh::glDisplay( colorMap & cMap )
+void mesh::glDisplay( colorMap & cMap , bool smooth = false)
 {
 //	matrixf rot = matrixFactory::rotateY(0.00101f);
 //	matrixf rot2 = matrixFactory::rotateX(0.00253f);
@@ -317,16 +317,18 @@ void mesh::glDisplay( colorMap & cMap )
 	glBegin(GL_TRIANGLES);
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-//		c= intensitiesFlat(i, localLightDir);
-c= intensities(i, localLightDir);
+		
+		if(smooth){ c= intensities(i, localLightDir);}
+		else{c= intensitiesFlat(i, localLightDir);}
+
 		color = cMap.color(faces[i].a);
 		glColor3f(c.x*color.x,c.x*color.y,c.x*color.z);
 		glVertex3fv( (GLfloat *) & vertices[faces[i].a]);
-c= intensities(i, localLightDir);
+
 		color = cMap.color(faces[i].b);
 		glColor3f(c.y*color.x,c.y*color.y,c.y*color.z);
 		glVertex3fv((GLfloat *) & vertices[faces[i].b]);
-c= intensities(i, localLightDir);
+
 		color = cMap.color(faces[i].c);
 		glColor3f(c.z*color.x,c.z*color.y,c.z*color.z);
 		glVertex3fv((GLfloat *) & vertices[faces[i].c]);

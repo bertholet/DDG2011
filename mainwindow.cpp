@@ -67,6 +67,7 @@ void MainWindow::setupButtons()
 
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Display Normed Field",this);
+	cbox3 = new QCheckBox("Flat Shading",this);
 	butt = new QPushButton("Reset", this);
 	cBoxArrow = new QCheckBox("Show Arrows", this);
 	cBoxArrow->setChecked(false);
@@ -117,6 +118,7 @@ void MainWindow::addAction()
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
 	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
 	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
+	connect(cbox3, SIGNAL(stateChanged(int)), this, SLOT(setSmoothMode(int)));
 	connect(butt, SIGNAL(released()), this, SLOT(resetStrokes()));
 
 	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
@@ -140,6 +142,7 @@ void MainWindow::layoutGui()
 	sublayout = new QHBoxLayout();
 	sublayout->addWidget(cbox2);
 	sublayout->addWidget(cBoxArrow);
+	sublayout->addWidget(cbox3);
 	rightLayout->addLayout(sublayout);
 	rightLayout->addWidget(fieldSlider);
 	rightLayout->addWidget(linewidthSlider);	
@@ -306,4 +309,10 @@ void MainWindow::showArrows( int val)
 	/*if(Model::getModel()->getVField() != NULL){
 		Model::getModel()->getVField()->setShowArrows(val==2);
 	}*/
+}
+
+void MainWindow::setSmoothMode( int what )
+{
+	this->myGLDisp->setSmooth(what==2);
+	this->update();
 }

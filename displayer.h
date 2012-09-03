@@ -30,6 +30,7 @@ public:
 	void resetStrokes();
 	void setLineWidth( float param1 );
 	void update(void * src, Model::modelMsg msg);
+	void setSmooth( bool param1 );
 
 protected:
 	void initializeGL();
@@ -54,6 +55,7 @@ private:
 	squareTexture * tex;
 
 	GLuint tex_id;
+	bool smoothShading;
 	//for the trackball
 //	float lastx, lasty, lastz;
 };
