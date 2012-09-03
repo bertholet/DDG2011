@@ -10,19 +10,47 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 {
 
 	meshMetaInfo * msh = Model::getModel()->getMeshInfo();
-	mat = new pardisoMatrix();
-		
-	*mat =	DDGMatrices::dual_d0(*msh) * DDGMatrices::star2(*msh) * DDGMatrices::d1(*msh);
-	pardisoMatrix star0Inv = DDGMatrices::star0(*msh);
-	pardisoMatrix star1 = DDGMatrices::star1(*msh);
-	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*msh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
+	mat_border = new pardisoMatrix();
+	mat_noborder = new pardisoMatrix();
 
+	if(statusBar != NULL){
+		statusBar->setBar(0,8);
+	}
+
+		
+	*mat_border =	DDGMatrices::dual_d0(*msh) * DDGMatrices::star2(*msh) * DDGMatrices::d1(*msh);
+	if(statusBar != NULL){
+		statusBar->updateBar(1);
+	}
+
+	pardisoMatrix star0Inv = DDGMatrices::star0(*msh);
+	if(statusBar != NULL){
+		statusBar->updateBar(2);
+	}
+	pardisoMatrix star1 = DDGMatrices::star1(*msh);
+	if(statusBar != NULL){
+		statusBar->updateBar(3);
+	}
+	pardisoMatrix duald1_border = DDGMatrices::dual_d1(*msh);// + DDGMatrices::dual_d1_borderdiff(*mesh);
+	if(statusBar != NULL){
+		statusBar->updateBar(4);
+	}
+
+	*mat_noborder = *mat_border + (star1*pardisoMatrix::transpose(duald1_border) *star0Inv * (duald1_border) * star1);
+	if(statusBar != NULL){
+		statusBar->updateBar(5);
+	}
 	//comment for 'incorrect' border handling.
 	duald1_border = duald1_border  + DDGMatrices::dual_d1_borderdiff(*msh);
+	if(statusBar != NULL){
+		statusBar->updateBar(6);
+	}
 
 	star0Inv.elementWiseInv(0);
-	*mat = *mat + (star1*pardisoMatrix::transpose(duald1_border) *star0Inv * (duald1_border) * star1);
-
+	*mat_border = *mat_border + (star1*pardisoMatrix::transpose(duald1_border) *star0Inv * (duald1_border) * star1);
+	if(statusBar != NULL){
+		statusBar->updateBar(7);
+	}
 
 	//the following two lines DO work...
 	l = new oneFormLaplacian(&f2he,&edges,aMesh);
@@ -61,21 +89,25 @@ VectorFieldSolver::VectorFieldSolver(mesh * aMesh, vector<tuple2i> & edges, vect
 ////////////////////////////////////////////////////////////////////////
 #endif
 
-	solver->setMatrix(*mat, 1);
-	mat->getDiagonalIndices(this->diagonalMatInd);
+	solver->setMatrix(*mat_border, 1);
+	mat_border->getDiagonalIndices(this->diagonalMatInd);
 
 
-	for(int i = 0; i < mat->dim(); i++){
+	for(int i = 0; i < mat_border->dim(); i++){
 		b.push_back(0.0);
 		x.push_back(0.0);
 	}
 
+	if(statusBar != NULL){
+		statusBar->updateBar(8);
+	}
 }
 
 VectorFieldSolver::~VectorFieldSolver(void)
 {
 	delete solver;
-	delete mat;
+	delete mat_border;
+	delete mat_noborder;
 	delete l;
 }
 
@@ -85,9 +117,14 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 			vector<tuple3f> & constr_edge_dir, 
 			float edgeConstrWeight,
 			float constrLength,
-			VectorField * target )
+			VectorField * target,
+			bool borderAdapted)
 {
 
+
+	pardisoMatrix * mat = (borderAdapted? mat_border: mat_noborder);
+	mat->getDiagonalIndices(this->diagonalMatInd);
+	
 
 	// * constrLength: Hack!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	float weight = edgeConstrWeight * (Model::getModel()->getMeshInfo()->getHalfedges()->size());
@@ -97,19 +134,6 @@ void VectorFieldSolver::solve(vector<int> & vertIDs,
 	//calls, even Z changes.... this means it has to be tidied up 
 	//after having added the extra constraints
 
-
-	//TO DELETE:
-/*	for(int i = 0; i < mat->a.size(); i++){
-		mat->a[i] = 0;
-	}
-	for(int i = 0; i< diagonalMatInd.size(); i++){
-		mat->a[diagonalMatInd[i]] = 1;
-	}
-	for(int i = 0; i < mat->dim(); i++){
-		x[i]=0;
-	}
-
-	//LOOK OUT DELETE THE STUFF BEFORE HERE*/
 
 #ifdef PRINTMAT
 mat->saveMatrix("C:/Users/bertholet/Dropbox/To Delete/matrix_before.m");
@@ -146,12 +170,12 @@ void VectorFieldSolver::constraints(vector<int> & vertIds,
 			float weight,
 			double * b )
 {
-	for(int i = 0; i < mat->dim(); i++){
+	for(int i = 0; i < mat_border->dim(); i++){
 		b[i] = 0;
 	}
-	l->addZToB(edgeIds, edge_dir_constr,weight, b, mat->dim());
+	l->addZToB(edgeIds, edge_dir_constr,weight, b, mat_border->dim());
 
-	l->add_star_d(vertIds, src_sink_constr, b, mat->dim());
+	l->add_star_d(vertIds, src_sink_constr, b, mat_border->dim());
 
 }
 
@@ -162,13 +186,13 @@ void VectorFieldSolver::constraints( vector<int> & vertIds,
 			vector<float> & lengths, 
 			float weight, double * b )
 {
-	for(int i = 0; i < mat->dim(); i++){
+	for(int i = 0; i < mat_border->dim(); i++){
 		b[i] = 0;
 	}
 
-	l->addZToB(faceIds, face_dir_constr, lengths,weight, b, mat->dim());
+	l->addZToB(faceIds, face_dir_constr, lengths,weight, b, mat_border->dim());
 
-	l->add_star_d(vertIds, src_sink_constr, b, mat->dim());
+	l->add_star_d(vertIds, src_sink_constr, b, mat_border->dim());
 
 }
 
@@ -177,10 +201,10 @@ void VectorFieldSolver::constraints( vector<int> & vertIds,
 
 void VectorFieldSolver::constraintsSrcSinkOnly( vector<int> & vertIds, vector<float> & src_sink_constr, double * b )
 {
-	for(int i = 0; i < mat->dim(); i++){
+	for(int i = 0; i < mat_border->dim(); i++){
 		b[i] = 0;
 	}
-	l->add_star_d(vertIds, src_sink_constr, b, mat->dim());
+	l->add_star_d(vertIds, src_sink_constr, b, mat_border->dim());
 }
 
 
@@ -195,8 +219,12 @@ void VectorFieldSolver::solveDirectional(vector<int> & vertIDs,
 										 vector<tuple3f> & constr_face_dir, 
 										 float edgeConstrWeight,
 										 float constrLength,
-										 VectorField * target )
+										 VectorField * target,
+										 bool borderAdapted)
 {
+
+	pardisoMatrix * mat = (borderAdapted? mat_border: mat_noborder);
+	mat->getDiagonalIndices(this->diagonalMatInd);
 	float weight = edgeConstrWeight;
 	constraintsSrcSinkOnly(vertIDs, src_sink_constr, &(b[0]));
 
@@ -264,17 +292,17 @@ void VectorFieldSolver::addDirConstraint2Mat( vector<int> & constr_faces ,
 		c2 = e2/(e3);
 		c3 = e3/(e1);
 
-		mat->add(edgeIDs.a,edgeIDs.a, weight* (1+c3*c3));
-		mat->add(edgeIDs.a,edgeIDs.b, -weight * c1);
-		mat->add(edgeIDs.a,edgeIDs.c, -weight * c3);
+		target->add(edgeIDs.a,edgeIDs.a, weight* (1+c3*c3));
+		target->add(edgeIDs.a,edgeIDs.b, -weight * c1);
+		target->add(edgeIDs.a,edgeIDs.c, -weight * c3);
 
-		mat->add(edgeIDs.b,edgeIDs.a, -weight* c1);
-		mat->add(edgeIDs.b,edgeIDs.b, weight * (1+c1*c1));
-		mat->add(edgeIDs.b,edgeIDs.c, -weight * c2);
+		target->add(edgeIDs.b,edgeIDs.a, -weight* c1);
+		target->add(edgeIDs.b,edgeIDs.b, weight * (1+c1*c1));
+		target->add(edgeIDs.b,edgeIDs.c, -weight * c2);
 
-		mat->add(edgeIDs.c,edgeIDs.a, -weight* c3);
-		mat->add(edgeIDs.c,edgeIDs.b, -weight * c2);
-		mat->add(edgeIDs.c,edgeIDs.c, weight * (1+c2*c2));
+		target->add(edgeIDs.c,edgeIDs.a, -weight* c3);
+		target->add(edgeIDs.c,edgeIDs.b, -weight * c2);
+		target->add(edgeIDs.c,edgeIDs.c, weight * (1+c2*c2));
 	}
 }
 
@@ -282,13 +310,17 @@ void VectorFieldSolver::solveLengthEstimated( vector<int> & vertIDs,
 			vector<float> & src_sink_constraints, 
 			vector<int> & constr_fc,
 			vector<tuple3f> & constr_fc_dir, 
-			float weight, VectorField * target )
+			float weight, VectorField * target, bool borderAdapted )
 {
+
+	pardisoMatrix * mat = (borderAdapted? mat_border: mat_noborder);
+	mat->getDiagonalIndices(this->diagonalMatInd);
+
 	vector<float> length;
 	vector<int> constr_edges;
 
 	findLengths(vertIDs, src_sink_constraints, constr_fc,
-		length);
+		length, mat);
 
 	constraints(vertIDs, src_sink_constraints, 
 		constr_fc, constr_fc_dir, length, weight, &(b[0]));
@@ -326,7 +358,8 @@ void VectorFieldSolver::solveLengthEstimated( vector<int> & vertIDs,
 
 void VectorFieldSolver::findLengths( vector<int> & vertIDs, vector<float> & src_sink_constr, 
 				vector<int> & constr_fc, 
-				vector<float> & target_lengths )
+				vector<float> & target_lengths,
+				pardisoMatrix * mat)
 {
 
 	target_lengths.clear();

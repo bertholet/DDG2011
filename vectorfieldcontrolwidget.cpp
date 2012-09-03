@@ -179,7 +179,8 @@ void vectorFieldControlWidget::solveVField()
 			Model::getModel()->getInputCollector().getEdgeDirs(),
 			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
 			constraintLength,
-			Model::getModel()->getVField());
+			Model::getModel()->getVField(),
+			useBorderMat);
 	}
 	else{
 	/*	solver->solveDirectional(verts, constr,
@@ -192,7 +193,8 @@ void vectorFieldControlWidget::solveVField()
 			Model::getModel()->getInputCollector().getFaces(),
 			Model::getModel()->getInputCollector().getFaceDir(),
 			weight * (Model::getModel()->getMeshInfo()->getHalfedges()->size()),
-			Model::getModel()->getVField());
+			Model::getModel()->getVField(),
+			useBorderMat);
 	}
 
 	if(mainWindow != NULL){

@@ -66,10 +66,10 @@ void MainWindow::setupButtons()
 	comboBox->addItem("Embedding");
 
 	cbox = new QCheckBox("Draw strokes",this);
-	cbox2 = new QCheckBox("Display Normed Field",this);
-	cbox3 = new QCheckBox("Flat Shading",this);
+	cbox2 = new QCheckBox("Normed Field",this);
+	cbox3 = new QCheckBox("Flat",this);
 	butt = new QPushButton("Reset", this);
-	cBoxArrow = new QCheckBox("Show Arrows", this);
+	cBoxArrow = new QCheckBox("Arrows", this);
 	cBoxArrow->setChecked(false);
 
 	fieldSlider = new QSlider(Qt::Horizontal, this);

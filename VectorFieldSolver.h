@@ -26,7 +26,8 @@ public:
 		vector<tuple3f> & constr_edg_dir, 
 		float weight,
 		float constrLength,
-		VectorField * target );
+		VectorField * target,
+		bool borderAdaped);
 
 	//////////////////////////////////////////////////////////////////////////
 	//Instead of enforcing vectors of the vector fields only their direction
@@ -38,7 +39,8 @@ public:
 		vector<tuple3f> & constr_fc_dir, 
 		float weight,
 		float constrLength,
-		VectorField * target );
+		VectorField * target,
+		bool borderAdaped );
 
 	//////////////////////////////////////////////////////////////////////////
 	// In a first step, before directional constraints are introduced the length
@@ -50,7 +52,8 @@ public:
 		vector<int> & constr_fc,
 		vector<tuple3f> & constr_fc_dir, 
 		float weight,
-		VectorField * target );
+		VectorField * target,
+		bool borderAdaped );
 
 	//////////////////////////////////////////////////////////////////////////
 	// calculate the constraints Vector b in (M+Z)x = b.
@@ -76,7 +79,8 @@ public:
 	void perturb( vector<int>&  verts, vector<float> & constr );
 
 private:
-	pardisoMatrix *mat;
+	pardisoMatrix *mat_border;
+	pardisoMatrix *mat_noborder;
 	pardisoSolver *solver;
 	oneFormLaplacian *l;
 
@@ -96,6 +100,7 @@ private:
 		double * b);
 	void findLengths( vector<int> & vertIDs, vector<float> & src_sink_constr, 
 		vector<int> & constr_fc, 
-		vector<float> & target_lengths );
+		vector<float> & target_lengths,
+		pardisoMatrix * mat);
 	void pushEdges( vector<int> & constr_fc, vector<tuple3i> & f2e , vector<int>  & target );
 };
