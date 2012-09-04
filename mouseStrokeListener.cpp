@@ -47,7 +47,8 @@ void mouseStrokeListener::onMouseMove( QMouseEvent* event )
 	tuple3i * fc = Model::getModel()->getMesh()->intersect(start,end, &vertex, &face, next);
 
 	if(fc != NULL){
-		this->map->mark(vertex, nrCalls);
+		int what = Model::getModel()->getInputCollector().getWhat();
+		this->map->mark(vertex, what);
 		//this->map->mark(Model::getModel()->getMesh()->getFaces()[face], nrCalls);
 		this->daddy->updateGL();
 

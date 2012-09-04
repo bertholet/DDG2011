@@ -148,23 +148,57 @@ void fieldConstraintCollector::glOutputConstraints( mesh * theMesh )
 	int fc;
 	std::vector<tuple3i> & fcs = theMesh->getFaces();
 	std::vector<tuple3f> & vrt = theMesh->getVertices();
-	glColor3f(1.f,1.f,0.f);
+	std::vector<tuple3f> & fcnormals = theMesh->getFaceNormals();
+	glColor3f(0.8f,0.5f,0);
 
-	glBegin(GL_LINES);
-	tuple3f pos, dir;
+	
+	tuple3f pos, dir, point;
 	float length = Model::getModel()->getDisplayLength();
+	bool arrows = Model::getModel()->getShowArrows();
 	for(int i = 0; i < faces.size(); i++){
 		if(i < fcs.size()){
+			glBegin(GL_LINES);
 			fc = faces[i];
 			pos = (vrt[fcs[fc].a]+vrt[fcs[fc].b]+vrt[fcs[fc].c]) * (1.f/3);
+			pos +=  fcnormals[fc] *0.001;
 			glVertex3fv( (GLfloat *) & pos);
+			dir= face_dir[i] *length;
 			/*dir = face_dir[i];
 			dir.normalize();
 			dir = dir * (0.3f);*/
-			pos += face_dir[i] *length;
+			pos += dir;
 			glVertex3fv( (GLfloat *) & pos);
+			glEnd();
+
+			if(arrows== true){
+				glBegin(GL_TRIANGLES);
+				glVertex3fv((GLfloat *) & pos) ;
+				pos +=  fcnormals[fc] *0.001;
+				point = fcnormals[fc].cross(dir) *(0.15f) ;
+				pos = pos - dir*0.3f;
+				pos = pos + point;
+				glVertex3fv((GLfloat *) & pos) ;
+				pos = pos + point *(-2.f);
+				glVertex3fv((GLfloat *) & pos) ;
+				glEnd();
+			}
 		}
 	}
-	glEnd();
+	
+}
+
+int fieldConstraintCollector::getWhat()
+{
+
+	 if(what == SOURCE_VERTS){
+		 return 0;
+	 }
+	 if(what == SINK_VERTS){
+		 return 1;
+	 }if(what == GUIDING_FIELD){
+		 return 2;
+	 }if(what == NOTHING){
+		 return 3;
+	 }
 }
 
