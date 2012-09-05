@@ -46,7 +46,7 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 
 	for(int j = 0; j < nrSimulationLines/*noFaces*/; j++){
 
-		int i = (rand()%noFaces);
+		int i = (rand()%(noFaces));
 		line_strip_triangle.push_back(i);//(rand()%noFaces);
 		line_stripe_starts.push_back(/**/randPoint(i));//*/dualVertices[line_strip_triangle[i]]);
 		age.push_back(rand()%maxAge);
@@ -203,6 +203,7 @@ void fluidSimulation::setViscosity( float visc )
 void fluidSimulation::setStepSize( float stepSize )
 {
 	this->timeStep = stepSize;
+	this->setViscosity(viscosity);
 }
 
 //////////////////////////////////////////////////////////////////////////

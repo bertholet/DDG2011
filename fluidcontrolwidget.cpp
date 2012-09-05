@@ -34,8 +34,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	//setUp Gui
 
-	QPushButton * butt2 = new QPushButton("Reset Flux!");
-	connect(butt2, SIGNAL(released()), this, SLOT(resetToCollectedFlux()));
+	QPushButton * but_resetFlux = new QPushButton("Reset Flux!");
+	connect(but_resetFlux, SIGNAL(released()), this, SLOT(resetToCollectedFlux()));
 	//QPushButton * butt_defForce = new QPushButton("Define Force!");
 	//connect(butt_defForce, SIGNAL(released()), this, SLOT(setForceFlux()));
 	//QPushButton * butt = new QPushButton("Flux 2 Vorticity 2 Flux!");
@@ -47,8 +47,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	connect(butt_startSim , SIGNAL(released()), this, SLOT(startSim()));
 
 
-	QPushButton * debug = new QPushButton("Define Border Constraints");//"Debug (harmonic flow)!");
-	connect(debug , SIGNAL(released()), this, SLOT(debugSome()));
+	QPushButton * but_borderconstr = new QPushButton("Define Border Constraints");//"Debug (harmonic flow)!");
+	connect(but_borderconstr , SIGNAL(released()), this, SLOT(debugSome()));
 
 	QPushButton * debug2 = new QPushButton("Debug (pathtracing/vorts)!");
 	connect(debug2 , SIGNAL(released()), this, SLOT(debugSome2()));
@@ -142,15 +142,14 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	QVBoxLayout * layout = new QVBoxLayout();
 
-	layout->addWidget(butt2);
+	layout->addWidget(animationLabel);
+	layout->addWidget(vectorInput);
+	layout->addWidget(but_borderconstr);
 	//layout->addWidget(butt);
 	//layout->addWidget(butt_defForce);
-	layout->addWidget(butt_simStep);
 	layout->addWidget(butt_startSim);
-
-	layout->addWidget(debug);
-	layout->addWidget(debug2);
-
+	layout->addWidget(but_resetFlux);
+	layout->addWidget(butt_simStep);
 
 	layout->addWidget(stepSliderLabel);
 	layout->addWidget(stepSlider);
@@ -161,9 +160,11 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(forceStrengthLabel);
 	layout->addWidget(forceStrengthSlider);
 //	layout->addWidget(viscosityAndTimestep);
-	layout->addWidget(animationLabel);
+
+
+
 	layout->addWidget(streamLinesInterpolationLable);
-	
+
 	QHBoxLayout * hlayout = new QHBoxLayout();
 	hlayout->addWidget(showStreamLines);
 	hlayout->addWidget(doInterpolation);
@@ -172,7 +173,16 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	hlayout->addWidget(texLine);
 	hlayout->addWidget(colorScale);
 	layout->addLayout(hlayout);
-	layout->addWidget(vectorInput);
+
+	layout->addWidget(debug2);
+
+
+	/*QPushButton * dbg1 = new QPushButton("1");
+	QPushButton * dbg2= new QPushButton("2");
+	QHBoxLayout * hlayout2 = new QHBoxLayout();
+	hlayout2->addWidget(dbg1);
+	hlayout2->addWidget(dbg2);
+	layout->addLayout(hlayout2);*/
 
 	this->setLayout(layout);
 
