@@ -44,8 +44,9 @@ public:
 	// Note: the Memory of points needs to be released elsewhere
 	// at the time given-..
 	//////////////////////////////////////////////////////////////////////////
-	void setPointCloud(std::vector<tuple3f> * points);
+	void setDualMesh(std::vector<tuple3f> * points, std::vector<std::vector<int>> * dualF2V);
 	std::vector<tuple3f>  * getPointCloud();
+	std::vector<std::vector<int>> * getPointCloudConnectivity();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Will make the displayer display these Vectors.
@@ -72,6 +73,7 @@ public:
 	void updateObserver(modelMsg msg);
 	void setShowArrows( bool show );
 	bool getShowArrows(void);
+	
 private:
 	static Model* instance;
 	mesh * myMesh;
@@ -85,6 +87,8 @@ private:
 	// just any list of points you want to be displayed.
 	// good for debugging
 	std::vector<tuple3f> * points;
+	//dual face to vertex array
+	std::vector<std::vector<int>> * dualF2V;
 
 	vector<Observer<modelMsg> *> observer;
 

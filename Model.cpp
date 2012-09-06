@@ -137,9 +137,15 @@ std::vector<tuple3f>  * Model::getPointCloud()
 	return this->points;
 }
 
-void Model::setPointCloud( std::vector<tuple3f> * points_ )
+std::vector<std::vector<int>>  * Model::getPointCloudConnectivity()
+{
+	return this->dualF2V;
+}
+
+void Model::setDualMesh( std::vector<tuple3f> * points_ ,std::vector<std::vector<int>> * dualF2V_)
 {
 	this->points = points_;
+	this->dualF2V = dualF2V_;
 	this->updateObserver(DISPLAY_CHANGED);
 }
 

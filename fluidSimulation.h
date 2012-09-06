@@ -21,7 +21,9 @@ private:
 
 	// Things needed for Pathtracing
 	std::vector<tuple3f> velocities;
+	std::vector<tuple3f> velocities_vorticitypart;
 	std::vector<tuple3f> dualVertices;
+	std::vector<std::vector<int>> dualF2V;
 	std::vector<tuple3f> backtracedDualVertices;
 
 	//the triangle the backtraced dual vertex lies in.
@@ -190,6 +192,8 @@ public:
 
 	void showHarmonicField();
 
+	void showVorticityPart();
+
 	//////////////////////////////////////////////////////////////////////////
 	// pathtrace and display pathtracedPositions
 	// Again this is for debug / visualisation reasons
@@ -197,8 +201,7 @@ public:
 	void pathTraceAndShow(float howmuch);
 	void showFlux2Vel();
 
-	void showTracedFaces();
-	
+
 	//////////////////////////////////////////////////////////////////////////
 	// helpmethod that interpolates the velocityfield defined on the dualvertex
 	// positions. triangleIndex is the index of the triangle containing pos.

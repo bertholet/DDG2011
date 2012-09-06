@@ -200,5 +200,6 @@ int fieldConstraintCollector::getWhat()
 	 }if(what == NOTHING){
 		 return 3;
 	 }
+	 return 4;
 }
 

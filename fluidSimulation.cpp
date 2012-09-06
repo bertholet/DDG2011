@@ -27,12 +27,15 @@ flux(*mesh),harmonicFlux(*mesh), vorticity(*mesh), L_m1Vorticity(*mesh), tempNul
 	myMesh = mesh;
 	simulationtime = 0;
 
-	dualMeshTools::getDualVertices(*mesh, dualVertices);
+	dualMeshTools::getDualVertices_border(*mesh, dualVertices,dualF2V);
 //	assert(checkAllDualVerticesInside());
 
 	backtracedDualVertices = dualVertices; //this copies everything.
 	backtracedVelocity = dualVertices; // just to have the right dimension
-	backtracedVelocity_noHarmonic = dualVertices; // same reason
+	for(int i = 0; i < backtracedVelocity.size(); i++){
+		backtracedVelocity[i]*=0.f;
+	}
+	backtracedVelocity_noHarmonic = backtracedVelocity; // same reason
 
 
 
@@ -648,7 +651,7 @@ void fluidSimulation::pathTraceDualVertices( float t )
 	backtracedDualVertices = dualVertices;
 	int triangle;
 	int nrIterations = t/0.05 + 1; // at least one iteration!!!
-	int end = backtracedDualVertices.size();
+	int end = myMesh->getBasicMesh().getFaces().size(); //backtrace only non border vertices;
 	float changed_t;
 	bool hitBorder;
 	std::vector<float> intern_memory; //intern memory
@@ -897,10 +900,13 @@ void fluidSimulation::updateBacktracedVelocities()
 
 void fluidSimulation::updateVelocities()
 {
-	fluidTools::flux2Velocity(flux,velocities, *myMesh);
+	fluidTools::flux2Velocity(flux,velocities_vorticitypart, *myMesh);
 
+	if(velocities.size() != velocities_vorticitypart.size()){
+		velocities = velocities_vorticitypart;
+	}
 	for(int i = 0; i < velocities.size(); i++){
-		velocities[i]+= harmonicVelocities[i];
+		velocities[i]= velocities_vorticitypart[i] + harmonicVelocities[i];
 		assert(velocities[i].x *0 == 0);
 	}
 }
@@ -941,8 +947,17 @@ void fluidSimulation::addDiffusion2Vorticity()
 
 void fluidSimulation::showDualPositions()
 {
-	Model::getModel()->setPointCloud(&dualVertices);
+	Model::getModel()->setDualMesh(&dualVertices, &dualF2V);
 }
+
+
+void fluidSimulation::showVorticityPart()
+{
+	updateVelocities();
+	Model::getModel()->setDualMesh(NULL, NULL); //stop displaying dual mesh.
+	Model::getModel()->setVectors(&dualVertices,&velocities_vorticitypart);
+}
+
 
 
 void fluidSimulation::showFlux2Vel()
@@ -963,7 +978,7 @@ void fluidSimulation::pathTraceAndShow(float howmuch)
 	//fluidTools::flux2Velocity(flux,velocities, *myMesh);
 	updateVelocities();
 	pathTraceDualVertices(howmuch);
-	Model::getModel()->setPointCloud(&backtracedDualVertices);
+	Model::getModel()->setDualMesh(&backtracedDualVertices, &dualF2V);
 
 	updateBacktracedVelocities();
 	Model::getModel()->setVectors(&backtracedDualVertices,&backtracedVelocity);

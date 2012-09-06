@@ -178,6 +178,8 @@ void Displayer::paintGL()
 
 		if(displayPointCloud && Model::getModel()->getPointCloud() != NULL){
 			std::vector<tuple3f> & points = * Model::getModel()->getPointCloud();
+			std::vector<tuple3f> & fcnormals=  Model::getModel()->getMesh()->getFaceNormals();
+
 			glColor3f(0,0,1);
 			glBegin(GL_POINTS);
 			for(int i =0; i< points.size(); i++){
@@ -185,40 +187,47 @@ void Displayer::paintGL()
 			}
 			glEnd();
 
-			std::vector<std::vector<int>> & nbrFaces =  Model::getModel()->getMesh()->getNeighborFaces();
+			std::vector<std::vector<int>> & nbrFaces =  * Model::getModel()->getPointCloudConnectivity();
+			tuple3f position;
 			for(int i =0; i< nbrFaces.size(); i++){
 				glBegin(GL_LINE_LOOP);
 				for(int j =0; j< nbrFaces[i].size(); j++){
-					glVertex3f(points[nbrFaces[i][j]].x,points[nbrFaces[i][j]].y,points[nbrFaces[i][j]].z);
+					position = points[nbrFaces[i][j]];
+					if( nbrFaces[i][j] < fcnormals.size()){
+						position += fcnormals[nbrFaces[i][j]] *0.001;
+					}
+					glVertex3fv((GLfloat *) & position);
 				}
 				glEnd();
 			}
 		}
-		if(displayVectors && Model::getModel()->getPos() != NULL){
+		if(displayVectors && Model::getModel()->getPos() != NULL && Model::getModel()->getDirs() != NULL){
 			std::vector<tuple3f> & pos= * Model::getModel()->getPos();
 			std::vector<tuple3f> & dirs= * Model::getModel()->getDirs();
 			std::vector<tuple3f> & fcnormals=  Model::getModel()->getMesh()->getFaceNormals();
 			bool showArrows = Model::getModel()->getShowArrows();
 
 			tuple3f normeddir, point, position;
-			for(int i =0; i< pos.size(); i++){
+			for(int i =0; i< fcnormals.size(); i++){
 				glBegin(GL_LINE_LOOP);		
 				glColor3f(0,0,0);
-				glVertex3f(pos[i].x,pos[i].y,pos[i].z);
+				position = pos[i] + fcnormals[i]*0.001;
+				glVertex3fv((GLfloat *) & position);
 				normeddir = dirs[i];
 				if(normedVField){
 					normeddir.normalize();
 				}
 				normeddir*= Model::getModel()->getDisplayLength();
 				glColor3f(1,0,0);
-				glVertex3f(pos[i].x+ normeddir.x,pos[i].y+ normeddir.y,pos[i].z+ normeddir.z);
+				position = pos[i] + normeddir;
+				glVertex3fv((GLfloat *) & position);
 				glEnd();
 
 				if(showArrows){
 					glBegin(GL_TRIANGLES);
 					glColor3f(0.5f,0,0);
 
-					position = pos[i] + normeddir + fcnormals[i]*0.001;
+					position = position + fcnormals[i]*0.001;
 					glVertex3fv((GLfloat *) & position) ;
 					point = fcnormals[i].cross(normeddir) *(0.15f) ;
 					position = position - normeddir *0.3f;

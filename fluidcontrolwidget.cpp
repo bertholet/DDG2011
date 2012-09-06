@@ -179,7 +179,8 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 
 	QPushButton * dbg1 = new QPushButton("PathTr");
 	connect(dbg1 , SIGNAL(released()), this, SLOT(pathtrace()));
-	QPushButton * dbg2= new QPushButton("2");
+	QPushButton * dbg2= new QPushButton("VortPart");
+	connect(dbg2 , SIGNAL(released()), this, SLOT(showVorticityPart()));
 	QHBoxLayout * hlayout2 = new QHBoxLayout();
 	hlayout2->addWidget(dbg1);
 	hlayout2->addWidget(dbg2);
@@ -727,6 +728,13 @@ void fluidControlWidget::pathtrace()
 {
 	if(mySimulation != NULL){
 		mySimulation->pathTraceAndShow(getTimestep());
+	}
+}
+
+void fluidControlWidget::showVorticityPart()
+{
+	if(mySimulation != NULL){
+		mySimulation->showVorticityPart();
 	}
 }
 
