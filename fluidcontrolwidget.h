@@ -54,6 +54,7 @@ public slots:
 	void debugSome2();
 	void showTexLines( int what );
 	void colorScaleChanged( int state );
+	void pathtrace();
 private:
 	std::vector<tuple3f> dirs;
 	fluidSimulation * mySimulation;

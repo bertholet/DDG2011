@@ -178,11 +178,21 @@ void Displayer::paintGL()
 
 		if(displayPointCloud && Model::getModel()->getPointCloud() != NULL){
 			std::vector<tuple3f> & points = * Model::getModel()->getPointCloud();
+			glColor3f(0,0,1);
 			glBegin(GL_POINTS);
 			for(int i =0; i< points.size(); i++){
 				glVertex3f(points[i].x,points[i].y,points[i].z);
 			}
 			glEnd();
+
+			std::vector<std::vector<int>> & nbrFaces =  Model::getModel()->getMesh()->getNeighborFaces();
+			for(int i =0; i< nbrFaces.size(); i++){
+				glBegin(GL_LINE_LOOP);
+				for(int j =0; j< nbrFaces[i].size(); j++){
+					glVertex3f(points[nbrFaces[i][j]].x,points[nbrFaces[i][j]].y,points[nbrFaces[i][j]].z);
+				}
+				glEnd();
+			}
 		}
 		if(displayVectors && Model::getModel()->getPos() != NULL){
 			std::vector<tuple3f> & pos= * Model::getModel()->getPos();

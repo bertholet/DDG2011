@@ -177,12 +177,13 @@ fluidControlWidget::fluidControlWidget(QWidget *parent)
 	layout->addWidget(debug2);
 
 
-	/*QPushButton * dbg1 = new QPushButton("1");
+	QPushButton * dbg1 = new QPushButton("PathTr");
+	connect(dbg1 , SIGNAL(released()), this, SLOT(pathtrace()));
 	QPushButton * dbg2= new QPushButton("2");
 	QHBoxLayout * hlayout2 = new QHBoxLayout();
 	hlayout2->addWidget(dbg1);
 	hlayout2->addWidget(dbg2);
-	layout->addLayout(hlayout2);*/
+	layout->addLayout(hlayout2);
 
 	this->setLayout(layout);
 
@@ -719,6 +720,13 @@ void fluidControlWidget::colorScaleChanged( int scale )
 {
 	if(mySimulation != NULL){
 		mySimulation->setColorScale(pow(10.f,(1.f*scale-50)/10));
+	}
+}
+
+void fluidControlWidget::pathtrace()
+{
+	if(mySimulation != NULL){
+		mySimulation->pathTraceAndShow(getTimestep());
 	}
 }
 
