@@ -279,7 +279,7 @@ oneForm fluidSimulation::setHarmonicFlow( vector<tuple3f> & borderConstraints )
 	tuple2i edge;
 
 
-	pardisoMatrix Lflux = (pardisoMatrix::transpose(d1)*DDGMatrices::star2(*myMesh)*d1) //* 100
+	pardisoMatrix Lflux = (pardisoMatrix::transpose(d1)*DDGMatrices::star2(*myMesh)*d1) 
 		+ pardisoMatrix::transpose(dt_star1_adapted)*star0inv*dt_star1_adapted;
 
 #ifdef printMat_harmonicFlux
